@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { AccountWithAliases } from '@/lib/types';
-import { Mail, Calendar, Clock, Plus, Trash2 } from 'lucide-react';
+import { Mail, Calendar, Clock, Plus, Trash2, Copy } from 'lucide-react';
 
 interface AccountCardProps {
   account: AccountWithAliases;
@@ -30,6 +30,10 @@ export function AccountCard({
   isSelected = false,
 }: AccountCardProps) {
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${account.recoveryEmail}:${account.recoveryPassword}`);
+  };
 
   const canAddAlias = () => {
     if (!account.lastAliasAddedAt) return true;
@@ -105,16 +109,28 @@ export function AccountCard({
                 {account.recoveryEmail}:{showPassword ? account.recoveryPassword : '••••••••'}
               </span>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowPassword(!showPassword);
-              }}
-            >
-              {showPassword ? 'Hide' : 'Show'}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopy();
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPassword(!showPassword);
+                }}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </Button>
+            </div>
           </div>
         </section>
 

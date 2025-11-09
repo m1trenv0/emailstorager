@@ -246,7 +246,7 @@ export default function Home() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-6 space-y-4">
+        <TabsContent value="all" className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           {filteredAccounts.length === 0 ? (
             <Card>
               <CardContent className="flex h-32 items-center justify-center">
