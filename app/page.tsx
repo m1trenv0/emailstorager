@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccountCard } from '@/components/AccountCard';
 import { AliasCard } from '@/components/AliasCard';
 import { AddAccountForm } from '@/components/AddAccountForm';
+import { AddAliasModal } from '@/components/AddAliasModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
 import { Input } from '@/components/ui/input';
 import { ServiceStatus } from '@/lib/types';
@@ -29,6 +30,8 @@ export default function Home() {
   const allAccounts = useAllAccounts();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
 
   // Compute derived data with useMemo to avoid infinite loops
   const unregisteredAliases = useMemo(
@@ -103,17 +106,24 @@ export default function Home() {
     }
   };
 
-  const handleAddAlias = async (accountId: string) => {
-    const email = prompt('Enter alias email:');
-    if (!email) return;
+    const handleAddAlias = async (accountId: string) => {
+    setCurrentAccountId(accountId);
+    setIsAddAliasModalOpen(true);
+  };
+
+  const handleAddAliasSubmit = async (email: string, countsTowardLimit: boolean) => {
+    if (!currentAccountId) return;
 
     try {
-      const response = await fetch(`/api/accounts/${accountId}/aliases`, {
+      const response = await fetch(`/api/accounts/${currentAccountId}/aliases`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          countsTowardLimit,
+        }),
       });
 
       if (!response.ok) {
@@ -122,7 +132,7 @@ export default function Home() {
       }
 
       const newAlias = await response.json();
-      addAlias(accountId, newAlias);
+      addAlias(currentAccountId, newAlias);
     } catch (error) {
       console.error('Error adding alias:', error);
       alert(error instanceof Error ? error.message : 'Failed to add alias');
@@ -246,7 +256,10 @@ export default function Home() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <TabsContent
+          value="all"
+          className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4"
+        >
           {filteredAccounts.length === 0 ? (
             <Card>
               <CardContent className="flex h-32 items-center justify-center">
@@ -332,6 +345,12 @@ export default function Home() {
           )}
         </TabsContent>
       </Tabs>
+
+      <AddAliasModal
+        isOpen={isAddAliasModalOpen}
+        onClose={() => setIsAddAliasModalOpen(false)}
+        onSubmit={handleAddAliasSubmit}
+      />
     </main>
   );
 }

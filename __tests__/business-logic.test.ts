@@ -6,47 +6,81 @@ import {
 } from '@/lib/business-logic';
 
 describe('Business Logic Tests', () => {
-  describe('canAddAlias', () => {
+  describe('canAddAlias - 2 aliases per 7 days', () => {
     it('should allow adding alias when no previous alias exists', () => {
-      const result = canAddAlias(null);
+      const result = canAddAlias(null, 0);
       expect(result.canAdd).toBe(true);
       expect(result.message).toBe('Ready to add new alias');
+      expect(result.aliasesRemaining).toBe(2);
     });
 
-    it('should allow adding alias after 7 days', () => {
+    it('should allow adding first alias in new period after 7 days', () => {
       const eightDaysAgo = new Date();
       eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
 
-      const result = canAddAlias(eightDaysAgo);
+      const result = canAddAlias(eightDaysAgo, 2);
       expect(result.canAdd).toBe(true);
       expect(result.message).toBe('Ready to add new alias');
+      expect(result.aliasesRemaining).toBe(2);
     });
 
-    it('should not allow adding alias before 7 days', () => {
+    it('should allow adding second alias within 7 days', () => {
       const threeDaysAgo = new Date();
       threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-      const result = canAddAlias(threeDaysAgo);
+      const result = canAddAlias(threeDaysAgo, 1);
+      expect(result.canAdd).toBe(true);
+      expect(result.message).toContain('1 remaining');
+      expect(result.aliasesRemaining).toBe(1);
+    });
+
+    it('should not allow adding alias when 2 aliases already added within 7 days', () => {
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+      const result = canAddAlias(threeDaysAgo, 2);
       expect(result.canAdd).toBe(false);
       expect(result.daysRemaining).toBe(4);
       expect(result.nextAvailableDate).toBeDefined();
+      expect(result.aliasesRemaining).toBe(0);
     });
 
-    it('should allow adding exactly on the 7th day', () => {
+    it('should allow adding exactly on the 7th day (reset period)', () => {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const result = canAddAlias(sevenDaysAgo);
+      const result = canAddAlias(sevenDaysAgo, 2);
       expect(result.canAdd).toBe(true);
+      expect(result.aliasesRemaining).toBe(2);
     });
 
-    it('should calculate correct days remaining', () => {
+    it('should calculate correct days remaining when limit reached', () => {
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      const result = canAddAlias(oneDayAgo);
+      const result = canAddAlias(oneDayAgo, 2);
       expect(result.canAdd).toBe(false);
       expect(result.daysRemaining).toBe(6);
+    });
+
+    it('should show correct remaining aliases count', () => {
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+      // 0 aliases added - should have 2 remaining
+      let result = canAddAlias(twoDaysAgo, 0);
+      expect(result.canAdd).toBe(true);
+      expect(result.aliasesRemaining).toBe(2);
+
+      // 1 alias added - should have 1 remaining
+      result = canAddAlias(twoDaysAgo, 1);
+      expect(result.canAdd).toBe(true);
+      expect(result.aliasesRemaining).toBe(1);
+
+      // 2 aliases added - should have 0 remaining
+      result = canAddAlias(twoDaysAgo, 2);
+      expect(result.canAdd).toBe(false);
+      expect(result.aliasesRemaining).toBe(0);
     });
   });
 

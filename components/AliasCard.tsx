@@ -68,10 +68,17 @@ export function AliasCard({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Mail className="h-5 w-5" />
-          {alias.email}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Mail className="h-5 w-5" />
+            {alias.email}
+          </CardTitle>
+          {!alias.countsTowardLimit && (
+            <Badge variant="secondary" className="text-xs">
+              Not counted
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>Created: {formatDate(alias.createdAt)}</span>

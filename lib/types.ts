@@ -12,6 +12,7 @@ export interface AccountWithAliases {
   recoveryPassword: string;
   createdAt: Date;
   lastAliasAddedAt: Date | null;
+  aliasesAddedInPeriod: number;
   aliases: AliasWithStatus[];
 }
 
@@ -22,4 +23,5 @@ export interface AliasWithStatus {
   status: AliasStatus;
   comments: string | null;
   createdAt: Date;
+  countsTowardLimit: boolean;
 }

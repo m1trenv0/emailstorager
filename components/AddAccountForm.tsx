@@ -20,19 +20,36 @@ export function AddAccountForm({ onSubmit }: AddAccountFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     primaryEmail: '',
-    recoveryEmail: '',
-    recoveryPassword: '',
+    recoveryCredentials: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSubmit(formData);
+      // Parse recovery credentials (email:password format)
+      const [recoveryEmail, recoveryPassword] =
+        formData.recoveryCredentials.split(':');
+
+      if (!recoveryEmail || !recoveryPassword) {
+        alert('Recovery credentials must be in format: email:password');
+        setIsLoading(false);
+        return;
+      }
+
+      // Auto-append @outlook.com to primary email if not present
+      const primaryEmail = formData.primaryEmail.includes('@')
+        ? formData.primaryEmail
+        : `${formData.primaryEmail}@outlook.com`;
+
+      await onSubmit({
+        primaryEmail,
+        recoveryEmail,
+        recoveryPassword,
+      });
       setFormData({
         primaryEmail: '',
-        recoveryEmail: '',
-        recoveryPassword: '',
+        recoveryCredentials: '',
       });
       setIsOpen(false);
     } catch (error) {
@@ -60,44 +77,44 @@ export function AddAccountForm({ onSubmit }: AddAccountFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="primaryEmail">Primary Email</Label>
-            <Input
-              id="primaryEmail"
-              type="email"
-              placeholder="user@example.com"
-              value={formData.primaryEmail}
-              onChange={(e) =>
-                setFormData({ ...formData, primaryEmail: e.target.value })
-              }
-              required
-            />
+            <div className="flex gap-2 items-center">
+              <Input
+                id="primaryEmail"
+                type="text"
+                placeholder="username"
+                value={formData.primaryEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, primaryEmail: e.target.value })
+                }
+                required
+                className="flex-1"
+              />
+              <span className="text-muted-foreground">@outlook.com</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Enter username only (e.g., &quot;myusername&quot; →
+              myusername@outlook.com)
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="recoveryEmail">Recovery Email</Label>
+            <Label htmlFor="recoveryCredentials">Recovery Credentials</Label>
             <Input
-              id="recoveryEmail"
-              type="email"
-              placeholder="recovery@example.com"
-              value={formData.recoveryEmail}
-              onChange={(e) =>
-                setFormData({ ...formData, recoveryEmail: e.target.value })
-              }
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="recoveryPassword">Recovery Password</Label>
-            <Input
-              id="recoveryPassword"
+              id="recoveryCredentials"
               type="text"
-              placeholder="Enter recovery password"
-              value={formData.recoveryPassword}
+              placeholder="recovery@example.com:password123"
+              value={formData.recoveryCredentials}
               onChange={(e) =>
-                setFormData({ ...formData, recoveryPassword: e.target.value })
+                setFormData({
+                  ...formData,
+                  recoveryCredentials: e.target.value,
+                })
               }
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Format: email:password (e.g., recovery@gmail.com:mypassword)
+            </p>
           </div>
 
           <div className="flex gap-2">

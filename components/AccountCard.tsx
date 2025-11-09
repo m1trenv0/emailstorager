@@ -29,10 +29,14 @@ export function AccountCard({
   isSelected = false,
 }: AccountCardProps) {
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${account.recoveryEmail}:${account.recoveryPassword}`);
+    navigator.clipboard.writeText(
+      `${account.recoveryEmail}:${account.recoveryPassword}`
+    );
   };
 
   const canAddAlias = () => {
+    const MAX_ALIASES_PER_PERIOD = 2;
+
     if (!account.lastAliasAddedAt) return true;
 
     const lastAdded = new Date(account.lastAliasAddedAt);
@@ -41,17 +45,34 @@ export function AccountCard({
       (now.getTime() - lastAdded.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    return daysSinceLastAlias >= 7;
+    // If 7 days have passed, reset counter
+    if (daysSinceLastAlias >= 7) return true;
+
+    // Check if we have aliases remaining in current period
+    return account.aliasesAddedInPeriod < MAX_ALIASES_PER_PERIOD;
   };
 
   const getTimeUntilNextAlias = () => {
+    const MAX_ALIASES_PER_PERIOD = 2;
+
     if (!account.lastAliasAddedAt) return null;
 
     const lastAdded = new Date(account.lastAliasAddedAt);
+    const now = new Date();
+    const daysSinceLastAlias = Math.floor(
+      (now.getTime() - lastAdded.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // If 7 days have passed or we have aliases remaining, no timer needed
+    if (
+      daysSinceLastAlias >= 7 ||
+      account.aliasesAddedInPeriod < MAX_ALIASES_PER_PERIOD
+    )
+      return null;
+
     const nextAvailable = new Date(lastAdded);
     nextAvailable.setDate(nextAvailable.getDate() + 7);
 
-    const now = new Date();
     const diff = nextAvailable.getTime() - now.getTime();
 
     if (diff <= 0) return null;
@@ -63,6 +84,23 @@ export function AccountCard({
     return { days, hours, minutes };
   };
 
+  const getAliasesRemaining = () => {
+    const MAX_ALIASES_PER_PERIOD = 2;
+
+    if (!account.lastAliasAddedAt) return MAX_ALIASES_PER_PERIOD;
+
+    const lastAdded = new Date(account.lastAliasAddedAt);
+    const now = new Date();
+    const daysSinceLastAlias = Math.floor(
+      (now.getTime() - lastAdded.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // If 7 days have passed, reset counter
+    if (daysSinceLastAlias >= 7) return MAX_ALIASES_PER_PERIOD;
+
+    return Math.max(0, MAX_ALIASES_PER_PERIOD - account.aliasesAddedInPeriod);
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -72,6 +110,7 @@ export function AccountCard({
   };
 
   const timeRemaining = getTimeUntilNextAlias();
+  const aliasesRemaining = getAliasesRemaining();
 
   return (
     <Card
@@ -127,14 +166,14 @@ export function AccountCard({
               <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               <span className="text-yellow-800 dark:text-yellow-200">
                 New alias available in {timeRemaining.days}d{' '}
-                {timeRemaining.hours}h {timeRemaining.minutes}m
+                {timeRemaining.hours}h {timeRemaining.minutes}m (2/2 used)
               </span>
             </div>
           ) : (
             <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm dark:border-green-900 dark:bg-green-950">
               <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
               <span className="text-green-800 dark:text-green-200">
-                Ready to add new alias
+                Ready to add new alias ({aliasesRemaining}/2 available)
               </span>
             </div>
           )}
