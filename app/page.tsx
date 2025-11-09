@@ -7,7 +7,7 @@ import { AddAliasModal } from '@/components/AddAliasModal';
 import { AddAccountModal } from '@/components/AddAccountModal';
 import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
-import { AccountWithAliases, ServiceFieldValue } from '@/lib/types';
+import { AccountWithAliases, ServiceFieldValue, Service } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import {
   useAddAccount,
@@ -30,6 +30,8 @@ export default function Home() {
     useAccountStore();
 
   const allAccounts = useAllAccounts();
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
@@ -52,28 +54,43 @@ export default function Home() {
   const unregisteredAliases = useMemo(
     () =>
       allAccounts.flatMap((account) =>
-        account.aliases.filter(
-          (alias) =>
-            !alias.status.aliexpress &&
-            !alias.status.augment &&
-            alias.status.aliexpress !== 'registered' &&
-            alias.status.augment !== 'registered'
-        )
-      ),
-    [allAccounts]
-  );
-
-  const getAliasesByService = useMemo(
-    () => (service: 'aliexpress' | 'augment') =>
-      allAccounts.flatMap((account) =>
-        account.aliases.filter((alias) => alias.status[service])
+        account.aliases.filter((alias) => {
+          // Check if alias has no service registrations
+          return Object.keys(alias.status).length === 0;
+        })
       ),
     [allAccounts]
   );
 
   useEffect(() => {
     fetchAccounts();
+    fetchServices();
   }, [fetchAccounts]);
+
+  const fetchServices = async () => {
+    try {
+      setIsLoadingServices(true);
+      const response = await fetch('/api/services');
+      if (response.ok) {
+        const data = await response.json();
+        setServices(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch services:', err);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  };
+
+  // Get aliases by service dynamically
+  const getAliasesByServiceName = (serviceName: string) => {
+    return allAccounts.flatMap((account) =>
+      account.aliases.filter((alias) => {
+        const serviceStatus = alias.status[serviceName];
+        return serviceStatus && Object.keys(serviceStatus).length > 0;
+      })
+    );
+  };
 
   // Handlers
   const handleAddAccount = async (accountData: {
@@ -158,7 +175,7 @@ export default function Home() {
       account.recoveryEmail.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (isLoading) {
+  if (isLoading || isLoadingServices) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -188,17 +205,21 @@ export default function Home() {
       <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList
+          className={`grid w-full grid-cols-${Math.min(services.length + 2, 6)} gap-1`}
+        >
           <TabsTrigger value="all">All Accounts</TabsTrigger>
           <TabsTrigger value="unregistered">
             Not Registered ({unregisteredAliases.length})
           </TabsTrigger>
-          <TabsTrigger value="aliexpress">
-            AliExpress ({getAliasesByService('aliexpress').length})
-          </TabsTrigger>
-          <TabsTrigger value="augment">
-            Augment ({getAliasesByService('augment').length})
-          </TabsTrigger>
+          {services.map((service) => {
+            const count = getAliasesByServiceName(service.name).length;
+            return (
+              <TabsTrigger key={service.id} value={service.name.toLowerCase()}>
+                {service.name} ({count})
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
@@ -219,23 +240,23 @@ export default function Home() {
           />
         </TabsContent>
 
-        <TabsContent value="aliexpress" className="mt-6">
-          <ServiceTab
-            aliases={getAliasesByService('aliexpress')}
-            serviceName="AliExpress"
-            onServiceFieldUpdate={handleUpdateAliasServiceField}
-            onCommentUpdate={handleUpdateAliasComment}
-          />
-        </TabsContent>
-
-        <TabsContent value="augment" className="mt-6">
-          <ServiceTab
-            aliases={getAliasesByService('augment')}
-            serviceName="Augment"
-            onServiceFieldUpdate={handleUpdateAliasServiceField}
-            onCommentUpdate={handleUpdateAliasComment}
-          />
-        </TabsContent>
+        {services.map((service) => {
+          const serviceAliases = getAliasesByServiceName(service.name);
+          return (
+            <TabsContent
+              key={service.id}
+              value={service.name.toLowerCase()}
+              className="mt-6"
+            >
+              <ServiceTab
+                aliases={serviceAliases}
+                serviceName={service.name}
+                onServiceFieldUpdate={handleUpdateAliasServiceField}
+                onCommentUpdate={handleUpdateAliasComment}
+              />
+            </TabsContent>
+          );
+        })}
       </Tabs>
 
       <AddAliasModal

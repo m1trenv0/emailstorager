@@ -1,0 +1,211 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { ServiceWithCategories, ServiceField } from '@/lib/types';
+import { ServiceList } from '@/components/services/ServiceList';
+import { ServiceForm } from '@/components/services/ServiceForm';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+
+type ViewMode = 'list' | 'create' | 'edit';
+
+export default function ServicesPage() {
+  const [services, setServices] = useState<ServiceWithCategories[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [editingService, setEditingService] =
+    useState<ServiceWithCategories | null>(null);
+
+  const fetchServices = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/services');
+      if (!response.ok) throw new Error('Failed to fetch services');
+      const data = await response.json();
+      setServices(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load services');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const handleCreate = async (data: {
+    name: string;
+    description?: string;
+    fields: ServiceField[];
+  }) => {
+    const response = await fetch('/api/services', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create service');
+    }
+
+    await fetchServices();
+    setViewMode('list');
+  };
+
+  const handleEdit = async (data: {
+    name: string;
+    description?: string;
+    fields: ServiceField[];
+  }) => {
+    if (!editingService) return;
+
+    const response = await fetch(`/api/services/${editingService.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update service');
+    }
+
+    await fetchServices();
+    setViewMode('list');
+    setEditingService(null);
+  };
+
+  const handleDelete = async (serviceId: string) => {
+    try {
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete service');
+      }
+
+      await fetchServices();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete service');
+    }
+  };
+
+  const handleEditClick = (service: ServiceWithCategories) => {
+    setEditingService(service);
+    setViewMode('edit');
+  };
+
+  const handleClone = (service: ServiceWithCategories) => {
+    setEditingService({
+      ...service,
+      name: `${service.name} (Copy)`,
+      id: '',
+    } as ServiceWithCategories);
+    setViewMode('create');
+  };
+
+  const handleCancel = () => {
+    setViewMode('list');
+    setEditingService(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="container mx-auto min-h-screen p-6">
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-destructive">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{error}</p>
+            <Button onClick={fetchServices} className="mt-4">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container mx-auto min-h-screen p-6">
+      <header className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Service Management</h1>
+            <p className="text-sm text-muted-foreground">
+              Create and manage dynamic service configurations
+            </p>
+          </div>
+        </div>
+
+        {viewMode === 'list' && (
+          <Button onClick={() => setViewMode('create')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Service
+          </Button>
+        )}
+      </header>
+
+      {viewMode === 'list' && (
+        <ServiceList
+          services={services}
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          onClone={handleClone}
+        />
+      )}
+
+      {viewMode === 'create' && (
+        <ServiceForm
+          initialData={
+            editingService
+              ? {
+                  name: editingService.name,
+                  description: editingService.description,
+                  fields: editingService.fields,
+                }
+              : undefined
+          }
+          onSubmit={handleCreate}
+          onCancel={handleCancel}
+          mode="create"
+        />
+      )}
+
+      {viewMode === 'edit' && editingService && (
+        <ServiceForm
+          initialData={{
+            name: editingService.name,
+            description: editingService.description,
+            fields: editingService.fields,
+          }}
+          onSubmit={handleEdit}
+          onCancel={handleCancel}
+          mode="edit"
+        />
+      )}
+    </main>
+  );
+}
