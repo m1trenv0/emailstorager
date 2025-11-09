@@ -1,6 +1,7 @@
 # Email Storage Project Plan
 
 ## Project Overview
+
 Open-source NextJS + MongoDB application for convenient storage of Outlook emails with alias management. Features 7-day limit for adding aliases, status tracking for AliExpress and Augment services, and secure self-hosted solution.
 
 ## Current Status
@@ -88,16 +89,19 @@ Open-source NextJS + MongoDB application for convenient storage of Outlook email
 ## 🏗️ Architecture
 
 ### Database (MongoDB + Prisma)
+
 - **Account**: Main email accounts with recovery credentials
 - **Alias**: Additional emails linked to accounts with service statuses
 
 ### Security
+
 - CSRF tokens for API protection
 - Input validation with Zod
 - Rate limiting
 - Helmet for security headers
 
 ### Testing
+
 - Jest framework configured
 - TypeScript support
 - Environment setup
@@ -144,6 +148,7 @@ To deploy the application:
 5. Configure backup strategy for database
 
 ## 📁 File Structure
+
 ```
 emailstorager/
 ├── app/                    # NextJS app directory
@@ -164,6 +169,7 @@ emailstorager/
 ```
 
 ## 🔧 Environment Setup
+
 - Set `DATABASE_URL` in `.env` for MongoDB connection
 - Run `npm install` to install dependencies
 - Run `npx prisma generate` to update client

@@ -21,22 +21,26 @@ Open-source NextJS application for convenient storage and management of Outlook 
 ## 🛠️ Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone <repository-url>
 cd emailstorager
 ```
 
 2. **Install dependencies**
+
 ```bash
 npm install
 ```
 
 3. **Set up environment variables**
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` and add your MongoDB connection string:
+
 ```env
 DATABASE_URL="mongodb://localhost:27017/emailstorager"
 # or for MongoDB Atlas:
@@ -44,11 +48,13 @@ DATABASE_URL="mongodb://localhost:27017/emailstorager"
 ```
 
 4. **Generate Prisma Client**
+
 ```bash
 npx prisma generate
 ```
 
 5. **Run database migrations** (if using a fresh database)
+
 ```bash
 npx prisma db push
 ```
@@ -156,12 +162,14 @@ The application uses Shadcn-UI with a consistent design system:
 - **TypeScript**: Full type safety
 
 Run linting:
+
 ```bash
 npm run lint
 npm run lint:fix
 ```
 
 Run formatting:
+
 ```bash
 npm run format
 npm run format:check

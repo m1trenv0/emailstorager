@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
-import { ServiceStatus } from '@/lib/types';
 
 const updateAliasSchema = z.object({
   status: z
@@ -78,7 +77,7 @@ export async function PATCH(
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (validationResult.data.status) {
       // Merge existing status with new status

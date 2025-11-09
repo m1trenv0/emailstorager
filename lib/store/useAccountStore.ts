@@ -44,7 +44,7 @@ type AccountStore = AccountState & AccountActions;
 export const useAccountStore = create<AccountStore>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         // Initial state
         accounts: [],
         selectedAccountId: null,

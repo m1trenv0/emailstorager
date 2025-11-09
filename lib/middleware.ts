@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { z, ZodIssue } from 'zod';
 
 // CSRF Protection Middleware
 export function csrfProtection(request: NextRequest) {
@@ -49,7 +49,7 @@ export function validateInput<T>(
   if (!result.success) {
     return {
       success: false,
-      error: result.error.issues.map((e: any) => e.message).join(', '),
+      error: result.error.issues.map((e: ZodIssue) => e.message).join(', '),
     };
   }
   return { success: true, data: result.data };

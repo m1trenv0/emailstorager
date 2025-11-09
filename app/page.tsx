@@ -106,25 +106,31 @@ export default function Home() {
     }
   };
 
-    const handleAddAlias = async (accountId: string) => {
+  const handleAddAlias = async (accountId: string) => {
     setCurrentAccountId(accountId);
     setIsAddAliasModalOpen(true);
   };
 
-  const handleAddAliasSubmit = async (email: string, countsTowardLimit: boolean) => {
+  const handleAddAliasSubmit = async (
+    email: string,
+    countsTowardLimit: boolean
+  ) => {
     if (!currentAccountId) return;
 
     try {
-      const response = await fetch(`/api/accounts/${currentAccountId}/aliases`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          countsTowardLimit,
-        }),
-      });
+      const response = await fetch(
+        `/api/accounts/${currentAccountId}/aliases`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            countsTowardLimit,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();

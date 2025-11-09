@@ -20,7 +20,11 @@ interface AddAliasModalProps {
   onSubmit: (email: string, countsTowardLimit: boolean) => void;
 }
 
-export function AddAliasModal({ isOpen, onClose, onSubmit }: AddAliasModalProps) {
+export function AddAliasModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: AddAliasModalProps) {
   const [emailInput, setEmailInput] = useState('');
   const [countsTowardLimit, setCountsTowardLimit] = useState(true);
 
@@ -51,7 +55,8 @@ export function AddAliasModal({ isOpen, onClose, onSubmit }: AddAliasModalProps)
         <DialogHeader>
           <DialogTitle>Add Alias</DialogTitle>
           <DialogDescription>
-            Enter the alias email address. If you don't include a domain, @outlook.com will be appended automatically.
+            Enter the alias email address. If you do not include a domain,
+            @outlook.com will be appended automatically.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -75,7 +80,9 @@ export function AddAliasModal({ isOpen, onClose, onSubmit }: AddAliasModalProps)
                 <Checkbox
                   id="countsTowardLimit"
                   checked={!countsTowardLimit}
-                  onCheckedChange={(checked) => setCountsTowardLimit(!(checked as boolean))}
+                  onCheckedChange={(checked) =>
+                    setCountsTowardLimit(!(checked as boolean))
+                  }
                 />
                 <Label htmlFor="countsTowardLimit" className="text-sm">
                   Do not count towards 7 days limit

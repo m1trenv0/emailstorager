@@ -81,7 +81,8 @@ npm start
 
 **Problem**: Cannot connect to MongoDB
 
-**Solution**: 
+**Solution**:
+
 - Verify MongoDB is running: `mongosh` (for local)
 - Check DATABASE_URL format
 - Ensure network access (for Atlas)
@@ -90,7 +91,8 @@ npm start
 
 **Problem**: Port 3000 is already in use
 
-**Solution**: 
+**Solution**:
+
 - Stop other processes on port 3000
 - Or change port: `npm run dev -- -p 3001`
 
@@ -98,7 +100,8 @@ npm start
 
 **Problem**: Cannot find Prisma Client
 
-**Solution**: 
+**Solution**:
+
 ```bash
 npx prisma generate
 ```
