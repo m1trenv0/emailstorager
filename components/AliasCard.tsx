@@ -84,20 +84,20 @@ export function AliasCard({
           <span>Created: {formatDate(alias.createdAt)}</span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {/* Service Statuses */}
         <section className="space-y-3">
           <Label>Service Status</Label>
 
           {/* AliExpress Status */}
-          <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center justify-between rounded-lg border p-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline">AliExpress</Badge>
               {alias.status.aliexpress && (
                 <StatusIcon status={alias.status.aliexpress} />
               )}
             </div>
-            <div className="flex gap-1">
+            <div className="flex flex-col gap-1 items-start">
               {(['pending', 'registered', 'banned', 'delivered'] as const).map(
                 (status) => (
                   <Button
@@ -118,14 +118,14 @@ export function AliasCard({
           </div>
 
           {/* Augment Status */}
-          <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center justify-between rounded-lg border p-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline">Augment</Badge>
               {alias.status.augment && (
                 <StatusIcon status={alias.status.augment} />
               )}
             </div>
-            <div className="flex gap-1">
+            <div className="flex flex-col gap-1 items-start">
               {(['pending', 'registered', 'banned', 'delivered'] as const).map(
                 (status) => (
                   <Button
@@ -181,7 +181,7 @@ export function AliasCard({
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="min-h-[60px] rounded-md border p-3 text-sm">
+              <p className="min-h-[40px] rounded-md border p-3 text-sm">
                 {alias.comments || 'No comments yet.'}
               </p>
               <Button

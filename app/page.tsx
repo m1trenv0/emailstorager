@@ -5,12 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccountCard } from '@/components/AccountCard';
 import { AliasCard } from '@/components/AliasCard';
-import { AddAccountForm } from '@/components/AddAccountForm';
 import { AddAliasModal } from '@/components/AddAliasModal';
+import { AddAccountModal } from '@/components/AddAccountModal';
+import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
 import { Input } from '@/components/ui/input';
-import { ServiceStatus } from '@/lib/types';
-import { Search, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ServiceStatus, AccountWithAliases } from '@/lib/types';
+import { Search, Loader2, Plus } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -31,7 +33,12 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
+  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] =
+    useState(false);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
+  const [selectedAccount, setSelectedAccount] =
+    useState<AccountWithAliases | null>(null);
 
   // Compute derived data with useMemo to avoid infinite loops
   const unregisteredAliases = useMemo(
@@ -103,6 +110,15 @@ export default function Home() {
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Failed to delete account');
+    }
+  };
+
+  const handleSelectAccount = (accountId: string) => {
+    const account = accounts.find((acc) => acc.id === accountId);
+    if (account) {
+      setSelectedAccount(account);
+      setIsAccountDetailsModalOpen(true);
+      selectAccount(accountId);
     }
   };
 
@@ -224,16 +240,18 @@ export default function Home() {
 
   return (
     <main className="container mx-auto min-h-screen p-6">
-      <header className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold">Email Storage Manager</h1>
-        <p className="text-muted-foreground">
-          Manage your Outlook accounts and aliases with service status tracking
-        </p>
+      <header className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="mb-2 text-4xl font-bold">Email Storage Manager</h1>
+          <p className="text-muted-foreground">
+            Manage your Outlook accounts and aliases with service status tracking
+          </p>
+        </div>
+        <Button onClick={() => setIsAddAccountModalOpen(true)} className="ml-4">
+          <Plus className="mr-2 h-4 w-4" />
+          Add Account
+        </Button>
       </header>
-
-      <div className="mb-6">
-        <AddAccountForm onSubmit={handleAddAccount} />
-      </div>
 
       <div className="mb-4">
         <div className="relative">
@@ -249,7 +267,7 @@ export default function Home() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="all">All Accounts</TabsTrigger>
           <TabsTrigger value="unregistered">
             Not Registered ({unregisteredAliases.length})
@@ -281,7 +299,7 @@ export default function Home() {
                 account={account}
                 onAddAlias={handleAddAlias}
                 onDelete={handleDeleteAccount}
-                onSelect={selectAccount}
+                onSelect={handleSelectAccount}
                 isSelected={selectedAccountId === account.id}
               />
             ))
@@ -356,6 +374,25 @@ export default function Home() {
         isOpen={isAddAliasModalOpen}
         onClose={() => setIsAddAliasModalOpen(false)}
         onSubmit={handleAddAliasSubmit}
+      />
+
+      <AddAccountModal
+        isOpen={isAddAccountModalOpen}
+        onClose={() => setIsAddAccountModalOpen(false)}
+        onSubmit={handleAddAccount}
+      />
+
+      <AccountDetailsModal
+        isOpen={isAccountDetailsModalOpen}
+        onClose={() => {
+          setIsAccountDetailsModalOpen(false);
+          setSelectedAccount(null);
+        }}
+        account={selectedAccount}
+        onAddAlias={handleAddAlias}
+        onDelete={handleDeleteAccount}
+        onUpdateAliasStatus={handleUpdateAliasStatus}
+        onUpdateAliasComment={handleUpdateAliasComment}
       />
     </main>
   );
