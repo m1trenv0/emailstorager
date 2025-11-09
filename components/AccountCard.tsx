@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { AccountWithAliases } from '@/lib/types';
-import { Mail, Key, Calendar, Clock, Plus, Trash2 } from 'lucide-react';
+import { Mail, Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 
 interface AccountCardProps {
   account: AccountWithAliases;
@@ -101,15 +101,8 @@ export function AccountCard({
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">Recovery:</span>
-              <span>{account.recoveryEmail}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Key className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Password:</span>
               <span className="font-mono">
-                {showPassword ? account.recoveryPassword : '••••••••'}
+                {account.recoveryEmail}:{showPassword ? account.recoveryPassword : '••••••••'}
               </span>
             </div>
             <Button
