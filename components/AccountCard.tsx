@@ -102,10 +102,10 @@ export function AccountCard({
         {/* Recovery Information */}
         <section className="space-y-2">
           <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-xs">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">Recovery:</span>
-              <span className="font-mono">
+              <span className="font-mono truncate">
                 {account.recoveryEmail}:{showPassword ? account.recoveryPassword : '••••••••'}
               </span>
             </div>
