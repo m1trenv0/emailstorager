@@ -3,16 +3,19 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AccountCard } from '@/components/AccountCard';
-import { AliasCard } from '@/components/AliasCard';
 import { AddAliasModal } from '@/components/AddAliasModal';
 import { AddAccountModal } from '@/components/AddAccountModal';
 import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ServiceStatus, AccountWithAliases } from '@/lib/types';
-import { Search, Loader2, Plus } from 'lucide-react';
+import { AccountWithAliases, ServiceStatus } from '@/lib/types';
+import { Loader2 } from 'lucide-react';
+import { useAddAccount, useDeleteAccount, useSelectAccount } from '@/lib/hooks/useAccountOperations';
+import { useAddAlias, useUpdateAliasStatus, useUpdateAliasComment } from '@/lib/hooks/useAliasOperations';
+import { Header } from '@/components/Header';
+import { SearchBar } from '@/components/SearchBar';
+import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
+import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
+import { ServiceTab } from '@/components/tabs/ServiceTab';
 
 export default function Home() {
   const {
@@ -21,12 +24,6 @@ export default function Home() {
     isLoading,
     error,
     fetchAccounts,
-    addAccount,
-    deleteAccount,
-    selectAccount,
-    addAlias,
-    updateAliasStatus,
-    updateAliasComment,
   } = useAccountStore();
 
   const allAccounts = useAllAccounts();
@@ -34,13 +31,19 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
-  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] =
-    useState(false);
+  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] = useState(false);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] =
-    useState<AccountWithAliases | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<AccountWithAliases | null>(null);
 
-  // Compute derived data with useMemo to avoid infinite loops
+  // Hooks for operations
+  const addAccountMutation = useAddAccount();
+  const deleteAccountMutation = useDeleteAccount();
+  const selectAccountMutation = useSelectAccount();
+  const addAliasMutation = useAddAlias();
+  const updateAliasStatusMutation = useUpdateAliasStatus();
+  const updateAliasCommentMutation = useUpdateAliasComment();
+
+  // Compute derived data
   const unregisteredAliases = useMemo(
     () =>
       allAccounts.flatMap((account) =>
@@ -67,48 +70,23 @@ export default function Home() {
     fetchAccounts();
   }, [fetchAccounts]);
 
+  // Handlers
   const handleAddAccount = async (accountData: {
     primaryEmail: string;
     recoveryEmail: string;
     recoveryPassword: string;
   }) => {
     try {
-      const response = await fetch('/api/accounts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(accountData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create account');
-      }
-
-      const newAccount = await response.json();
-      addAccount(newAccount);
+      await addAccountMutation(accountData);
     } catch (error) {
-      console.error('Error adding account:', error);
-      alert(
-        error instanceof Error ? error.message : 'Failed to create account'
-      );
+      alert(error instanceof Error ? error.message : 'Failed to create account');
     }
   };
 
   const handleDeleteAccount = async (accountId: string) => {
     try {
-      const response = await fetch(`/api/accounts/${accountId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
-
-      deleteAccount(accountId);
-    } catch (error) {
-      console.error('Error deleting account:', error);
+      await deleteAccountMutation(accountId);
+    } catch {
       alert('Failed to delete account');
     }
   };
@@ -118,11 +96,11 @@ export default function Home() {
     if (account) {
       setSelectedAccount(account);
       setIsAccountDetailsModalOpen(true);
-      selectAccount(accountId);
+      selectAccountMutation(accountId);
     }
   };
 
-  const handleAddAlias = async (accountId: string) => {
+  const handleAddAlias = (accountId: string) => {
     setCurrentAccountId(accountId);
     setIsAddAliasModalOpen(true);
   };
@@ -134,29 +112,9 @@ export default function Home() {
     if (!currentAccountId) return;
 
     try {
-      const response = await fetch(
-        `/api/accounts/${currentAccountId}/aliases`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            countsTowardLimit,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to add alias');
-      }
-
-      const newAlias = await response.json();
-      addAlias(currentAccountId, newAlias);
+      await addAliasMutation(currentAccountId, email, countsTowardLimit);
+      setIsAddAliasModalOpen(false);
     } catch (error) {
-      console.error('Error adding alias:', error);
       alert(error instanceof Error ? error.message : 'Failed to add alias');
     }
   };
@@ -167,44 +125,16 @@ export default function Home() {
     status: ServiceStatus
   ) => {
     try {
-      const response = await fetch(`/api/aliases/${aliasId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: { [service]: status },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
-
-      updateAliasStatus(aliasId, service, status);
-    } catch (error) {
-      console.error('Error updating status:', error);
+      await updateAliasStatusMutation(aliasId, service, status);
+    } catch {
       alert('Failed to update status');
     }
   };
 
   const handleUpdateAliasComment = async (aliasId: string, comment: string) => {
     try {
-      const response = await fetch(`/api/aliases/${aliasId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ comments: comment }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update comment');
-      }
-
-      updateAliasComment(aliasId, comment);
-    } catch (error) {
-      console.error('Error updating comment:', error);
+      await updateAliasCommentMutation(aliasId, comment);
+    } catch {
       alert('Failed to update comment');
     }
   };
@@ -240,31 +170,9 @@ export default function Home() {
 
   return (
     <main className="container mx-auto min-h-screen p-6">
-      <header className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-        <div>
-          <h1 className="mb-2 text-4xl font-bold">Email Storage Manager</h1>
-          <p className="text-muted-foreground">
-            Manage your Outlook accounts and aliases with service status tracking
-          </p>
-        </div>
-        <Button onClick={() => setIsAddAccountModalOpen(true)} className="ml-4">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Account
-        </Button>
-      </header>
+      <Header onAddAccount={() => setIsAddAccountModalOpen(true)} />
 
-      <div className="mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search accounts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
@@ -280,93 +188,40 @@ export default function Home() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value="all"
-          className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4"
-        >
-          {filteredAccounts.length === 0 ? (
-            <Card>
-              <CardContent className="flex h-32 items-center justify-center">
-                <p className="text-muted-foreground">
-                  No accounts found. Add your first account to get started.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredAccounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
-                onAddAlias={handleAddAlias}
-                onDelete={handleDeleteAccount}
-                onSelect={handleSelectAccount}
-                isSelected={selectedAccountId === account.id}
-              />
-            ))
-          )}
+        <TabsContent value="all" className="mt-6">
+          <AllAccountsTab
+            filteredAccounts={filteredAccounts}
+            onAddAlias={handleAddAlias}
+            onDelete={handleDeleteAccount}
+            onSelect={handleSelectAccount}
+            selectedAccountId={selectedAccountId}
+          />
         </TabsContent>
 
-        <TabsContent value="unregistered" className="mt-6 space-y-4">
-          {unregisteredAliases.length === 0 ? (
-            <Card>
-              <CardContent className="flex h-32 items-center justify-center">
-                <p className="text-muted-foreground">
-                  No unregistered aliases found.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            unregisteredAliases.map((alias) => (
-              <AliasCard
-                key={alias.id}
-                alias={alias}
-                onStatusUpdate={handleUpdateAliasStatus}
-                onCommentUpdate={handleUpdateAliasComment}
-              />
-            ))
-          )}
+        <TabsContent value="unregistered" className="mt-6">
+          <UnregisteredTab
+            unregisteredAliases={unregisteredAliases}
+            onStatusUpdate={handleUpdateAliasStatus}
+            onCommentUpdate={handleUpdateAliasComment}
+          />
         </TabsContent>
 
-        <TabsContent value="aliexpress" className="mt-6 space-y-4">
-          {getAliasesByService('aliexpress').length === 0 ? (
-            <Card>
-              <CardContent className="flex h-32 items-center justify-center">
-                <p className="text-muted-foreground">
-                  No AliExpress aliases found.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            getAliasesByService('aliexpress').map((alias) => (
-              <AliasCard
-                key={alias.id}
-                alias={alias}
-                onStatusUpdate={handleUpdateAliasStatus}
-                onCommentUpdate={handleUpdateAliasComment}
-              />
-            ))
-          )}
+        <TabsContent value="aliexpress" className="mt-6">
+          <ServiceTab
+            aliases={getAliasesByService('aliexpress')}
+            serviceName="AliExpress"
+            onStatusUpdate={handleUpdateAliasStatus}
+            onCommentUpdate={handleUpdateAliasComment}
+          />
         </TabsContent>
 
-        <TabsContent value="augment" className="mt-6 space-y-4">
-          {getAliasesByService('augment').length === 0 ? (
-            <Card>
-              <CardContent className="flex h-32 items-center justify-center">
-                <p className="text-muted-foreground">
-                  No Augment aliases found.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            getAliasesByService('augment').map((alias) => (
-              <AliasCard
-                key={alias.id}
-                alias={alias}
-                onStatusUpdate={handleUpdateAliasStatus}
-                onCommentUpdate={handleUpdateAliasComment}
-              />
-            ))
-          )}
+        <TabsContent value="augment" className="mt-6">
+          <ServiceTab
+            aliases={getAliasesByService('augment')}
+            serviceName="Augment"
+            onStatusUpdate={handleUpdateAliasStatus}
+            onCommentUpdate={handleUpdateAliasComment}
+          />
         </TabsContent>
       </Tabs>
 
