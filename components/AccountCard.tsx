@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -29,8 +28,6 @@ export function AccountCard({
   onSelect,
   isSelected = false,
 }: AccountCardProps) {
-  const [showPassword, setShowPassword] = useState(false);
-
   const handleCopy = () => {
     navigator.clipboard.writeText(`${account.recoveryEmail}:${account.recoveryPassword}`);
   };
@@ -104,33 +101,20 @@ export function AccountCard({
           <div className="flex items-center justify-between rounded-lg bg-muted p-3">
             <div className="flex items-center gap-2 text-xs">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Recovery:</span>
-              <span className="font-mono truncate">
-                {account.recoveryEmail}:{showPassword ? account.recoveryPassword : '••••••••'}
+              <span className="font-mono truncate max-w-[12rem]">
+                {account.recoveryEmail}:••••••••
               </span>
             </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCopy();
-                }}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowPassword(!showPassword);
-                }}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopy();
+              }}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
         </section>
 
