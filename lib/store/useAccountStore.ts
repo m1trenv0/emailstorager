@@ -3,8 +3,9 @@ import { devtools, persist } from 'zustand/middleware';
 import {
   AccountWithAliases,
   AliasWithStatus,
-  ServiceStatus,
+  ServiceFieldValue,
 } from '@/lib/types';
+import { setServiceField } from '@/lib/service-utils';
 
 interface AccountState {
   accounts: AccountWithAliases[];
@@ -23,10 +24,11 @@ interface AccountActions {
 
   // Alias actions
   addAlias: (accountId: string, alias: AliasWithStatus) => void;
-  updateAliasStatus: (
+  updateAliasServiceField: (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => void;
   updateAliasComment: (aliasId: string, comment: string) => void;
   deleteAlias: (aliasId: string) => void;
@@ -89,7 +91,7 @@ export const useAccountStore = create<AccountStore>()(
             ),
           })),
 
-        updateAliasStatus: (aliasId, service, status) =>
+        updateAliasServiceField: (aliasId, serviceName, fieldName, value) =>
           set((state) => ({
             accounts: state.accounts.map((account) => ({
               ...account,
@@ -97,10 +99,12 @@ export const useAccountStore = create<AccountStore>()(
                 alias.id === aliasId
                   ? {
                       ...alias,
-                      status: {
-                        ...alias.status,
-                        [service]: status,
-                      },
+                      status: setServiceField(
+                        alias.status,
+                        serviceName,
+                        fieldName,
+                        value
+                      ),
                     }
                   : alias
               ),

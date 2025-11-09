@@ -12,14 +12,15 @@ const updateAccountSchema = z.object({
 // GET /api/accounts/[id] - Fetch a specific account
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
+    const { id } = await params;
     const account = await prisma.account.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         aliases: {
           orderBy: {
@@ -46,12 +47,13 @@ export async function GET(
 // PATCH /api/accounts/[id] - Update an account
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
+    const { id } = await params;
     const body = await request.json();
 
     // Validate input
@@ -65,7 +67,7 @@ export async function PATCH(
 
     // Check if account exists
     const existingAccount = await prisma.account.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingAccount) {
@@ -74,7 +76,7 @@ export async function PATCH(
 
     // Update account
     const updatedAccount = await prisma.account.update({
-      where: { id: params.id },
+      where: { id },
       data: validationResult.data,
       include: {
         aliases: true,
@@ -94,15 +96,16 @@ export async function PATCH(
 // DELETE /api/accounts/[id] - Delete an account
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
+    const { id } = await params;
     // Check if account exists
     const existingAccount = await prisma.account.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingAccount) {
@@ -111,7 +114,7 @@ export async function DELETE(
 
     // Delete account (aliases will be cascade deleted)
     await prisma.account.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(

@@ -84,7 +84,8 @@ export function AddAccountModal({
         <DialogHeader>
           <DialogTitle>Add New Account</DialogTitle>
           <DialogDescription>
-            Enter the primary email and recovery credentials for the new account.
+            Enter the primary email and recovery credentials for the new
+            account.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

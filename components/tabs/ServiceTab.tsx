@@ -1,13 +1,14 @@
 import { AliasCard } from '@/components/AliasCard';
-import { AliasWithStatus, ServiceStatus } from '@/lib/types';
+import { AliasWithStatus, ServiceFieldValue } from '@/lib/types';
 
 interface ServiceTabProps {
   aliases: AliasWithStatus[];
   serviceName: string;
-  onStatusUpdate: (
+  onServiceFieldUpdate: (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
 }
@@ -15,7 +16,7 @@ interface ServiceTabProps {
 export const ServiceTab = ({
   aliases,
   serviceName,
-  onStatusUpdate,
+  onServiceFieldUpdate,
   onCommentUpdate,
 }: ServiceTabProps) => {
   return (
@@ -31,7 +32,7 @@ export const ServiceTab = ({
           <AliasCard
             key={alias.id}
             alias={alias}
-            onStatusUpdate={onStatusUpdate}
+            onServiceFieldUpdate={onServiceFieldUpdate}
             onCommentUpdate={onCommentUpdate}
           />
         ))

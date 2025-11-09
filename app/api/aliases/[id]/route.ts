@@ -20,14 +20,14 @@ const updateAliasSchema = z.object({
 // GET /api/aliases/[id] - Fetch a specific alias
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
     const alias = await prisma.alias.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         account: true,
       },
@@ -50,7 +50,7 @@ export async function GET(
 // PATCH /api/aliases/[id] - Update alias status or comments
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
@@ -69,7 +69,7 @@ export async function PATCH(
 
     // Check if alias exists
     const existingAlias = await prisma.alias.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!existingAlias) {
@@ -99,7 +99,7 @@ export async function PATCH(
 
     // Update alias
     const updatedAlias = await prisma.alias.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: updateData,
     });
 
@@ -116,7 +116,7 @@ export async function PATCH(
 // DELETE /api/aliases/[id] - Delete an alias
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const rateLimitResult = rateLimit(request);
@@ -124,7 +124,7 @@ export async function DELETE(
 
     // Check if alias exists
     const existingAlias = await prisma.alias.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!existingAlias) {
@@ -133,7 +133,7 @@ export async function DELETE(
 
     // Delete alias
     await prisma.alias.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json(

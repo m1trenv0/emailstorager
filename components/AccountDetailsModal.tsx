@@ -22,7 +22,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AliasCard } from './AliasCard';
-import { ServiceStatus } from '@/lib/types';
+import { ServiceFieldValue } from '@/lib/types';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -30,10 +30,11 @@ interface AccountDetailsModalProps {
   account: AccountWithAliases | null;
   onAddAlias: (accountId: string) => void;
   onDelete: (accountId: string) => void;
-  onUpdateAliasStatus?: (
+  onServiceFieldUpdate?: (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => Promise<void>;
   onUpdateAliasComment?: (aliasId: string, comment: string) => Promise<void>;
 }
@@ -44,7 +45,7 @@ export function AccountDetailsModal({
   account,
   onAddAlias,
   onDelete,
-  onUpdateAliasStatus,
+  onServiceFieldUpdate,
   onUpdateAliasComment,
 }: AccountDetailsModalProps) {
   const [copied, setCopied] = useState(false);
@@ -101,7 +102,7 @@ export function AccountDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Mail className="h-6 w-6" />
@@ -123,7 +124,9 @@ export function AccountDetailsModal({
               Recovery Credentials
             </h3>
             <div className="flex items-center justify-between rounded-lg border bg-muted p-4">
-              <p className="font-mono text-base">{account.recoveryEmail}:••••••••••••</p>
+              <p className="font-mono text-base break-all">
+                {account.recoveryEmail}:••••••••••••
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -152,7 +155,7 @@ export function AccountDetailsModal({
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Actions
             </h3>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 className="flex-1"
                 onClick={() => {
@@ -166,14 +169,17 @@ export function AccountDetailsModal({
               </Button>
               <Button
                 variant="outline"
-                onClick={() =>
-                  window.open(`https://outlook.com`, '_blank')
-                }
+                className="flex-1"
+                onClick={() => window.open(`https://outlook.com`, '_blank')}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Open Outlook
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleDelete}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Account
               </Button>
@@ -199,7 +205,7 @@ export function AccountDetailsModal({
                   <AliasCard
                     key={alias.id}
                     alias={alias}
-                    onStatusUpdate={onUpdateAliasStatus}
+                    onServiceFieldUpdate={onServiceFieldUpdate}
                     onCommentUpdate={onUpdateAliasComment}
                   />
                 ))}

@@ -1,19 +1,20 @@
 import { AliasCard } from '@/components/AliasCard';
-import { AliasWithStatus, ServiceStatus } from '@/lib/types';
+import { AliasWithStatus, ServiceFieldValue } from '@/lib/types';
 
 interface UnregisteredTabProps {
   unregisteredAliases: AliasWithStatus[];
-  onStatusUpdate: (
+  onServiceFieldUpdate: (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
 }
 
 export const UnregisteredTab = ({
   unregisteredAliases,
-  onStatusUpdate,
+  onServiceFieldUpdate,
   onCommentUpdate,
 }: UnregisteredTabProps) => {
   return (
@@ -29,7 +30,7 @@ export const UnregisteredTab = ({
           <AliasCard
             key={alias.id}
             alias={alias}
-            onStatusUpdate={onStatusUpdate}
+            onServiceFieldUpdate={onServiceFieldUpdate}
             onCommentUpdate={onCommentUpdate}
           />
         ))

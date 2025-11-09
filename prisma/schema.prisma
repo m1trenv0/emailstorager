@@ -30,8 +30,38 @@ model Alias {
   accountId       String   @db.ObjectId
   account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   email           String
-  status          Json
+  status          Json     // Changed from AliasStatus to flexible Record<string, Record<string, any>>
   comments        String?
   createdAt       DateTime @default(now())
   countsTowardLimit Boolean @default(true)
+}
+
+model Service {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String           @unique
+  description     String?
+  fields          Json             // Array of ServiceField definitions
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  filterCategories FilterCategory[]
+}
+
+model FilterCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  serviceId String   @db.ObjectId
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  filters   Filter[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Filter {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  categoryId  String         @db.ObjectId
+  category    FilterCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  conditions  Json           // Array of FilterCondition
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }

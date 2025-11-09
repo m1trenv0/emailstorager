@@ -7,10 +7,18 @@ import { AddAliasModal } from '@/components/AddAliasModal';
 import { AddAccountModal } from '@/components/AddAccountModal';
 import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
-import { AccountWithAliases, ServiceStatus } from '@/lib/types';
+import { AccountWithAliases, ServiceFieldValue } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
-import { useAddAccount, useDeleteAccount, useSelectAccount } from '@/lib/hooks/useAccountOperations';
-import { useAddAlias, useUpdateAliasStatus, useUpdateAliasComment } from '@/lib/hooks/useAliasOperations';
+import {
+  useAddAccount,
+  useDeleteAccount,
+  useSelectAccount,
+} from '@/lib/hooks/useAccountOperations';
+import {
+  useAddAlias,
+  useUpdateAliasServiceField,
+  useUpdateAliasComment,
+} from '@/lib/hooks/useAliasOperations';
 import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
@@ -18,29 +26,26 @@ import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
 import { ServiceTab } from '@/components/tabs/ServiceTab';
 
 export default function Home() {
-  const {
-    accounts,
-    selectedAccountId,
-    isLoading,
-    error,
-    fetchAccounts,
-  } = useAccountStore();
+  const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
+    useAccountStore();
 
   const allAccounts = useAllAccounts();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
-  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] = useState(false);
+  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] =
+    useState(false);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<AccountWithAliases | null>(null);
+  const [selectedAccount, setSelectedAccount] =
+    useState<AccountWithAliases | null>(null);
 
   // Hooks for operations
   const addAccountMutation = useAddAccount();
   const deleteAccountMutation = useDeleteAccount();
   const selectAccountMutation = useSelectAccount();
   const addAliasMutation = useAddAlias();
-  const updateAliasStatusMutation = useUpdateAliasStatus();
+  const updateAliasServiceFieldMutation = useUpdateAliasServiceField();
   const updateAliasCommentMutation = useUpdateAliasComment();
 
   // Compute derived data
@@ -79,7 +84,9 @@ export default function Home() {
     try {
       await addAccountMutation(accountData);
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to create account');
+      alert(
+        error instanceof Error ? error.message : 'Failed to create account'
+      );
     }
   };
 
@@ -119,15 +126,21 @@ export default function Home() {
     }
   };
 
-  const handleUpdateAliasStatus = async (
+  const handleUpdateAliasServiceField = async (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => {
     try {
-      await updateAliasStatusMutation(aliasId, service, status);
+      await updateAliasServiceFieldMutation(
+        aliasId,
+        serviceName,
+        fieldName,
+        value
+      );
     } catch {
-      alert('Failed to update status');
+      alert('Failed to update service field');
     }
   };
 
@@ -201,7 +214,7 @@ export default function Home() {
         <TabsContent value="unregistered" className="mt-6">
           <UnregisteredTab
             unregisteredAliases={unregisteredAliases}
-            onStatusUpdate={handleUpdateAliasStatus}
+            onServiceFieldUpdate={handleUpdateAliasServiceField}
             onCommentUpdate={handleUpdateAliasComment}
           />
         </TabsContent>
@@ -210,7 +223,7 @@ export default function Home() {
           <ServiceTab
             aliases={getAliasesByService('aliexpress')}
             serviceName="AliExpress"
-            onStatusUpdate={handleUpdateAliasStatus}
+            onServiceFieldUpdate={handleUpdateAliasServiceField}
             onCommentUpdate={handleUpdateAliasComment}
           />
         </TabsContent>
@@ -219,7 +232,7 @@ export default function Home() {
           <ServiceTab
             aliases={getAliasesByService('augment')}
             serviceName="Augment"
-            onStatusUpdate={handleUpdateAliasStatus}
+            onServiceFieldUpdate={handleUpdateAliasServiceField}
             onCommentUpdate={handleUpdateAliasComment}
           />
         </TabsContent>
@@ -246,7 +259,7 @@ export default function Home() {
         account={selectedAccount}
         onAddAlias={handleAddAlias}
         onDelete={handleDeleteAccount}
-        onUpdateAliasStatus={handleUpdateAliasStatus}
+        onServiceFieldUpdate={handleUpdateAliasServiceField}
         onUpdateAliasComment={handleUpdateAliasComment}
       />
     </main>

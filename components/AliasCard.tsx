@@ -6,23 +6,24 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { StatusIcon } from './StatusIcon';
-import { AliasWithStatus, ServiceStatus } from '@/lib/types';
-import { Mail, Calendar } from 'lucide-react';
+import { AliasWithStatus, ServiceFieldValue } from '@/lib/types';
+import { getServiceField } from '@/lib/service-utils';
+import { Mail, Calendar, CheckCircle, XCircle, Package } from 'lucide-react';
 
 interface AliasCardProps {
   alias: AliasWithStatus;
-  onStatusUpdate?: (
+  onServiceFieldUpdate?: (
     aliasId: string,
-    service: 'aliexpress' | 'augment',
-    status: ServiceStatus
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate?: (aliasId: string, comment: string) => Promise<void>;
 }
 
 export function AliasCard({
   alias,
-  onStatusUpdate,
+  onServiceFieldUpdate,
   onCommentUpdate,
 }: AliasCardProps) {
   const [isEditingComment, setIsEditingComment] = useState(false);
@@ -42,16 +43,17 @@ export function AliasCard({
     }
   };
 
-  const handleStatusChange = async (
-    service: 'aliexpress' | 'augment',
-    newStatus: ServiceStatus
+  const handleFieldUpdate = async (
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
   ) => {
-    if (!onStatusUpdate) return;
+    if (!onServiceFieldUpdate) return;
     setIsUpdating(true);
     try {
-      await onStatusUpdate(alias.id, service, newStatus);
+      await onServiceFieldUpdate(alias.id, serviceName, fieldName, value);
     } catch (error) {
-      console.error('Failed to update status:', error);
+      console.error('Failed to update field:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -65,13 +67,87 @@ export function AliasCard({
     });
   };
 
+  const renderServiceStatus = (serviceName: string) => {
+    const serviceStatus = alias.status[serviceName];
+    if (!serviceStatus) return null;
+
+    // Determine status badge based on service fields
+    let statusLabel = 'Unknown';
+    let statusIcon = null;
+    let statusVariant: 'default' | 'secondary' | 'destructive' | 'outline' =
+      'secondary';
+
+    if (serviceName.toLowerCase() === 'aliexpress') {
+      const isBanned = getServiceField(alias.status, serviceName, 'isBanned');
+      const isDelivered = getServiceField(
+        alias.status,
+        serviceName,
+        'isDelivered'
+      );
+      const registerDate = getServiceField(
+        alias.status,
+        serviceName,
+        'registerDate'
+      );
+
+      if (isBanned === true) {
+        statusLabel = 'Banned';
+        statusIcon = <XCircle className="h-4 w-4" />;
+        statusVariant = 'destructive';
+      } else if (isDelivered === true) {
+        statusLabel = 'Delivered';
+        statusIcon = <Package className="h-4 w-4" />;
+        statusVariant = 'default';
+      } else if (registerDate) {
+        statusLabel = 'Registered';
+        statusIcon = <CheckCircle className="h-4 w-4" />;
+        statusVariant = 'default';
+      } else {
+        statusLabel = 'Pending';
+        statusVariant = 'secondary';
+      }
+    } else if (serviceName.toLowerCase() === 'augment') {
+      const isBanned = getServiceField(alias.status, serviceName, 'isBanned');
+      const register = getServiceField(alias.status, serviceName, 'register');
+
+      if (isBanned === true) {
+        statusLabel = 'Banned';
+        statusIcon = <XCircle className="h-4 w-4" />;
+        statusVariant = 'destructive';
+      } else if (register === true) {
+        statusLabel = 'Registered';
+        statusIcon = <CheckCircle className="h-4 w-4" />;
+        statusVariant = 'default';
+      } else {
+        statusLabel = 'Pending';
+        statusVariant = 'secondary';
+      }
+    }
+
+    return (
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="capitalize">
+            {serviceName}
+          </Badge>
+          <Badge variant={statusVariant} className="flex items-center gap-1">
+            {statusIcon}
+            {statusLabel}
+          </Badge>
+        </div>
+      </div>
+    );
+  };
+
+  const services = Object.keys(alias.status);
+
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Mail className="h-5 w-5" />
-            {alias.email}
+            <span className="break-all">{alias.email}</span>
           </CardTitle>
           {!alias.countsTowardLimit && (
             <Badge variant="secondary" className="text-xs">
@@ -86,65 +162,14 @@ export function AliasCard({
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Service Statuses */}
-        <section className="space-y-3">
-          <Label>Service Status</Label>
-
-          {/* AliExpress Status */}
-          <div className="flex items-center justify-between rounded-lg border p-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">AliExpress</Badge>
-              {alias.status.aliexpress && (
-                <StatusIcon status={alias.status.aliexpress} />
-              )}
-            </div>
-            <div className="flex flex-col gap-1 items-start">
-              {(['pending', 'registered', 'banned', 'delivered'] as const).map(
-                (status) => (
-                  <Button
-                    key={status}
-                    size="sm"
-                    variant={
-                      alias.status.aliexpress === status ? 'default' : 'outline'
-                    }
-                    onClick={() => handleStatusChange('aliexpress', status)}
-                    disabled={isUpdating}
-                    className="capitalize"
-                  >
-                    {status}
-                  </Button>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Augment Status */}
-          <div className="flex items-center justify-between rounded-lg border p-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Augment</Badge>
-              {alias.status.augment && (
-                <StatusIcon status={alias.status.augment} />
-              )}
-            </div>
-            <div className="flex flex-col gap-1 items-start">
-              {(['pending', 'registered', 'banned', 'delivered'] as const).map(
-                (status) => (
-                  <Button
-                    key={status}
-                    size="sm"
-                    variant={
-                      alias.status.augment === status ? 'default' : 'outline'
-                    }
-                    onClick={() => handleStatusChange('augment', status)}
-                    disabled={isUpdating}
-                    className="capitalize"
-                  >
-                    {status}
-                  </Button>
-                )
-              )}
-            </div>
-          </div>
-        </section>
+        {services.length > 0 && (
+          <section className="space-y-3">
+            <Label>Service Status</Label>
+            {services.map((serviceName) => (
+              <div key={serviceName}>{renderServiceStatus(serviceName)}</div>
+            ))}
+          </section>
+        )}
 
         {/* Comments Section */}
         <section className="space-y-2">
