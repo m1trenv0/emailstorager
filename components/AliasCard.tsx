@@ -156,21 +156,20 @@ export function AliasCard({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-3">
+      <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
+        <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
-            <CollapsibleTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer hover:opacity-70">
-                <ChevronDown
-                  className="h-4 w-4 transition-transform flex-shrink-0"
-                  style={{
-                    transform: isServicesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                  }}
-                />
-                <Mail className="h-4 w-4 flex-shrink-0" />
-              </div>
-            </CollapsibleTrigger>
-          </Collapsible>
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-70">
+              <ChevronDown
+                className="h-4 w-4 transition-transform flex-shrink-0"
+                style={{
+                  transform: isServicesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                }}
+              />
+              <Mail className="h-4 w-4 flex-shrink-0" />
+            </div>
+          </CollapsibleTrigger>
           <div className="flex-1 min-w-0">
             <CardTitle className="text-base break-all">{alias.email}</CardTitle>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -200,22 +199,20 @@ export function AliasCard({
             </Button>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-2 pt-0">
+        </CardHeader>
+        <CardContent className="space-y-2 pt-0">
         {/* Collapsible Services Content */}
-        <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
-          <CollapsibleContent className="space-y-2">
-            {services.length === 0 ? (
-              <p className="text-xs text-muted-foreground italic">
-                No services added yet.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {services.map((serviceName) => renderServiceEditor(serviceName))}
-              </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
+        <CollapsibleContent className="space-y-2">
+          {services.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              No services added yet.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {services.map((serviceName) => renderServiceEditor(serviceName))}
+            </div>
+          )}
+        </CollapsibleContent>
 
         {/* Collapsible Comments Section */}
         <Collapsible open={isCommentsOpen} onOpenChange={setIsCommentsOpen}>
@@ -281,7 +278,8 @@ export function AliasCard({
             )}
           </CollapsibleContent>
         </Collapsible>
-      </CardContent>
+        </CardContent>
+      </Collapsible>
 
       {/* Add Service Dialog */}
       <AddServiceToAliasDialog
