@@ -78,6 +78,7 @@ export interface AccountWithAliases {
   primaryEmail: string;
   recoveryEmail: string;
   recoveryPassword: string;
+  status: AliasStatus; // Service status for primary email
   createdAt: Date;
   lastAliasAddedAt: Date | null;
   aliasesAddedInPeriod: number;

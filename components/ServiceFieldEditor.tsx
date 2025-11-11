@@ -135,7 +135,7 @@ export function ServiceFieldEditor({
             <Input
               id={`${serviceName}-${field.name}`}
               type="number"
-              value={value ?? ''}
+              value={(value as number) ?? ''}
               onChange={(e) =>
                 handleChange(
                   field.name,
@@ -200,70 +200,72 @@ export function ServiceFieldEditor({
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
+    <Card className="border-0 bg-muted/50">
+      <CardContent className="pt-3 pb-3">
+        <div className="space-y-2">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <Badge variant="outline" className="text-sm capitalize">
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="outline" className="text-xs capitalize">
               {serviceName}
             </Badge>
             {!isEditing ? (
               <Button
                 size="sm"
                 variant="ghost"
+                className="h-6 px-1"
                 onClick={() => setIsEditing(true)}
                 disabled={isUpdating}
               >
-                <Edit2 className="h-4 w-4 mr-2" />
-                Edit
+                <Edit2 className="h-3 w-3 mr-1" />
+                <span className="text-xs">Edit</span>
               </Button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <Button
                   size="sm"
+                  className="h-6 px-2"
                   onClick={handleSave}
                   disabled={!hasChanges || isUpdating}
                 >
                   {isUpdating ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-3 w-3 mr-1" />
                   )}
-                  Save
+                  <span className="text-xs">Save</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
+                  className="h-6 px-2"
                   onClick={handleCancel}
                   disabled={isUpdating}
                 >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
+                  <X className="h-3 w-3" />
                 </Button>
               </div>
             )}
           </div>
 
           {/* Fields */}
-          <div className="space-y-3">
+          <div className="space-y-1">
             {isEditing ? (
               // Edit mode - show inputs
               serviceFields.map((field) => (
-                <div key={field.name}>{renderFieldInput(field)}</div>
+                <div key={field.name} className="text-sm">{renderFieldInput(field)}</div>
               ))
             ) : (
               // View mode - show values
-              <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-1">
                 {serviceFields.map((field) => (
                   <div
                     key={field.name}
-                    className="flex items-center justify-between py-2"
+                    className="flex items-center justify-between gap-2 py-0.5"
                   >
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {field.name}:
                     </span>
-                    <div className="text-sm">{renderFieldValue(field)}</div>
+                    <div className="text-xs">{renderFieldValue(field)}</div>
                   </div>
                 ))}
               </div>

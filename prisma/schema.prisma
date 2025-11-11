@@ -19,6 +19,7 @@ model Account {
   primaryEmail           String
   recoveryEmail          String
   recoveryPassword       String
+  status                 Json     @default("{}") // Service status for primary email
   createdAt              DateTime @default(now())
   lastAliasAddedAt       DateTime?
   aliasesAddedInPeriod   Int      @default(0)
