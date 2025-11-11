@@ -3,14 +3,7 @@
 import { ServiceWithCategories } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Edit,
-  Trash2,
-  Copy,
-  MoreVertical,
-  Layers,
-  FileText,
-} from 'lucide-react';
+import { Edit, Trash2, Copy, Layers, FileText } from 'lucide-react';
 
 interface ServiceListProps {
   services: ServiceWithCategories[];

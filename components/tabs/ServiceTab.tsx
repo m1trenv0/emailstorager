@@ -11,6 +11,8 @@ interface ServiceTabProps {
     value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
+  onAddService?: (aliasId: string, serviceName: string) => Promise<void>;
+  onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
 }
 
 export const ServiceTab = ({
@@ -18,6 +20,8 @@ export const ServiceTab = ({
   serviceName,
   onServiceFieldUpdate,
   onCommentUpdate,
+  onAddService,
+  onRemoveService,
 }: ServiceTabProps) => {
   return (
     <div className="space-y-4">
@@ -34,6 +38,8 @@ export const ServiceTab = ({
             alias={alias}
             onServiceFieldUpdate={onServiceFieldUpdate}
             onCommentUpdate={onCommentUpdate}
+            onAddService={onAddService}
+            onRemoveService={onRemoveService}
           />
         ))
       )}

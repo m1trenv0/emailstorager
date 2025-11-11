@@ -10,12 +10,16 @@ interface UnregisteredTabProps {
     value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
+  onAddService?: (aliasId: string, serviceName: string) => Promise<void>;
+  onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
 }
 
 export const UnregisteredTab = ({
   unregisteredAliases,
   onServiceFieldUpdate,
   onCommentUpdate,
+  onAddService,
+  onRemoveService,
 }: UnregisteredTabProps) => {
   return (
     <div className="space-y-4">
@@ -32,6 +36,8 @@ export const UnregisteredTab = ({
             alias={alias}
             onServiceFieldUpdate={onServiceFieldUpdate}
             onCommentUpdate={onCommentUpdate}
+            onAddService={onAddService}
+            onRemoveService={onRemoveService}
           />
         ))
       )}

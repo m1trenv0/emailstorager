@@ -1,9 +1,8 @@
 'use client';
 
 import { Service, AliasWithStatus, ServiceFieldValue } from '@/lib/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { ServiceTab } from './ServiceTab';
-import { getServiceField } from '@/lib/service-utils';
 
 interface DynamicServiceTabsProps {
   services: Service[];

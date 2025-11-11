@@ -18,6 +18,8 @@ import {
   useAddAlias,
   useUpdateAliasServiceField,
   useUpdateAliasComment,
+  useAddServiceToAlias,
+  useRemoveServiceFromAlias,
 } from '@/lib/hooks/useAliasOperations';
 import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
@@ -49,6 +51,8 @@ export default function Home() {
   const addAliasMutation = useAddAlias();
   const updateAliasServiceFieldMutation = useUpdateAliasServiceField();
   const updateAliasCommentMutation = useUpdateAliasComment();
+  const addServiceToAliasMutation = useAddServiceToAlias();
+  const removeServiceFromAliasMutation = useRemoveServiceFromAlias();
 
   // Compute derived data
   const unregisteredAliases = useMemo(
@@ -169,6 +173,29 @@ export default function Home() {
     }
   };
 
+  const handleAddServiceToAlias = async (
+    aliasId: string,
+    serviceName: string
+  ) => {
+    try {
+      await addServiceToAliasMutation(aliasId, serviceName);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to add service');
+      throw error;
+    }
+  };
+
+  const handleRemoveServiceFromAlias = async (
+    aliasId: string,
+    serviceName: string
+  ) => {
+    try {
+      await removeServiceFromAliasMutation(aliasId, serviceName);
+    } catch {
+      alert('Failed to remove service');
+    }
+  };
+
   const filteredAccounts = accounts.filter(
     (account) =>
       account.primaryEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -237,6 +264,8 @@ export default function Home() {
             unregisteredAliases={unregisteredAliases}
             onServiceFieldUpdate={handleUpdateAliasServiceField}
             onCommentUpdate={handleUpdateAliasComment}
+            onAddService={handleAddServiceToAlias}
+            onRemoveService={handleRemoveServiceFromAlias}
           />
         </TabsContent>
 
@@ -253,6 +282,8 @@ export default function Home() {
                 serviceName={service.name}
                 onServiceFieldUpdate={handleUpdateAliasServiceField}
                 onCommentUpdate={handleUpdateAliasComment}
+                onAddService={handleAddServiceToAlias}
+                onRemoveService={handleRemoveServiceFromAlias}
               />
             </TabsContent>
           );
@@ -282,6 +313,8 @@ export default function Home() {
         onDelete={handleDeleteAccount}
         onServiceFieldUpdate={handleUpdateAliasServiceField}
         onUpdateAliasComment={handleUpdateAliasComment}
+        onAddService={handleAddServiceToAlias}
+        onRemoveService={handleRemoveServiceFromAlias}
       />
     </main>
   );

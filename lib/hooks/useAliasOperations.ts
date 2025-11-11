@@ -103,3 +103,61 @@ export const useUpdateAliasComment = () => {
     [updateAliasComment]
   );
 };
+
+export const useAddServiceToAlias = () => {
+  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+
+  return useCallback(
+    async (aliasId: string, serviceName: string) => {
+      try {
+        const response = await fetch(`/api/aliases/${aliasId}/services`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ serviceName }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to add service');
+        }
+
+        // Refresh accounts to get updated alias
+        await fetchAccounts();
+      } catch (error) {
+        console.error('Error adding service to alias:', error);
+        throw error;
+      }
+    },
+    [fetchAccounts]
+  );
+};
+
+export const useRemoveServiceFromAlias = () => {
+  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+
+  return useCallback(
+    async (aliasId: string, serviceName: string) => {
+      try {
+        const response = await fetch(
+          `/api/aliases/${aliasId}/services/${serviceName}`,
+          {
+            method: 'DELETE',
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to remove service');
+        }
+
+        // Refresh accounts to get updated alias
+        await fetchAccounts();
+      } catch (error) {
+        console.error('Error removing service from alias:', error);
+        throw error;
+      }
+    },
+    [fetchAccounts]
+  );
+};

@@ -37,6 +37,8 @@ interface AccountDetailsModalProps {
     value: ServiceFieldValue
   ) => Promise<void>;
   onUpdateAliasComment?: (aliasId: string, comment: string) => Promise<void>;
+  onAddService?: (aliasId: string, serviceName: string) => Promise<void>;
+  onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
 }
 
 export function AccountDetailsModal({
@@ -47,6 +49,8 @@ export function AccountDetailsModal({
   onDelete,
   onServiceFieldUpdate,
   onUpdateAliasComment,
+  onAddService,
+  onRemoveService,
 }: AccountDetailsModalProps) {
   const [copied, setCopied] = useState(false);
 
@@ -207,6 +211,8 @@ export function AccountDetailsModal({
                     alias={alias}
                     onServiceFieldUpdate={onServiceFieldUpdate}
                     onCommentUpdate={onUpdateAliasComment}
+                    onAddService={onAddService}
+                    onRemoveService={onRemoveService}
                   />
                 ))}
               </div>
