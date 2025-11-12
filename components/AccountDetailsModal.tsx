@@ -111,45 +111,52 @@ export function AccountDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="flex items-center gap-2.5 text-2xl">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            {account.primaryEmail}
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-3xl overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-2xl break-all">
+            <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
+            <span className="break-all">{account.primaryEmail}</span>
           </DialogTitle>
-          <DialogDescription className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
-              {formatDate(account.createdAt)}
+          <DialogDescription className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+            <span className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+              <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="hidden sm:inline">{formatDate(account.createdAt)}</span>
+              <span className="sm:hidden">
+                {new Date(account.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
             </span>
-            <Badge variant="secondary">{account.aliases.length} {account.aliases.length === 1 ? 'alias' : 'aliases'}</Badge>
+            <Badge variant="secondary" className="text-xs">{account.aliases.length} {account.aliases.length === 1 ? 'alias' : 'aliases'}</Badge>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Recovery Credentials */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Recovery Credentials
             </h3>
-            <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/50 p-3.5">
-              <code className="min-w-0 flex-1 truncate text-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 rounded-lg border bg-muted/50 p-2.5 sm:p-3.5">
+              <code className="min-w-0 flex-1 truncate text-xs sm:text-sm break-all">
                 {account.recoveryEmail}:••••••••••••
               </code>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopyCredentials}
-                className="cursor-pointer gap-2 shrink-0"
+                className="cursor-pointer gap-1.5 sm:gap-2 shrink-0 w-full sm:w-auto text-xs"
               >
                 {copied ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     Copy
                   </>
                 )}
@@ -160,36 +167,36 @@ export function AccountDetailsModal({
           <Separator />
 
           {/* Actions */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Actions
             </h3>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
-                className="flex-1 cursor-pointer"
+                className="flex-1 cursor-pointer text-xs sm:text-sm"
                 onClick={() => {
                   onAddAlias(account.id);
                   onClose();
                 }}
                 disabled={!canAddAlias()}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Add Alias
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 cursor-pointer"
+                className="flex-1 cursor-pointer text-xs sm:text-sm"
                 onClick={() => window.open(`https://outlook.com`, '_blank')}
               >
-                <ExternalLink className="mr-2 h-4 w-4" />
+                <ExternalLink className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Outlook
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1 cursor-pointer"
+                className="flex-1 cursor-pointer text-xs sm:text-sm"
                 onClick={handleDelete}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Delete
               </Button>
             </div>
@@ -198,18 +205,18 @@ export function AccountDetailsModal({
           <Separator />
 
           {/* Aliases List */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Aliases ({account.aliases.length})
             </h3>
             {account.aliases.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-12 text-center">
-                <p className="text-sm text-muted-foreground">
+              <div className="rounded-lg border border-dashed p-8 sm:p-12 text-center">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   No aliases yet. Add your first alias to get started.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
                 {account.aliases.map((alias) => (
                   <AliasCard
                     key={alias.id}

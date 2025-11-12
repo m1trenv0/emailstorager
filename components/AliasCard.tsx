@@ -199,7 +199,7 @@ export function AliasCard({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2 pt-3">
+      <CardHeader className="pb-2 pt-2 sm:pt-3 px-3 sm:px-6">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 space-y-0.5 px-0.5">
             <h4 className="text-sm font-semibold leading-none break-all ">
@@ -220,7 +220,7 @@ export function AliasCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 pt-0 pb-3">
+      <CardContent className="space-y-2 pt-0 pb-2 sm:pb-3 px-3 sm:px-6">
         {/* Services Section */}
         <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
           <div className="flex items-center justify-between">

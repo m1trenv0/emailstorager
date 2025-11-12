@@ -236,18 +236,18 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-6">
+    <main className="container mx-auto min-h-screen p-3 sm:p-6">
       <Header onAddAccount={() => setIsAddAccountModalOpen(true)} />
 
       <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList
-          className={`grid w-full grid-cols-${Math.min(services.length + 2, 6)} gap-1`}
-        >
+        <TabsList className="w-full">
           <TabsTrigger value="all">All Accounts</TabsTrigger>
           <TabsTrigger value="unregistered">
-            Not Registered ({unregisteredAliases.length})
+            <span className="hidden sm:inline">Not Registered</span>
+            <span className="sm:hidden">Unreg.</span>
+            <span className="ml-1">({unregisteredAliases.length})</span>
           </TabsTrigger>
           {services.map((service) => {
             const count = getAliasesByServiceName(service.name).length;
@@ -259,7 +259,7 @@ export default function Home() {
           })}
         </TabsList>
 
-        <TabsContent value="all" className="mt-6">
+        <TabsContent value="all" className="mt-4 sm:mt-6">
           <AllAccountsTab
             filteredAccounts={filteredAccounts}
             onAddAlias={handleAddAlias}
@@ -269,7 +269,7 @@ export default function Home() {
           />
         </TabsContent>
 
-        <TabsContent value="unregistered" className="mt-6">
+        <TabsContent value="unregistered" className="mt-4 sm:mt-6">
           <UnregisteredTab
             unregisteredAliases={unregisteredAliases}
             onServiceFieldUpdate={handleUpdateAliasServiceField}
@@ -285,7 +285,7 @@ export default function Home() {
             <TabsContent
               key={service.id}
               value={service.name.toLowerCase()}
-              className="mt-6"
+              className="mt-4 sm:mt-6"
             >
               <ServiceTab
                 aliases={serviceAliases}
