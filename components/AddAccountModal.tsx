@@ -83,21 +83,18 @@ export function AddAccountModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Account</DialogTitle>
           <DialogDescription>
-            Enter the primary email and recovery credentials for the new
-            account.
+            Create a new email account with primary email and recovery credentials.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="primaryEmail" className="text-right">
-                Primary Email
-              </Label>
-              <div className="col-span-3 flex gap-2 items-center">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="primaryEmail">Primary Email</Label>
+              <div className="flex items-center gap-2">
                 <Input
                   id="primaryEmail"
                   type="text"
@@ -110,13 +107,12 @@ export function AddAccountModal({
                   className="flex-1"
                   autoFocus
                 />
-                <span className="text-muted-foreground">@outlook.com</span>
+                <span className="shrink-0 text-sm text-muted-foreground">@outlook.com</span>
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="recoveryCredentials" className="text-right">
-                Recovery Credentials
-              </Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recoveryCredentials">Recovery Credentials</Label>
               <Input
                 id="recoveryCredentials"
                 type="text"
@@ -129,21 +125,18 @@ export function AddAccountModal({
                   })
                 }
                 required
-                className="col-span-3"
               />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="col-span-1"></div>
-              <p className="col-span-3 text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Format: email:password (e.g., recovery@gmail.com:mypassword)
               </p>
             </div>
           </div>
+          
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} className="cursor-pointer">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="cursor-pointer">
               {isLoading ? 'Adding...' : 'Add Account'}
             </Button>
           </DialogFooter>

@@ -111,36 +111,36 @@ export function AccountDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Mail className="h-6 w-6" />
+      <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="flex items-center gap-2.5 text-2xl">
+            <Mail className="h-5 w-5 text-muted-foreground" />
             {account.primaryEmail}
           </DialogTitle>
-          <DialogDescription className="flex items-center gap-4 text-base">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              Created {formatDate(account.createdAt)}
+          <DialogDescription className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(account.createdAt)}
             </span>
-            <Badge variant="secondary">{account.aliases.length} aliases</Badge>
+            <Badge variant="secondary">{account.aliases.length} {account.aliases.length === 1 ? 'alias' : 'aliases'}</Badge>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Recovery Credentials */}
-          <section className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Recovery Credentials
             </h3>
-            <div className="flex items-center justify-between rounded-lg border bg-muted p-4">
-              <p className="font-mono text-base break-all">
+            <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/50 p-3.5">
+              <code className="min-w-0 flex-1 truncate text-sm">
                 {account.recoveryEmail}:••••••••••••
-              </p>
+              </code>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopyCredentials}
-                className="gap-2"
+                className="cursor-pointer gap-2 shrink-0"
               >
                 {copied ? (
                   <>
@@ -155,18 +155,18 @@ export function AccountDetailsModal({
                 )}
               </Button>
             </div>
-          </section>
+          </div>
 
           <Separator />
 
           {/* Actions */}
-          <section className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Actions
             </h3>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => {
                   onAddAlias(account.id);
                   onClose();
@@ -174,44 +174,42 @@ export function AccountDetailsModal({
                 disabled={!canAddAlias()}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Add New Alias
+                Add Alias
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => window.open(`https://outlook.com`, '_blank')}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Open Outlook
+                Outlook
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleDelete}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete Account
+                Delete
               </Button>
             </div>
-          </section>
+          </div>
 
           <Separator />
 
           {/* Aliases List */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Aliases ({account.aliases.length})
-              </h3>
-            </div>
+          <div className="space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Aliases ({account.aliases.length})
+            </h3>
             {account.aliases.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-8 text-center">
+              <div className="rounded-lg border border-dashed p-12 text-center">
                 <p className="text-sm text-muted-foreground">
                   No aliases yet. Add your first alias to get started.
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {account.aliases.map((alias) => (
                   <AliasCard
                     key={alias.id}
@@ -224,7 +222,7 @@ export function AccountDetailsModal({
                 ))}
               </div>
             )}
-          </section>
+          </div>
         </div>
       </DialogContent>
       <ConfirmDialog />
