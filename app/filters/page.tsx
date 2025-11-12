@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { FilterCondition, ServiceField } from '@/lib/types';
 import { FilterList } from '@/components/filters/FilterList';
 import { FilterForm } from '@/components/filters/FilterForm';
+import { NavigationHeader } from '@/components/NavigationHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
@@ -17,11 +18,15 @@ interface FilterWithCategory {
   name: string;
   categoryId: string;
   conditions: FilterCondition[];
+  createdAt: Date;
+  updatedAt: Date;
   category: {
     id: string;
     name: string;
     serviceId: string;
-    service: { name: string; fields: ServiceField[] };
+    createdAt: Date;
+    updatedAt: Date;
+    service: { name: string };
   };
 }
 
@@ -152,7 +157,7 @@ export default function FiltersPage() {
 
   if (error) {
     return (
-      <main className="container mx-auto min-h-screen p-6">
+      <main className="container mx-auto min-h-screen p-3 sm:p-6">
         <Card className="mx-auto w-full max-w-2xl">
           <CardHeader>
             <CardTitle className="text-destructive">Error</CardTitle>
@@ -170,21 +175,8 @@ export default function FiltersPage() {
 
   if (categories.length === 0 && viewMode === 'list') {
     return (
-      <main className="container mx-auto min-h-screen p-6">
-        <header className="mb-6 flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Filter Management</h1>
-            <p className="text-sm text-muted-foreground">
-              Create and manage filters for your services
-            </p>
-          </div>
-        </header>
+      <main className="container mx-auto min-h-screen p-3 sm:p-6">
+        <NavigationHeader />
 
         <Card className="mx-auto w-full max-w-2xl">
           <CardContent className="py-12 text-center">
@@ -204,30 +196,20 @@ export default function FiltersPage() {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+    <main className="container mx-auto min-h-screen p-3 sm:p-6">
+      <NavigationHeader
+        customAction={
+          viewMode === 'list' ? (
+            <Button
+              onClick={() => setViewMode('create')}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Filter
             </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Filter Management</h1>
-            <p className="text-sm text-muted-foreground">
-              Create and manage filters for your services
-            </p>
-          </div>
-        </div>
-
-        {viewMode === 'list' && (
-          <Button onClick={() => setViewMode('create')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Filter
-          </Button>
-        )}
-      </header>
+          ) : undefined
+        }
+      />
 
       {viewMode === 'list' && (
         <FilterList

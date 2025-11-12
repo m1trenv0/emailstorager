@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ServiceWithCategories, ServiceField } from '@/lib/types';
 import { ServiceList } from '@/components/services/ServiceList';
 import { ServiceForm } from '@/components/services/ServiceForm';
+import { NavigationHeader } from '@/components/NavigationHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
@@ -130,7 +131,7 @@ export default function ServicesPage() {
 
   if (error) {
     return (
-      <main className="container mx-auto min-h-screen p-6">
+      <main className="container mx-auto min-h-screen p-3 sm:p-6">
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle className="text-destructive">Error</CardTitle>
@@ -147,30 +148,20 @@ export default function ServicesPage() {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+    <main className="container mx-auto min-h-screen p-3 sm:p-6">
+      <NavigationHeader
+        customAction={
+          viewMode === 'list' ? (
+            <Button
+              onClick={() => setViewMode('create')}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Service
             </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Service Management</h1>
-            <p className="text-sm text-muted-foreground">
-              Create and manage dynamic service configurations
-            </p>
-          </div>
-        </div>
-
-        {viewMode === 'list' && (
-          <Button onClick={() => setViewMode('create')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Service
-          </Button>
-        )}
-      </header>
+          ) : undefined
+        }
+      />
 
       {viewMode === 'list' && (
         <ServiceList

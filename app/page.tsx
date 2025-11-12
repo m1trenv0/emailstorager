@@ -22,6 +22,7 @@ import {
   useRemoveServiceFromAlias,
 } from '@/lib/hooks/useAliasOperations';
 import { Header } from '@/components/Header';
+import { NavigationHeader } from '@/components/NavigationHeader';
 import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
 import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
@@ -237,27 +238,31 @@ export default function Home() {
 
   return (
     <main className="container mx-auto min-h-screen p-3 sm:p-6">
-      <Header onAddAccount={() => setIsAddAccountModalOpen(true)} />
+      <NavigationHeader
+        onAddAccount={() => setIsAddAccountModalOpen(true)}
+        showAddAccount={true}
+      />
 
-      <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <div className="space-y-4 sm:space-y-6">
+        <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full">
-          <TabsTrigger value="all">All Accounts</TabsTrigger>
-          <TabsTrigger value="unregistered">
-            <span className="hidden sm:inline">Not Registered</span>
-            <span className="sm:hidden">Unreg.</span>
-            <span className="ml-1">({unregisteredAliases.length})</span>
-          </TabsTrigger>
-          {services.map((service) => {
-            const count = getAliasesByServiceName(service.name).length;
-            return (
-              <TabsTrigger key={service.id} value={service.name.toLowerCase()}>
-                {service.name} ({count})
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full">
+            <TabsTrigger value="all">All Accounts</TabsTrigger>
+            <TabsTrigger value="unregistered">
+              <span className="hidden sm:inline">Not Registered</span>
+              <span className="sm:hidden">Unreg.</span>
+              <span className="ml-1">({unregisteredAliases.length})</span>
+            </TabsTrigger>
+            {services.map((service) => {
+              const count = getAliasesByServiceName(service.name).length;
+              return (
+                <TabsTrigger key={service.id} value={service.name.toLowerCase()}>
+                  {service.name} ({count})
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
         <TabsContent value="all" className="mt-4 sm:mt-6">
           <AllAccountsTab
@@ -299,6 +304,7 @@ export default function Home() {
           );
         })}
       </Tabs>
+      </div>
 
       <AddAliasModal
         isOpen={isAddAliasModalOpen}
