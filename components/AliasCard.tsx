@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AliasWithStatus, ServiceFieldValue, Service } from '@/lib/types';
-import { Mail, Calendar, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown, Edit2, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
 
@@ -32,13 +31,14 @@ export function AliasCard({
   onAddService,
   onRemoveService,
 }: AliasCardProps) {
-  const [isEditingComment, setIsEditingComment] = useState(false);
   const [comment, setComment] = useState(alias.comments || '');
+  const [isEditingComment, setIsEditingComment] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [editingService, setEditingService] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -125,29 +125,63 @@ export function AliasCard({
     if (!service) return null;
 
     const currentValues = alias.status[serviceName] || {};
+    const isEditing = editingService === serviceName;
 
     return (
-      <div key={serviceName} className="relative">
-        <ServiceFieldEditor
-          serviceName={serviceName}
-          serviceFields={service.fields}
-          currentValues={currentValues}
-          onUpdate={(fieldName, value) =>
-            handleFieldUpdate(serviceName, fieldName, value)
-          }
-          isUpdating={isUpdating}
-        />
-        {onRemoveService && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute top-2 right-2"
-            onClick={() => handleRemoveService(serviceName)}
-            disabled={isUpdating}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        )}
+      <div key={serviceName} className="rounded border bg-card">
+        <div className="flex items-center justify-between gap-2 px-2 py-1.5 border-b bg-muted/30">
+          <h6 className="text-xs font-medium">{serviceName}</h6>
+          <div className="flex items-center gap-1">
+            {!isEditing ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-5 px-1"
+                onClick={() => setEditingService(serviceName)}
+                disabled={isUpdating}
+              >
+                <Edit2 className="h-3 w-3 mr-0.5" />
+                <span className="text-xs">Edit</span>
+              </Button>
+            ) : (
+              <ServiceFieldEditor
+                serviceName={serviceName}
+                serviceFields={service.fields}
+                currentValues={currentValues}
+                onUpdate={async (fieldName, value) => {
+                  await handleFieldUpdate(serviceName, fieldName, value);
+                }}
+                onEditComplete={() => setEditingService(null)}
+                isUpdating={isUpdating}
+                renderEditButton
+              />
+            )}
+            {onRemoveService && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => handleRemoveService(serviceName)}
+                disabled={isUpdating}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="p-2">
+          <ServiceFieldEditor
+            serviceName={serviceName}
+            serviceFields={service.fields}
+            currentValues={currentValues}
+            onUpdate={(fieldName, value) =>
+              handleFieldUpdate(serviceName, fieldName, value)
+            }
+            isEditing={isEditing}
+            isUpdating={isUpdating}
+            renderFieldsOnly
+          />
+        </div>
       </div>
     );
   };
@@ -156,92 +190,97 @@ export function AliasCard({
 
   return (
     <Card className="w-full">
-      <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
-        <CardHeader className="pb-3">
+      <CardHeader className="pb-2 pt-3">
         <div className="flex items-start justify-between gap-2">
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center gap-2 cursor-pointer hover:opacity-70">
-              <ChevronDown
-                className="h-4 w-4 transition-transform flex-shrink-0"
-                style={{
-                  transform: isServicesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                }}
-              />
-              <Mail className="h-4 w-4 flex-shrink-0" />
-            </div>
-          </CollapsibleTrigger>
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-base break-all">{alias.email}</CardTitle>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+          <div className="flex-1 space-y-0.5 px-0.5">
+            <h4 className="text-sm font-semibold leading-none break-all ">
+              {alias.email}
+            </h4>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              <span>{formatDate(alias.createdAt)}</span>
+              <time dateTime={new Date(alias.createdAt).toISOString()}>
+                {formatDate(alias.createdAt)}
+              </time>
               {!alias.countsTowardLimit && (
-                <Badge variant="secondary" className="text-xs ml-1">
+                <Badge variant="secondary" className="text-xs h-4 px-1">
                   Not counted
                 </Badge>
               )}
             </div>
           </div>
-          {services.length > 0 && !isServicesOpen && (
-            <span className="text-xs text-muted-foreground flex-shrink-0">
-              Services ({services.length})
-            </span>
-          )}
-          {onAddService && isServicesOpen && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 px-2 text-xs"
-              onClick={() => setIsAddServiceDialogOpen(true)}
-              disabled={isUpdating}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          )}
         </div>
-        </CardHeader>
-        <CardContent className="space-y-2 pt-0">
-        {/* Collapsible Services Content */}
-        <CollapsibleContent className="space-y-2">
-          {services.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">
-              No services added yet.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {services.map((serviceName) => renderServiceEditor(serviceName))}
-            </div>
-          )}
-        </CollapsibleContent>
+      </CardHeader>
 
-        {/* Collapsible Comments Section */}
+      <CardContent className="space-y-2 pt-0 pb-3">
+        {/* Services Section */}
+        <Collapsible open={isServicesOpen} onOpenChange={setIsServicesOpen}>
+          <div className="flex items-center justify-between">
+            <CollapsibleTrigger asChild>
+              <div className="flex items-center gap-1.5 cursor-pointer hover:opacity-70">
+                <ChevronDown
+                  className="h-3 w-3 transition-transform"
+                  style={{
+                    transform: isServicesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                  }}
+                />
+                <span className="text-xs font-medium text-muted-foreground">
+                  Services ({services.length})
+                </span>
+              </div>
+            </CollapsibleTrigger>
+            {onAddService && isServicesOpen && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-5 w-5 p-0"
+                onClick={() => setIsAddServiceDialogOpen(true)}
+                disabled={isUpdating}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          <CollapsibleContent className="mt-2 space-y-2">
+            {services.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic px-2">
+                No services added yet
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {services.map((serviceName) => renderServiceEditor(serviceName))}
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Comments Section */}
         <Collapsible open={isCommentsOpen} onOpenChange={setIsCommentsOpen}>
           <CollapsibleTrigger asChild>
-            <div className="flex items-center gap-2 p-0 h-8 cursor-pointer">
+            <div className="flex items-center gap-1.5 cursor-pointer hover:opacity-70">
               <ChevronDown
-                className="h-4 w-4 transition-transform"
+                className="h-3 w-3 transition-transform"
                 style={{
                   transform: isCommentsOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
                 }}
               />
-              <span className="text-sm">Comments</span>
+              <MessageSquare className="h-3 w-3" />
+              <span className="text-xs font-medium text-muted-foreground">Comments</span>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-2 mt-2">
+          <CollapsibleContent className="mt-2 space-y-2">
             {isEditingComment ? (
               <div className="space-y-2">
                 <Textarea
-                  id={`comment-${alias.id}`}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Add your comments here..."
                   rows={2}
-                  className="text-sm"
+                  className="resize-none text-xs"
                 />
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="h-7 text-xs"
+                    className="h-6 text-xs"
                     onClick={handleSaveComment}
                     disabled={isUpdating}
                   >
@@ -250,7 +289,7 @@ export function AliasCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs"
+                    className="h-6 text-xs"
                     onClick={() => {
                       setComment(alias.comments || '');
                       setIsEditingComment(false);
@@ -263,23 +302,28 @@ export function AliasCard({
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm px-2 py-1 rounded bg-muted">
-                  {alias.comments || 'No comments yet.'}
-                </p>
+                {alias.comments ? (
+                  <div className="rounded bg-muted px-2 py-1">
+                    <p className="text-xs whitespace-pre-wrap">{alias.comments}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic px-2">
+                    No comments yet
+                  </p>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full h-7 text-xs"
+                  className="w-full h-6 text-xs"
                   onClick={() => setIsEditingComment(true)}
                 >
-                  Edit
+                  {alias.comments ? 'Edit' : 'Add Comment'}
                 </Button>
               </div>
             )}
           </CollapsibleContent>
         </Collapsible>
-        </CardContent>
-      </Collapsible>
+      </CardContent>
 
       {/* Add Service Dialog */}
       <AddServiceToAliasDialog

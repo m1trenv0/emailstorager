@@ -193,18 +193,20 @@ export function AccountDetailsModal({
           <Separator />
 
           {/* Aliases List */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Aliases ({account.aliases.length})
-            </h3>
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Aliases ({account.aliases.length})
+              </h3>
+            </div>
             {account.aliases.length === 0 ? (
               <div className="rounded-lg border border-dashed p-8 text-center">
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   No aliases yet. Add your first alias to get started.
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {account.aliases.map((alias) => (
                   <AliasCard
                     key={alias.id}
