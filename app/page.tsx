@@ -26,6 +26,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
 import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
 import { ServiceTab } from '@/components/tabs/ServiceTab';
+import { toast } from 'sonner';
 
 export default function Home() {
   const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
@@ -104,18 +105,20 @@ export default function Home() {
   }) => {
     try {
       await addAccountMutation(accountData);
+      toast.success('Account created successfully');
     } catch (error) {
-      alert(
-        error instanceof Error ? error.message : 'Failed to create account'
-      );
+      toast.error('Failed to create account', {
+        description: error instanceof Error ? error.message : 'An error occurred',
+      });
     }
   };
 
   const handleDeleteAccount = async (accountId: string) => {
     try {
       await deleteAccountMutation(accountId);
+      toast.success('Account deleted successfully');
     } catch {
-      alert('Failed to delete account');
+      toast.error('Failed to delete account');
     }
   };
 
@@ -142,8 +145,11 @@ export default function Home() {
     try {
       await addAliasMutation(currentAccountId, email, countsTowardLimit);
       setIsAddAliasModalOpen(false);
+      toast.success('Alias added successfully');
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to add alias');
+      toast.error('Failed to add alias', {
+        description: error instanceof Error ? error.message : 'An error occurred',
+      });
     }
   };
 
@@ -161,7 +167,7 @@ export default function Home() {
         value
       );
     } catch {
-      alert('Failed to update service field');
+      toast.error('Failed to update service field');
     }
   };
 
@@ -169,7 +175,7 @@ export default function Home() {
     try {
       await updateAliasCommentMutation(aliasId, comment);
     } catch {
-      alert('Failed to update comment');
+      toast.error('Failed to update comment');
     }
   };
 
@@ -179,8 +185,11 @@ export default function Home() {
   ) => {
     try {
       await addServiceToAliasMutation(aliasId, serviceName);
+      toast.success('Service added successfully');
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to add service');
+      toast.error('Failed to add service', {
+        description: error instanceof Error ? error.message : 'An error occurred',
+      });
       throw error;
     }
   };
@@ -191,8 +200,9 @@ export default function Home() {
   ) => {
     try {
       await removeServiceFromAliasMutation(aliasId, serviceName);
+      toast.success('Service removed successfully');
     } catch {
-      alert('Failed to remove service');
+      toast.error('Failed to remove service');
     }
   };
 

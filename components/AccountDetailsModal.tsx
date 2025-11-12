@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { AliasCard } from './AliasCard';
 import { ServiceFieldValue } from '@/lib/types';
+import { useConfirm } from '@/lib/hooks/useConfirm';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export function AccountDetailsModal({
   onRemoveService,
 }: AccountDetailsModalProps) {
   const [copied, setCopied] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   if (!account) return null;
 
@@ -67,12 +69,15 @@ export function AccountDetailsModal({
     handleCopy(text);
   };
 
-  const handleDelete = () => {
-    if (
-      confirm(
-        `Are you sure you want to delete ${account.primaryEmail} and all its ${account.aliases.length} aliases?`
-      )
-    ) {
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Account',
+      description: `Are you sure you want to delete ${account.primaryEmail} and all its ${account.aliases.length} aliases? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (confirmed) {
       onDelete(account.id);
       onClose();
     }
@@ -222,6 +227,7 @@ export function AccountDetailsModal({
           </section>
         </div>
       </DialogContent>
+      <ConfirmDialog />
     </Dialog>
   );
 }

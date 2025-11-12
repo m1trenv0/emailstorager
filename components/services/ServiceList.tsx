@@ -4,6 +4,7 @@ import { ServiceWithCategories } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Edit, Trash2, Copy, Layers, FileText } from 'lucide-react';
+import { useConfirm } from '@/lib/hooks/useConfirm';
 
 interface ServiceListProps {
   services: ServiceWithCategories[];
@@ -18,6 +19,8 @@ export function ServiceList({
   onDelete,
   onClone,
 }: ServiceListProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
+
   if (services.length === 0) {
     return (
       <Card>
@@ -102,12 +105,15 @@ export function ServiceList({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        `Are you sure you want to delete "${service.name}"? This action cannot be undone.`
-                      )
-                    ) {
+                  onClick={async () => {
+                    const confirmed = await confirm({
+                      title: 'Delete Service',
+                      description: `Are you sure you want to delete "${service.name}"? This action cannot be undone.`,
+                      confirmText: 'Delete',
+                      cancelText: 'Cancel',
+                      variant: 'destructive',
+                    });
+                    if (confirmed) {
                       onDelete(service.id);
                     }
                   }}
@@ -120,6 +126,7 @@ export function ServiceList({
           </CardContent>
         </Card>
       ))}
+      <ConfirmDialog />
     </div>
   );
 }

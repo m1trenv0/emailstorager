@@ -10,8 +10,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AccountWithAliases } from '@/lib/types';
 import { Mail, Calendar, Clock, Plus, Trash2, Copy } from 'lucide-react';
+import { useConfirm } from '@/lib/hooks/useConfirm';
 
 interface AccountCardProps {
   account: AccountWithAliases;
@@ -28,6 +30,8 @@ export function AccountCard({
   onSelect,
   isSelected = false,
 }: AccountCardProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
+
   const handleCopy = () => {
     navigator.clipboard.writeText(
       `${account.recoveryEmail}:${account.recoveryPassword}`
@@ -162,20 +166,20 @@ export function AccountCard({
         {/* Alias Addition Status */}
         <section className="space-y-2">
           {timeRemaining ? (
-            <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm dark:border-yellow-900 dark:bg-yellow-950">
+            <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950">
               <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              <span className="text-yellow-800 dark:text-yellow-200">
+              <AlertDescription className="text-yellow-800 dark:text-yellow-200">
                 New alias available in {timeRemaining.days}d{' '}
                 {timeRemaining.hours}h {timeRemaining.minutes}m (2/2 used)
-              </span>
-            </div>
+              </AlertDescription>
+            </Alert>
           ) : (
-            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm dark:border-green-900 dark:bg-green-950">
+            <Alert variant="default" className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
               <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-green-800 dark:text-green-200">
+              <AlertDescription className="text-green-800 dark:text-green-200">
                 Ready to add new alias ({aliasesRemaining}/2 available)
-              </span>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
         </section>
 
@@ -195,13 +199,16 @@ export function AccountCard({
           <Button
             variant="destructive"
             size="icon"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              if (
-                confirm(
-                  `Are you sure you want to delete ${account.primaryEmail}?`
-                )
-              ) {
+              const confirmed = await confirm({
+                title: 'Delete Account',
+                description: `Are you sure you want to delete ${account.primaryEmail}? This action cannot be undone.`,
+                confirmText: 'Delete',
+                cancelText: 'Cancel',
+                variant: 'destructive',
+              });
+              if (confirmed) {
                 onDelete?.(account.id);
               }
             }}
@@ -210,6 +217,7 @@ export function AccountCard({
           </Button>
         </section>
       </CardContent>
+      <ConfirmDialog />
     </Card>
   );
 }

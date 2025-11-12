@@ -10,6 +10,7 @@ import { AliasWithStatus, ServiceFieldValue, Service } from '@/lib/types';
 import { Calendar, ChevronDown, Edit2, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
+import { useConfirm } from '@/lib/hooks/useConfirm';
 
 interface AliasCardProps {
   alias: AliasWithStatus;
@@ -39,6 +40,7 @@ export function AliasCard({
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [editingService, setEditingService] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -100,7 +102,14 @@ export function AliasCard({
 
   const handleRemoveService = async (serviceName: string) => {
     if (!onRemoveService) return;
-    if (!confirm(`Remove ${serviceName} from this alias?`)) return;
+    const confirmed = await confirm({
+      title: 'Remove Service',
+      description: `Are you sure you want to remove ${serviceName} from this alias?`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
 
     setIsUpdating(true);
     try {
@@ -333,6 +342,7 @@ export function AliasCard({
         availableServices={availableServices}
         existingServices={services}
       />
+      <ConfirmDialog />
     </Card>
   );
 }

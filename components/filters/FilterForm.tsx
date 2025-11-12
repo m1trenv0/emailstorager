@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ConditionBuilder } from './ConditionBuilder';
 import { Loader2 } from 'lucide-react';
 
@@ -142,19 +150,22 @@ export function FilterForm({
             <Label htmlFor="filter-category">
               Category (Service) <span className="text-destructive">*</span>
             </Label>
-            <select
-              id="filter-category"
+            <Select
               value={categoryId}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onValueChange={handleCategoryChange}
               disabled={mode === 'edit'}
             >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name} ({category.service.name})
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a category..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name} ({category.service.name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {mode === 'edit' && (
               <p className="text-xs text-muted-foreground">
                 Category cannot be changed after creation
@@ -177,11 +188,9 @@ export function FilterForm({
       )}
 
       {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-sm text-destructive">{error}</p>
-          </CardContent>
-        </Card>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <footer className="flex justify-end gap-4">

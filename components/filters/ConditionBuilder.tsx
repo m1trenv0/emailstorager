@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Trash2, Plus } from 'lucide-react';
 
 interface ConditionBuilderProps {
@@ -77,25 +84,29 @@ export function ConditionBuilder({
 
     if (fieldType === 'boolean') {
       return (
-        <select
+        <Select
           value={
             condition.value === true
               ? 'true'
               : condition.value === false
                 ? 'false'
-                : ''
+                : 'none'
           }
-          onChange={(e) =>
+          onValueChange={(value) =>
             updateCondition(index, {
-              value: e.target.value === '' ? '' : e.target.value === 'true',
+              value: value === 'none' ? '' : value === 'true',
             })
           }
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <option value="">Select value</option>
-          <option value="true">True</option>
-          <option value="false">False</option>
-        </select>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select value" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select value</SelectItem>
+            <SelectItem value="true">True</SelectItem>
+            <SelectItem value="false">False</SelectItem>
+          </SelectContent>
+        </Select>
       );
     }
 
@@ -156,42 +167,48 @@ export function ConditionBuilder({
                     <Label htmlFor={`condition-field-${index}`}>
                       Field <span className="text-destructive">*</span>
                     </Label>
-                    <select
-                      id={`condition-field-${index}`}
+                    <Select
                       value={condition.field}
-                      onChange={(e) =>
-                        updateCondition(index, { field: e.target.value })
+                      onValueChange={(value) =>
+                        updateCondition(index, { field: value })
                       }
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {serviceFields.map((field) => (
-                        <option key={field.name} value={field.name}>
-                          {field.name} ({field.type})
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select field..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {serviceFields.map((field) => (
+                          <SelectItem key={field.name} value={field.name}>
+                            {field.name} ({field.type})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor={`condition-operator-${index}`}>
                       Operator <span className="text-destructive">*</span>
                     </Label>
-                    <select
-                      id={`condition-operator-${index}`}
+                    <Select
                       value={condition.operator}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         updateCondition(index, {
-                          operator: e.target.value as FilterOperator,
+                          operator: value as FilterOperator,
                         })
                       }
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {OPERATORS.map((op) => (
-                        <option key={op.value} value={op.value}>
-                          {op.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select operator..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OPERATORS.map((op) => (
+                          <SelectItem key={op.value} value={op.value}>
+                            {op.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">

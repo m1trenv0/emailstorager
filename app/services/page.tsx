@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'create' | 'edit';
 
@@ -92,8 +93,11 @@ export default function ServicesPage() {
       }
 
       await fetchServices();
+      toast.success('Service deleted successfully');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete service');
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to delete service'
+      );
     }
   };
 

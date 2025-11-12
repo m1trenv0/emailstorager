@@ -10,6 +10,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Service } from '@/lib/types';
 
 interface AddServiceToAliasDialogProps {
@@ -75,40 +83,40 @@ export function AddServiceToAliasDialog({
             <>
               <div className="space-y-2">
                 <Label htmlFor="service">Service</Label>
-                <select
-                  id="service"
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required
-                >
-                  <option value="">Select a service...</option>
-                  {unaddedServices.map((service) => (
-                    <option key={service.id} value={service.name}>
-                      {service.name}
-                      {service.description && ` - ${service.description}`}
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedService} onValueChange={setSelectedService}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a service..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unaddedServices.map((service) => (
+                      <SelectItem key={service.id} value={service.name}>
+                        {service.name}
+                        {service.description && ` - ${service.description}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {selectedService && (
-                <div className="rounded-md bg-muted p-3 text-sm">
-                  <p className="font-medium mb-2">
-                    This will initialize the following fields:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    {unaddedServices
-                      .find((s) => s.name === selectedService)
-                      ?.fields.map((field) => (
-                        <li key={field.name}>
-                          {field.name} ({field.type})
-                          {field.defaultValue !== undefined &&
-                            ` - default: ${field.defaultValue}`}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
+                <Alert>
+                  <AlertDescription>
+                    <p className="font-medium mb-2">
+                      This will initialize the following fields:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                      {unaddedServices
+                        .find((s) => s.name === selectedService)
+                        ?.fields.map((field) => (
+                          <li key={field.name}>
+                            {field.name} ({field.type})
+                            {field.defaultValue !== undefined &&
+                              ` - default: ${field.defaultValue}`}
+                          </li>
+                        ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               )}
             </>
           )}

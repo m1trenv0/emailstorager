@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface AddAccountModalProps {
   isOpen: boolean;
@@ -43,7 +44,9 @@ export function AddAccountModal({
         formData.recoveryCredentials.split(':');
 
       if (!recoveryEmail || !recoveryPassword) {
-        alert('Recovery credentials must be in format: email:password');
+        toast.error('Invalid credentials format', {
+          description: 'Recovery credentials must be in format: email:password',
+        });
         setIsLoading(false);
         return;
       }

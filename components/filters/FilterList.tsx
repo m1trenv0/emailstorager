@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Filter as FilterIcon } from 'lucide-react';
+import { useConfirm } from '@/lib/hooks/useConfirm';
 
 interface FilterWithCategory extends Filter {
   category: FilterCategory & {
@@ -19,6 +20,8 @@ interface FilterListProps {
 }
 
 export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
+
   if (filters.length === 0) {
     return (
       <Card>
@@ -90,12 +93,15 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        `Are you sure you want to delete "${filter.name}"? This action cannot be undone.`
-                      )
-                    ) {
+                  onClick={async () => {
+                    const confirmed = await confirm({
+                      title: 'Delete Filter',
+                      description: `Are you sure you want to delete "${filter.name}"? This action cannot be undone.`,
+                      confirmText: 'Delete',
+                      cancelText: 'Cancel',
+                      variant: 'destructive',
+                    });
+                    if (confirmed) {
                       onDelete(filter.id);
                     }
                   }}
@@ -108,6 +114,7 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
           </CardContent>
         </Card>
       ))}
+      <ConfirmDialog />
     </div>
   );
 }

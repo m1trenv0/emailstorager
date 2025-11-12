@@ -8,6 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Trash2, GripVertical, Plus } from 'lucide-react';
 
 interface FieldBuilderProps {
@@ -127,21 +134,24 @@ export function FieldBuilder({ fields, onChange }: FieldBuilderProps) {
                     <Label htmlFor={`field-type-${index}`}>
                       Type <span className="text-destructive">*</span>
                     </Label>
-                    <select
-                      id={`field-type-${index}`}
+                    <Select
                       value={field.type}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         updateField(index, {
-                          type: e.target.value as ServiceFieldType,
+                          type: value as ServiceFieldType,
                         })
                       }
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <option value="string">String</option>
-                      <option value="number">Number</option>
-                      <option value="boolean">Boolean</option>
-                      <option value="date">Date</option>
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="string">String</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="boolean">Boolean</SelectItem>
+                        <SelectItem value="date">Date</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -166,29 +176,32 @@ export function FieldBuilder({ fields, onChange }: FieldBuilderProps) {
                       Default Value
                     </Label>
                     {field.type === 'boolean' ? (
-                      <select
-                        id={`field-default-${index}`}
+                      <Select
                         value={
                           field.defaultValue === true
                             ? 'true'
                             : field.defaultValue === false
                               ? 'false'
-                              : ''
+                              : 'none'
                         }
-                        onChange={(e) =>
+                        onValueChange={(value) =>
                           updateField(index, {
                             defaultValue:
-                              e.target.value === ''
+                              value === 'none'
                                 ? undefined
-                                : e.target.value === 'true',
+                                : value === 'true',
                           })
                         }
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <option value="">None</option>
-                        <option value="true">True</option>
-                        <option value="false">False</option>
-                      </select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select default..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="true">True</SelectItem>
+                          <SelectItem value="false">False</SelectItem>
+                        </SelectContent>
+                      </Select>
                     ) : (
                       <Input
                         id={`field-default-${index}`}
@@ -209,30 +222,30 @@ export function FieldBuilder({ fields, onChange }: FieldBuilderProps) {
 
                   <div className="space-y-2">
                     <Label htmlFor={`field-depends-${index}`}>Depends On</Label>
-                    <select
-                      id={`field-depends-${index}`}
-                      multiple
-                      value={field.dependsOn || []}
-                      onChange={(e) => {
-                        const selected = Array.from(
-                          e.target.selectedOptions,
-                          (option) => option.value
-                        );
-                        updateField(index, { dependsOn: selected });
+                    <Select
+                      value={field.dependsOn?.[0] || 'none'}
+                      onValueChange={(value) => {
+                        updateField(index, {
+                          dependsOn: value === 'none' ? undefined : [value],
+                        });
                       }}
-                      className="flex min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      size={3}
                     >
-                      {fieldNames
-                        .filter((name) => name !== field.name)
-                        .map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="No dependencies" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No dependencies</SelectItem>
+                        {fieldNames
+                          .filter((name) => name !== field.name)
+                          .map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-muted-foreground">
-                      Hold Ctrl/Cmd to select multiple
+                      Select a field this one depends on
                     </p>
                   </div>
                 </div>
