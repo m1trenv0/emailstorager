@@ -66,17 +66,15 @@ export const NavigationHeader = ({
           </h1>
           <div className="sm:hidden flex gap-2">
             <ThemeToggle />
-            <div className="hidden sm:block">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="sm:hidden">Log Out</span>
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="sm:hidden">Log Out</span>
+            </Button>
           </div>
           <p className="hidden sm:block text-sm sm:text-base text-muted-foreground transition-all duration-300">
             {getPageDescription()}
