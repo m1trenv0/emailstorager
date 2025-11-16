@@ -9,6 +9,7 @@ import {
   REFRESH_TOKEN_COOKIE_OPTIONS,
 } from '@/lib/auth/cookies';
 import { setupSchema } from '@/lib/auth/validation';
+import { createDefaultAliExpressService } from '@/lib/setup/createDefaultService';
 
 /**
  * POST /api/auth/setup
@@ -57,6 +58,15 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
       },
     });
+
+    // Create default AliExpress service for new user
+    try {
+      await createDefaultAliExpressService(prisma);
+      console.log('Default AliExpress service created for new user');
+    } catch (serviceError) {
+      console.error('Failed to create default service:', serviceError);
+      // Continue with user creation even if service creation fails
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken(user.id, user.username);

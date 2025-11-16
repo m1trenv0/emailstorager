@@ -11,40 +11,39 @@ async function main() {
     update: {},
     create: {
       name: 'AliExpress',
-      description: 'AliExpress account service',
+      description: 'AliExpress order tracking service',
       fields: [
         {
-          name: 'registerDate',
+          name: 'RegisterDate',
           type: 'date',
-          required: false,
-          description: 'Registration date (indicates isRegistered)',
+          required: true,
+          description: 'Service registration date',
         },
         {
-          name: 'trackNumber',
+          name: 'TrackNumber',
           type: 'string',
           required: false,
-          description: 'Tracking number for orders',
+          description: 'Package tracking number',
         },
         {
-          name: 'shortDescription',
+          name: 'OrderDescription',
           type: 'string',
           required: false,
-          dependsOn: ['trackNumber'],
-          description: 'Short description (requires track number)',
+          description: 'Order description',
         },
         {
           name: 'isDelivered',
           type: 'boolean',
           required: false,
-          dependsOn: ['trackNumber'],
-          description: 'Delivery status (requires track number)',
+          defaultValue: false,
+          description: 'Delivery status',
         },
         {
           name: 'isBanned',
           type: 'boolean',
           required: false,
           defaultValue: false,
-          description: 'Account ban status',
+          description: 'Ban status',
         },
       ],
     },
@@ -98,58 +97,43 @@ async function main() {
 
   // Create default filters for AliExpress
   await prisma.filter.upsert({
-    where: { id: 'filter-aliexpress-available' },
+    where: { id: 'filter-aliexpress-notreg' },
     update: {},
     create: {
-      id: 'filter-aliexpress-available',
-      name: 'Available to add aliases',
+      id: 'filter-aliexpress-notreg',
+      name: 'Ali Notreg',
       categoryId: aliexpressCategory.id,
       conditions: [
         {
-          field: 'isBanned',
-          operator: 'equals',
-          value: false,
-        },
-        {
-          field: 'registerDate',
-          operator: 'exists',
-          value: null,
+          field: '__service_registered__',
+          operator: 'not_exists',
         },
       ],
+      showAsTab: true,
+      tabOrder: 0,
     },
   });
 
   await prisma.filter.upsert({
-    where: { id: 'filter-aliexpress-delivered' },
+    where: { id: 'filter-aliexpress-not-delivered' },
     update: {},
     create: {
-      id: 'filter-aliexpress-delivered',
-      name: 'Delivered orders',
+      id: 'filter-aliexpress-not-delivered',
+      name: 'Ali Not delivered',
       categoryId: aliexpressCategory.id,
       conditions: [
+        {
+          field: 'TrackNumber',
+          operator: 'exists',
+        },
         {
           field: 'isDelivered',
           operator: 'equals',
-          value: true,
+          value: false,
         },
       ],
-    },
-  });
-
-  await prisma.filter.upsert({
-    where: { id: 'filter-aliexpress-pending' },
-    update: {},
-    create: {
-      id: 'filter-aliexpress-pending',
-      name: 'Pending registration',
-      categoryId: aliexpressCategory.id,
-      conditions: [
-        {
-          field: 'registerDate',
-          operator: 'not_exists',
-          value: null,
-        },
-      ],
+      showAsTab: true,
+      tabOrder: 1,
     },
   });
 
