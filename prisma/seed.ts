@@ -36,7 +36,7 @@ async function main() {
           type: 'boolean',
           required: false,
           defaultValue: false,
-          description: 'Delivery status',
+          description: 'Delivery status (auto-updated via 17TRACK)',
         },
         {
           name: 'isBanned',
@@ -44,6 +44,18 @@ async function main() {
           required: false,
           defaultValue: false,
           description: 'Ban status',
+        },
+        {
+          name: 'trackingStatus',
+          type: 'string',
+          required: false,
+          description: 'Current tracking status from 17TRACK API',
+        },
+        {
+          name: 'lastTrackingUpdate',
+          type: 'string',
+          required: false,
+          description: 'Last time tracking was updated (ISO date string)',
         },
       ],
     },

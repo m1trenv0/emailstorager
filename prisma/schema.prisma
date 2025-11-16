@@ -77,3 +77,13 @@ model User {
   updatedAt DateTime  @updatedAt
   lastLogin DateTime?
 }
+
+model TrackingCache {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  trackNumber     String   @unique
+  serviceName     String   // e.g., "AliExpress"
+  trackingData    Json     // Full tracking response from API
+  isDelivered     Boolean  @default(false)
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+}

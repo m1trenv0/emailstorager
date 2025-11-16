@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 /**
  * Creates default AliExpress service for new users with:
- * - 5 fields: RegisterDate, TrackNumber, OrderDescription, isDelivered, isBanned
+ * - 7 fields: RegisterDate, TrackNumber, OrderDescription, isDelivered, isBanned, trackingStatus, lastTrackingUpdate
  * - 1 category: AliExpress Filters
  * - 2 filters: Ali Notreg and Ali Not delivered
  */
@@ -47,7 +47,7 @@ export async function createDefaultAliExpressService(prisma: PrismaClient) {
             type: 'boolean',
             required: false,
             defaultValue: false,
-            description: 'Delivery status',
+            description: 'Delivery status (auto-updated via 17TRACK)',
           },
           {
             name: 'isBanned',
@@ -55,6 +55,18 @@ export async function createDefaultAliExpressService(prisma: PrismaClient) {
             required: false,
             defaultValue: false,
             description: 'Ban status',
+          },
+          {
+            name: 'trackingStatus',
+            type: 'string',
+            required: false,
+            description: 'Current tracking status from 17TRACK API',
+          },
+          {
+            name: 'lastTrackingUpdate',
+            type: 'string',
+            required: false,
+            description: 'Last time tracking was updated (ISO date string)',
           },
         ],
       },

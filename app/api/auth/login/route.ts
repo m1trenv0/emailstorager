@@ -8,6 +8,7 @@ import {
   REFRESH_TOKEN_COOKIE_OPTIONS,
 } from '@/lib/auth/cookies';
 import { loginSchema } from '@/lib/auth/validation';
+import { checkAndUpdateTrackingOnLogin } from '@/lib/tracking/trackingService';
 
 /**
  * POST /api/auth/login
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: { lastLogin: new Date() },
     });
+
+    // Check and update tracking data in background (non-blocking)
+    checkAndUpdateTrackingOnLogin().catch((error) =>
+      console.error('Background tracking update failed:', error)
+    );
 
     // Generate tokens
     const accessToken = generateAccessToken(user.id, user.username);
