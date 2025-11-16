@@ -16,6 +16,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
+import { useHeader } from '@/lib/context/HeaderContext';
 
 type DialogMode = 'create' | 'edit' | null;
 
@@ -55,6 +56,7 @@ export default function FiltersPage() {
     null
   );
   const { invalidateFilters, invalidateFilterCategories } = useCacheInvalidation();
+  const { setCustomAction } = useHeader();
 
   const fetchData = async () => {
     try {
@@ -81,6 +83,16 @@ export default function FiltersPage() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    setCustomAction(
+      <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
+        <Plus className="mr-2 h-4 w-4" />
+        Create Filter
+      </Button>
+    );
+    return () => setCustomAction(null);
   }, []);
 
   const handleCreate = async (data: {
@@ -246,13 +258,6 @@ export default function FiltersPage() {
 
   return (
     <>
-      <div className="mb-4 sm:mb-6 flex justify-end">
-        <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Filter
-        </Button>
-      </div>
-
       <FilterList
         filters={filters}
         onEdit={handleEditClick}

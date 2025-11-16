@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { AddAccountModal } from '@/components/AddAccountModal';
 import { toast } from 'sonner';
+import { HeaderProvider, useHeader } from '@/lib/context/HeaderContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -22,6 +23,7 @@ const geistMono = Geist_Mono({
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
+  const { customAction } = useHeader();
 
   const handleAddAccount = async (accountData: {
     primaryEmail: string;
@@ -59,6 +61,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             pathname === '/' ? () => setIsAddAccountModalOpen(true) : undefined
           }
           showAddAccount={pathname === '/'}
+          customAction={customAction}
         />
         {children}
       </main>
@@ -99,7 +102,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LayoutContent>{children}</LayoutContent>
+        <HeaderProvider>
+          <LayoutContent>{children}</LayoutContent>
+        </HeaderProvider>
         <Toaster position="top-right" />
       </body>
     </html>

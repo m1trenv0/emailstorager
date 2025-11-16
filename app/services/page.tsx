@@ -15,6 +15,7 @@ import {
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
+import { useHeader } from '@/lib/context/HeaderContext';
 
 type DialogMode = 'create' | 'edit' | null;
 
@@ -26,6 +27,7 @@ export default function ServicesPage() {
   const [editingService, setEditingService] =
     useState<ServiceWithCategories | null>(null);
   const { invalidateServices, invalidateFilterCategories } = useCacheInvalidation();
+  const { setCustomAction } = useHeader();
 
   const fetchServices = async () => {
     try {
@@ -43,6 +45,16 @@ export default function ServicesPage() {
 
   useEffect(() => {
     fetchServices();
+  }, []);
+
+  useEffect(() => {
+    setCustomAction(
+      <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
+        <Plus className="mr-2 h-4 w-4" />
+        Create Service
+      </Button>
+    );
+    return () => setCustomAction(null);
   }, []);
 
   const handleCreate = async (data: {
@@ -167,13 +179,6 @@ export default function ServicesPage() {
 
   return (
     <>
-      <div className="mb-4 sm:mb-6 flex justify-end">
-        <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Service
-        </Button>
-      </div>
-
       <ServiceList
         services={services}
         onEdit={handleEditClick}
