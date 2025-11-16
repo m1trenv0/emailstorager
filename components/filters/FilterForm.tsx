@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ConditionBuilder } from './ConditionBuilder';
 import { Loader2 } from 'lucide-react';
 
@@ -22,6 +23,8 @@ interface FilterFormProps {
     name: string;
     categoryId: string;
     conditions: FilterCondition[];
+    showAsTab?: boolean;
+    tabOrder?: number;
   };
   categories: Array<{
     id: string;
@@ -33,6 +36,8 @@ interface FilterFormProps {
     name: string;
     categoryId: string;
     conditions: FilterCondition[];
+    showAsTab: boolean;
+    tabOrder: number;
   }) => Promise<void>;
   onCancel: () => void;
   mode: 'create' | 'edit';
@@ -52,6 +57,8 @@ export function FilterForm({
   const [conditions, setConditions] = useState<FilterCondition[]>(
     initialData?.conditions || []
   );
+  const [showAsTab, setShowAsTab] = useState(initialData?.showAsTab ?? false);
+  const [tabOrder, setTabOrder] = useState(initialData?.tabOrder ?? 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,6 +121,8 @@ export function FilterForm({
         name: name.trim(),
         categoryId,
         conditions,
+        showAsTab,
+        tabOrder,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save filter');
@@ -170,6 +179,39 @@ export function FilterForm({
               <p className="text-xs text-muted-foreground">
                 Category cannot be changed after creation
               </p>
+            )}
+          </div>
+
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-as-tab"
+                checked={showAsTab}
+                onCheckedChange={(checked) => setShowAsTab(checked as boolean)}
+              />
+              <Label htmlFor="show-as-tab" className="cursor-pointer">
+                Show this filter as a tab on the main page
+              </Label>
+            </div>
+
+            {showAsTab && (
+              <div className="space-y-2 pl-6">
+                <Label htmlFor="tab-order">
+                  Tab Order (0 = hidden, higher numbers appear later)
+                </Label>
+                <Input
+                  id="tab-order"
+                  type="number"
+                  min="0"
+                  value={tabOrder}
+                  onChange={(e) => setTabOrder(parseInt(e.target.value) || 0)}
+                  placeholder="e.g., 1, 2, 3..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use this to control the order of filter tabs. Lower numbers
+                  appear first.
+                </p>
+              </div>
             )}
           </div>
         </CardContent>

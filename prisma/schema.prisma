@@ -63,6 +63,8 @@ model Filter {
   categoryId  String         @db.ObjectId
   category    FilterCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   conditions  Json           // Array of FilterCondition
+  showAsTab   Boolean        @default(false) // Whether to show this filter as a tab
+  tabOrder    Int            @default(0) // Order of the tab (0 = not shown)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }

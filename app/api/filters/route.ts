@@ -28,6 +28,8 @@ const filterSchema = z.object({
   conditions: z
     .array(filterConditionSchema)
     .min(1, 'At least one condition is required'),
+  showAsTab: z.boolean().optional().default(false),
+  tabOrder: z.number().optional().default(0),
 });
 
 // GET /api/filters - Fetch all filters
@@ -84,7 +86,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, categoryId, conditions } = validationResult.data;
+    const { name, categoryId, conditions, showAsTab, tabOrder } =
+      validationResult.data;
 
     // Check if category exists
     const category = await prisma.filterCategory.findUnique({
@@ -145,6 +148,8 @@ export async function POST(request: NextRequest) {
         name,
         categoryId,
         conditions: JSON.parse(JSON.stringify(conditions)),
+        showAsTab: showAsTab ?? false,
+        tabOrder: tabOrder ?? 0,
       },
       include: {
         category: {

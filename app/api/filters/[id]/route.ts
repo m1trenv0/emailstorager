@@ -29,6 +29,8 @@ const updateFilterSchema = z.object({
     .array(filterConditionSchema)
     .min(1, 'At least one condition is required')
     .optional(),
+  showAsTab: z.boolean().optional(),
+  tabOrder: z.number().optional(),
 });
 
 // GET /api/filters/[id] - Fetch a single filter
@@ -90,7 +92,8 @@ export async function PUT(
       );
     }
 
-    const { name, categoryId, conditions } = validationResult.data;
+    const { name, categoryId, conditions, showAsTab, tabOrder } =
+      validationResult.data;
 
     // Check if filter exists
     const existingFilter = await prisma.filter.findUnique({
@@ -176,6 +179,8 @@ export async function PUT(
         ...(conditions && {
           conditions: JSON.parse(JSON.stringify(conditions)),
         }),
+        ...(showAsTab !== undefined && { showAsTab }),
+        ...(tabOrder !== undefined && { tabOrder }),
       },
       include: {
         category: {

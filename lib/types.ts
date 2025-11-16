@@ -60,6 +60,8 @@ export interface Filter {
   name: string;
   categoryId: string;
   conditions: FilterCondition[];
+  showAsTab: boolean;
+  tabOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }

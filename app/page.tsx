@@ -6,7 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddAliasModal } from '@/components/AddAliasModal';
 import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
-import { AccountWithAliases, ServiceFieldValue, Service } from '@/lib/types';
+import {
+  AccountWithAliases,
+  ServiceFieldValue,
+  Service,
+  Filter,
+} from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import {
   useAddAccount,
@@ -24,6 +29,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
 import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
 import { ServiceTab } from '@/components/tabs/ServiceTab';
+import { FilterTab } from '@/components/tabs/FilterTab';
 import { toast } from 'sonner';
 
 export default function Home() {
@@ -32,6 +38,9 @@ export default function Home() {
 
   const allAccounts = useAllAccounts();
   const [services, setServices] = useState<Service[]>([]);
+  const [filters, setFilters] = useState<
+    Array<Filter & { category: { service: { name: string } } }>
+  >([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -67,6 +76,7 @@ export default function Home() {
   useEffect(() => {
     fetchAccounts();
     fetchServices();
+    fetchFilters();
   }, [fetchAccounts]);
 
   const fetchServices = async () => {
@@ -81,6 +91,18 @@ export default function Home() {
       console.error('Failed to fetch services:', err);
     } finally {
       setIsLoadingServices(false);
+    }
+  };
+
+  const fetchFilters = async () => {
+    try {
+      const response = await fetch('/api/filters');
+      if (response.ok) {
+        const data = await response.json();
+        setFilters(data.filter((f: Filter) => f.showAsTab));
+      }
+    } catch (err) {
+      console.error('Failed to fetch filters:', err);
     }
   };
 
@@ -105,7 +127,8 @@ export default function Home() {
       toast.success('Account created successfully');
     } catch (error) {
       toast.error('Failed to create account', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
     }
   };
@@ -145,7 +168,8 @@ export default function Home() {
       toast.success('Alias added successfully');
     } catch (error) {
       toast.error('Failed to add alias', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
     }
   };
@@ -185,7 +209,8 @@ export default function Home() {
       toast.success('Service added successfully');
     } catch (error) {
       toast.error('Failed to add service', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
       throw error;
     }
@@ -248,53 +273,86 @@ export default function Home() {
             {services.map((service) => {
               const count = getAliasesByServiceName(service.name).length;
               return (
-                <TabsTrigger key={service.id} value={service.name.toLowerCase()}>
+                <TabsTrigger
+                  key={service.id}
+                  value={service.name.toLowerCase()}
+                >
                   {service.name} ({count})
                 </TabsTrigger>
               );
             })}
+            {filters
+              .sort((a, b) => a.tabOrder - b.tabOrder)
+              .map((filter) => (
+                <TabsTrigger key={filter.id} value={`filter-${filter.id}`}>
+                  {filter.name}
+                </TabsTrigger>
+              ))}
           </TabsList>
 
-        <TabsContent value="all" className="mt-4 sm:mt-6">
-          <AllAccountsTab
-            filteredAccounts={filteredAccounts}
-            onAddAlias={handleAddAlias}
-            onDelete={handleDeleteAccount}
-            onSelect={handleSelectAccount}
-            selectedAccountId={selectedAccountId}
-          />
-        </TabsContent>
+          <TabsContent value="all" className="mt-4 sm:mt-6">
+            <AllAccountsTab
+              filteredAccounts={filteredAccounts}
+              onAddAlias={handleAddAlias}
+              onDelete={handleDeleteAccount}
+              onSelect={handleSelectAccount}
+              selectedAccountId={selectedAccountId}
+            />
+          </TabsContent>
 
-        <TabsContent value="unregistered" className="mt-4 sm:mt-6">
-          <UnregisteredTab
-            unregisteredAliases={unregisteredAliases}
-            onServiceFieldUpdate={handleUpdateAliasServiceField}
-            onCommentUpdate={handleUpdateAliasComment}
-            onAddService={handleAddServiceToAlias}
-            onRemoveService={handleRemoveServiceFromAlias}
-          />
-        </TabsContent>
+          <TabsContent value="unregistered" className="mt-4 sm:mt-6">
+            <UnregisteredTab
+              unregisteredAliases={unregisteredAliases}
+              onServiceFieldUpdate={handleUpdateAliasServiceField}
+              onCommentUpdate={handleUpdateAliasComment}
+              onAddService={handleAddServiceToAlias}
+              onRemoveService={handleRemoveServiceFromAlias}
+            />
+          </TabsContent>
 
-        {services.map((service) => {
-          const serviceAliases = getAliasesByServiceName(service.name);
-          return (
-            <TabsContent
-              key={service.id}
-              value={service.name.toLowerCase()}
-              className="mt-4 sm:mt-6"
-            >
-              <ServiceTab
-                aliases={serviceAliases}
-                serviceName={service.name}
-                onServiceFieldUpdate={handleUpdateAliasServiceField}
-                onCommentUpdate={handleUpdateAliasComment}
-                onAddService={handleAddServiceToAlias}
-                onRemoveService={handleRemoveServiceFromAlias}
-              />
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+          {services.map((service) => {
+            const serviceAliases = getAliasesByServiceName(service.name);
+            return (
+              <TabsContent
+                key={service.id}
+                value={service.name.toLowerCase()}
+                className="mt-4 sm:mt-6"
+              >
+                <ServiceTab
+                  aliases={serviceAliases}
+                  serviceName={service.name}
+                  onServiceFieldUpdate={handleUpdateAliasServiceField}
+                  onCommentUpdate={handleUpdateAliasComment}
+                  onAddService={handleAddServiceToAlias}
+                  onRemoveService={handleRemoveServiceFromAlias}
+                />
+              </TabsContent>
+            );
+          })}
+
+          {filters.map((filter) => {
+            const allAliases = allAccounts.flatMap(
+              (account) => account.aliases
+            );
+            return (
+              <TabsContent
+                key={filter.id}
+                value={`filter-${filter.id}`}
+                className="mt-4 sm:mt-6"
+              >
+                <FilterTab
+                  allAliases={allAliases}
+                  filter={filter}
+                  serviceName={filter.category.service.name}
+                  onServiceFieldUpdate={handleUpdateAliasServiceField}
+                  onCommentUpdate={handleUpdateAliasComment}
+                  onAddService={handleAddServiceToAlias}
+                  onRemoveService={handleRemoveServiceFromAlias}
+                />
+              </TabsContent>
+            );
+          })}
+        </Tabs>
       </div>
 
       <AddAliasModal

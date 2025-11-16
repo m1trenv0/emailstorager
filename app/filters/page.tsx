@@ -17,6 +17,8 @@ interface FilterWithCategory {
   name: string;
   categoryId: string;
   conditions: FilterCondition[];
+  showAsTab: boolean;
+  tabOrder: number;
   createdAt: Date;
   updatedAt: Date;
   category: {
@@ -77,6 +79,8 @@ export default function FiltersPage() {
     name: string;
     categoryId: string;
     conditions: FilterCondition[];
+    showAsTab: boolean;
+    tabOrder: number;
   }) => {
     const response = await fetch('/api/filters', {
       method: 'POST',
@@ -97,6 +101,8 @@ export default function FiltersPage() {
     name: string;
     categoryId: string;
     conditions: FilterCondition[];
+    showAsTab: boolean;
+    tabOrder: number;
   }) => {
     if (!editingFilter) return;
 
@@ -229,6 +235,8 @@ export default function FiltersPage() {
             name: editingFilter.name,
             categoryId: editingFilter.categoryId,
             conditions: editingFilter.conditions,
+            showAsTab: editingFilter.showAsTab,
+            tabOrder: editingFilter.tabOrder,
           }}
           categories={categories}
           onSubmit={handleEdit}
