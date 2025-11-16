@@ -73,8 +73,8 @@ export const NavigationHeader = ({
                 onClick={handleLogout}
                 className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
               >
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Logout</span>
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="sm:hidden">Log Out</span>
               </Button>
             </div>
           </div>

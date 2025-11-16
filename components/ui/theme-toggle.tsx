@@ -38,6 +38,7 @@ export function ThemeToggle() {
   return (
     <Button variant="outline" size="sm" onClick={cycleTheme} title={`Current: ${getLabel()}`}>
       {getIcon()}
+      <span className="ml-2 sm:hidden">{getLabel()}</span>
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
