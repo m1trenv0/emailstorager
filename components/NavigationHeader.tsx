@@ -55,7 +55,9 @@ export const NavigationHeader = ({
             </Button>
           )}
           {customAction}
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
       <nav className="flex gap-2 flex-wrap min-h-[36px]">
