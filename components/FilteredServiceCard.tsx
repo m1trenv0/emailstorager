@@ -14,6 +14,7 @@ import { AliasWithStatus, ServiceFieldValue, Service } from '@/lib/types';
 import { ChevronDown, Edit2, MessageSquare } from 'lucide-react';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { useConfirm } from '@/lib/hooks/useConfirm';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 interface FilteredServiceCardProps {
   alias: AliasWithStatus;
@@ -38,29 +39,16 @@ export function FilteredServiceCard({
   const [comment, setComment] = useState(alias.comments || '');
   const [isEditingComment, setIsEditingComment] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [service, setService] = useState<Service | null>(null);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [editingService, setEditingService] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  useEffect(() => {
-    const fetchService = async () => {
-      try {
-        const response = await fetch('/api/services');
-        if (response.ok) {
-          const servicesData = await response.json();
-          const foundService = servicesData.find(
-            (s: Service) => s.name === serviceName
-          );
-          setService(foundService);
-        }
-      } catch (error) {
-        console.error('Failed to fetch service:', error);
-      }
-    };
+  const { data: servicesData = [] } = useFetch<Service[]>('/api/services', {
+    cache: true,
+    cacheTTL: 30000,
+  });
 
-    fetchService();
-  }, [serviceName]);
+  const service = servicesData.find((s) => s.name === serviceName);
 
   const handleSaveComment = async () => {
     if (!onCommentUpdate) return;

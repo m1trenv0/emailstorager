@@ -22,6 +22,7 @@ import {
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
 import { useConfirm } from '@/lib/hooks/useConfirm';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 interface AliasCardProps {
   alias: AliasWithStatus;
@@ -46,28 +47,18 @@ export function AliasCard({
   const [comment, setComment] = useState(alias.comments || '');
   const [isEditingComment, setIsEditingComment] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [editingService, setEditingService] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch('/api/services');
-        if (response.ok) {
-          const servicesData = await response.json();
-          setAvailableServices(servicesData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch services:', error);
-      }
-    };
+  const { data: availableServices } = useFetch<Service[]>('/api/services', {
+    cache: true,
+    cacheTTL: 30000,
+  });
 
-    fetchServices();
-  }, []);
+  const services = availableServices || [];
 
   const handleSaveComment = async () => {
     if (!onCommentUpdate) return;
@@ -141,7 +132,8 @@ export function AliasCard({
   };
 
   const renderServiceEditor = (serviceName: string) => {
-    const service = availableServices.find((s) => s.name === serviceName);
+    if (services.length === 0) return null;
+    const service = services.find((s) => s.name === serviceName);
     if (!service) return null;
 
     const currentValues = alias.status[serviceName] || {};
@@ -225,7 +217,7 @@ export function AliasCard({
     );
   };
 
-  const services = Object.keys(alias.status);
+  const aliasServices = Object.keys(alias.status);
 
   return (
     <Card className="w-full">
@@ -265,7 +257,7 @@ export function AliasCard({
                   }}
                 />
                 <span className="text-xs font-medium text-muted-foreground">
-                  Services ({services.length})
+                  Services ({aliasServices.length})
                 </span>
               </div>
             </CollapsibleTrigger>
@@ -282,13 +274,13 @@ export function AliasCard({
             )}
           </div>
           <CollapsibleContent className="mt-2 space-y-2">
-            {services.length === 0 ? (
+            {aliasServices.length === 0 ? (
               <p className="text-xs text-muted-foreground italic px-2">
                 No services added yet
               </p>
             ) : (
               <div className="space-y-2">
-                {services.map((serviceName) =>
+                {aliasServices.map((serviceName) =>
                   renderServiceEditor(serviceName)
                 )}
               </div>
@@ -377,8 +369,8 @@ export function AliasCard({
         isOpen={isAddServiceDialogOpen}
         onClose={() => setIsAddServiceDialogOpen(false)}
         onSubmit={handleAddService}
-        availableServices={availableServices}
-        existingServices={services}
+        availableServices={services}
+        existingServices={Object.keys(alias.status)}
       />
       <ConfirmDialog />
     </Card>

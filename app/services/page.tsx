@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
 
 type DialogMode = 'create' | 'edit' | null;
 
@@ -24,6 +25,7 @@ export default function ServicesPage() {
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [editingService, setEditingService] =
     useState<ServiceWithCategories | null>(null);
+  const { invalidateServices, invalidateFilterCategories } = useCacheInvalidation();
 
   const fetchServices = async () => {
     try {
@@ -59,6 +61,8 @@ export default function ServicesPage() {
       throw new Error(error.error || 'Failed to create service');
     }
 
+    invalidateServices();
+    invalidateFilterCategories();
     await fetchServices();
     setDialogMode(null);
     toast.success('Service created successfully');
@@ -82,6 +86,8 @@ export default function ServicesPage() {
       throw new Error(error.error || 'Failed to update service');
     }
 
+    invalidateServices();
+    invalidateFilterCategories();
     await fetchServices();
     setDialogMode(null);
     setEditingService(null);
@@ -99,6 +105,8 @@ export default function ServicesPage() {
         throw new Error(error.error || 'Failed to delete service');
       }
 
+      invalidateServices();
+      invalidateFilterCategories();
       await fetchServices();
       toast.success('Service deleted successfully');
     } catch (err) {
@@ -178,24 +186,26 @@ export default function ServicesPage() {
         open={dialogMode === 'create'}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create Service</DialogTitle>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+            <DialogTitle className="text-2xl">Create Service</DialogTitle>
           </DialogHeader>
-          <ServiceForm
-            initialData={
-              editingService
-                ? {
-                    name: editingService.name,
-                    description: editingService.description,
-                    fields: editingService.fields,
-                  }
-                : undefined
-            }
-            onSubmit={handleCreate}
-            onCancel={handleCancel}
-            mode="create"
-          />
+          <div className="flex-1 overflow-hidden px-6">
+            <ServiceForm
+              initialData={
+                editingService
+                  ? {
+                      name: editingService.name,
+                      description: editingService.description,
+                      fields: editingService.fields,
+                    }
+                  : undefined
+              }
+              onSubmit={handleCreate}
+              onCancel={handleCancel}
+              mode="create"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -204,22 +214,24 @@ export default function ServicesPage() {
         open={dialogMode === 'edit'}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Service</DialogTitle>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+            <DialogTitle className="text-2xl">Edit Service</DialogTitle>
           </DialogHeader>
-          {editingService && (
-            <ServiceForm
-              initialData={{
-                name: editingService.name,
-                description: editingService.description,
-                fields: editingService.fields,
-              }}
-              onSubmit={handleEdit}
-              onCancel={handleCancel}
-              mode="edit"
-            />
-          )}
+          <div className="flex-1 overflow-hidden px-6">
+            {editingService && (
+              <ServiceForm
+                initialData={{
+                  name: editingService.name,
+                  description: editingService.description,
+                  fields: editingService.fields,
+                }}
+                onSubmit={handleEdit}
+                onCancel={handleCancel}
+                mode="edit"
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>

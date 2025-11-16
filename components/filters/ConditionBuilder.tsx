@@ -1,10 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { FilterCondition, FilterOperator, ServiceField } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -12,7 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, GripVertical, ChevronDown } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface ConditionBuilderProps {
   conditions: FilterCondition[];
@@ -52,25 +57,9 @@ export function ConditionBuilder({
   serviceFields,
   onChange,
 }: ConditionBuilderProps) {
-  // Add the special service registration field to the available fields
-  const allFields = [
-    {
-      name: SERVICE_REGISTRATION_FIELD,
-      type: 'boolean' as const,
-      required: false,
-      description: 'Whether the account is registered on this service',
-    },
-    ...serviceFields,
-  ];
-
-  const addCondition = () => {
-    const newCondition: FilterCondition = {
-      field: allFields[0]?.name || '',
-      operator: 'equals',
-      value: '',
-    };
-    onChange([...conditions, newCondition]);
-  };
+  const [expandedConditions, setExpandedConditions] = useState<Set<number>>(
+    new Set()
+  );
 
   const updateCondition = (
     index: number,
@@ -83,6 +72,19 @@ export function ConditionBuilder({
 
   const removeCondition = (index: number) => {
     onChange(conditions.filter((_, i) => i !== index));
+    const newExpanded = new Set(expandedConditions);
+    newExpanded.delete(index);
+    setExpandedConditions(newExpanded);
+  };
+
+  const toggleCondition = (index: number) => {
+    const newExpanded = new Set(expandedConditions);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedConditions(newExpanded);
   };
 
   const getFieldType = (fieldName: string): string => {
@@ -162,121 +164,165 @@ export function ConditionBuilder({
   };
 
   return (
-    <section className="space-y-4">
-      <header className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Filter Conditions</h3>
-        <Button onClick={addCondition} size="sm" type="button">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Condition
-        </Button>
-      </header>
-
+    <div className="space-y-3 pt-2">
       {conditions.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            No conditions added yet. Click &ldquo;Add Condition&rdquo; to create
-            your first filter rule.
-          </CardContent>
-        </Card>
+        <div className="border-2 border-dashed rounded-lg p-8 text-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <Plus className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">No conditions added yet</p>
+            <p className="text-sm text-muted-foreground">
+              Click &quot;Add Condition&quot; to create your first filter rule
+            </p>
+          </div>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {conditions.map((condition, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    Condition {index + 1}
-                  </CardTitle>
+            <Collapsible
+              key={index}
+              open={expandedConditions.has(index)}
+              onOpenChange={() => toggleCondition(index)}
+            >
+              <div
+                className={`border rounded-lg bg-card transition-all ${
+                  expandedConditions.has(index) ? 'shadow-sm' : ''
+                }`}
+              >
+                {/* Compact Header */}
+                <div className="flex items-center gap-2 p-3">
+                  <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors">
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+
+                  <CollapsibleTrigger className="flex items-center gap-2 flex-1 text-left hover:text-foreground transition-colors">
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                        expandedConditions.has(index)
+                          ? 'rotate-0'
+                          : '-rotate-90'
+                      }`}
+                    />
+                    <span className="font-mono font-medium text-sm">
+                      {condition.field || (
+                        <span className="text-muted-foreground italic">
+                          No field
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted border ml-1">
+                      {condition.operator}
+                    </span>
+                    {condition.value !== undefined &&
+                      condition.value !== '' && (
+                        <span className="text-xs text-foreground px-2 py-0.5 rounded bg-accent border ml-1 font-mono">
+                          = {String(condition.value)}
+                        </span>
+                      )}
+                  </CollapsibleTrigger>
+
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeCondition(index)}
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCondition(index)}
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title="Remove condition"
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`condition-field-${index}`}>
-                      Field <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={condition.field}
-                      onValueChange={(value) =>
-                        updateCondition(index, { field: value })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select field..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem
-                          key={SERVICE_REGISTRATION_FIELD}
-                          value={SERVICE_REGISTRATION_FIELD}
+
+                {/* Expandable Content */}
+                <CollapsibleContent>
+                  <div className="px-3 pb-3 pt-1 space-y-4 border-t">
+                    <div className="grid grid-cols-1 gap-3 pt-3 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`condition-field-${index}`}
+                          className="text-xs font-medium"
                         >
-                          <span className="font-semibold">
-                            Service Registration Status
-                          </span>
-                        </SelectItem>
-                        {serviceFields.map((field) => (
-                          <SelectItem key={field.name} value={field.name}>
-                            {field.name} ({field.type})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                          Field <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={condition.field}
+                          onValueChange={(value) =>
+                            updateCondition(index, { field: value })
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Select field..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem
+                              key={SERVICE_REGISTRATION_FIELD}
+                              value={SERVICE_REGISTRATION_FIELD}
+                            >
+                              <span className="font-semibold">
+                                Service Registration Status
+                              </span>
+                            </SelectItem>
+                            {serviceFields.map((field) => (
+                              <SelectItem key={field.name} value={field.name}>
+                                {field.name} ({field.type})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`condition-operator-${index}`}>
-                      Operator <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={condition.operator}
-                      onValueChange={(value) =>
-                        updateCondition(index, {
-                          operator: value as FilterOperator,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select operator..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAvailableOperators(condition.field).map((op) => (
-                          <SelectItem key={op.value} value={op.value}>
-                            {op.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`condition-operator-${index}`}
+                          className="text-xs font-medium"
+                        >
+                          Operator <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={condition.operator}
+                          onValueChange={(value) =>
+                            updateCondition(index, {
+                              operator: value as FilterOperator,
+                            })
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Select operator..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getAvailableOperators(condition.field).map((op) => (
+                              <SelectItem key={op.value} value={op.value}>
+                                {op.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`condition-value-${index}`}>Value</Label>
-                    {renderValueInput(condition, index)}
-                  </div>
-                </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`condition-value-${index}`}
+                          className="text-xs font-medium"
+                        >
+                          Value
+                        </Label>
+                        {renderValueInput(condition, index)}
+                      </div>
+                    </div>
 
-                {index < conditions.length - 1 && (
-                  <div className="text-center text-sm font-semibold text-muted-foreground">
-                    AND
+                    {index < conditions.length - 1 && (
+                      <div className="text-center text-sm font-semibold text-muted-foreground pt-3">
+                        AND
+                      </div>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
           ))}
         </div>
       )}
-
-      {conditions.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          All conditions must be met (AND logic) for the filter to match.
-        </p>
-      )}
-    </section>
+    </div>
   );
 }

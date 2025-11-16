@@ -121,3 +121,14 @@ export function clearFetchCache(): void {
 export function clearCacheEntry(url: string): void {
   fetchCache.delete(url);
 }
+
+// Invalidate cache by pattern (e.g., '/api/services' will clear '/api/services' and related)
+export function invalidateCacheByPattern(pattern: string): void {
+  const keysToDelete: string[] = [];
+  fetchCache.forEach((_, key) => {
+    if (key.includes(pattern)) {
+      keysToDelete.push(key);
+    }
+  });
+  keysToDelete.forEach(key => fetchCache.delete(key));
+}

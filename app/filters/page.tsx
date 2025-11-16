@@ -15,6 +15,7 @@ import {
 import { Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
 
 type DialogMode = 'create' | 'edit' | null;
 
@@ -53,6 +54,7 @@ export default function FiltersPage() {
   const [editingFilter, setEditingFilter] = useState<FilterWithCategory | null>(
     null
   );
+  const { invalidateFilters, invalidateFilterCategories } = useCacheInvalidation();
 
   const fetchData = async () => {
     try {
@@ -99,6 +101,7 @@ export default function FiltersPage() {
       throw new Error(error.error || 'Failed to create filter');
     }
 
+    invalidateFilters();
     await fetchData();
     setDialogMode(null);
     toast.success('Filter created successfully');
@@ -124,6 +127,7 @@ export default function FiltersPage() {
       throw new Error(error.error || 'Failed to update filter');
     }
 
+    invalidateFilters();
     await fetchData();
     setDialogMode(null);
     setEditingFilter(null);
@@ -141,6 +145,7 @@ export default function FiltersPage() {
         throw new Error(error.error || 'Failed to delete filter');
       }
 
+      invalidateFilters();
       await fetchData();
       toast.success('Filter deleted successfully');
     } catch (err) {
@@ -202,6 +207,7 @@ export default function FiltersPage() {
       }
 
       const result = await response.json();
+      invalidateFilterCategories();
       toast.success(result.message);
       await fetchData();
     } catch (err) {
@@ -258,16 +264,18 @@ export default function FiltersPage() {
         open={dialogMode === 'create'}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create Filter</DialogTitle>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+            <DialogTitle className="text-2xl">Create Filter</DialogTitle>
           </DialogHeader>
-          <FilterForm
-            categories={categories}
-            onSubmit={handleCreate}
-            onCancel={handleCancel}
-            mode="create"
-          />
+          <div className="flex-1 overflow-hidden px-6">
+            <FilterForm
+              categories={categories}
+              onSubmit={handleCreate}
+              onCancel={handleCancel}
+              mode="create"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -276,25 +284,27 @@ export default function FiltersPage() {
         open={dialogMode === 'edit'}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Filter</DialogTitle>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+            <DialogTitle className="text-2xl">Edit Filter</DialogTitle>
           </DialogHeader>
-          {editingFilter && (
-            <FilterForm
-              initialData={{
-                name: editingFilter.name,
-                categoryId: editingFilter.categoryId,
-                conditions: editingFilter.conditions,
-                showAsTab: editingFilter.showAsTab,
-                tabOrder: editingFilter.tabOrder,
-              }}
-              categories={categories}
-              onSubmit={handleEdit}
-              onCancel={handleCancel}
-              mode="edit"
-            />
-          )}
+          <div className="flex-1 overflow-hidden px-6">
+            {editingFilter && (
+              <FilterForm
+                initialData={{
+                  name: editingFilter.name,
+                  categoryId: editingFilter.categoryId,
+                  conditions: editingFilter.conditions,
+                  showAsTab: editingFilter.showAsTab,
+                  tabOrder: editingFilter.tabOrder,
+                }}
+                categories={categories}
+                onSubmit={handleEdit}
+                onCancel={handleCancel}
+                mode="edit"
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>

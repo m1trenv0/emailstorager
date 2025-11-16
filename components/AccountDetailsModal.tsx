@@ -29,6 +29,7 @@ import { useConfirm } from '@/lib/hooks/useConfirm';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -71,27 +72,17 @@ export function AccountDetailsModal({
 }: AccountDetailsModalProps) {
   const [copied, setCopied] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
-  const [availableServices, setAvailableServices] = useState<Service[]>([]);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
   const [isAccountServicesOpen, setIsAccountServicesOpen] = useState(false);
   const [editingService, setEditingService] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch('/api/services');
-        if (response.ok) {
-          const servicesData = await response.json();
-          setAvailableServices(servicesData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch services:', error);
-      }
-    };
+  const { data: availableServices } = useFetch<Service[]>('/api/services', {
+    cache: true,
+    cacheTTL: 30000,
+  });
 
-    fetchServices();
-  }, []);
+  const services = availableServices || [];
 
   if (!account) return null;
 
@@ -197,7 +188,8 @@ export function AccountDetailsModal({
   };
 
   const renderAccountServiceEditor = (serviceName: string) => {
-    const service = availableServices.find((s) => s.name === serviceName);
+    if (services.length === 0) return null;
+    const service = services.find((s) => s.name === serviceName);
     if (!service) return null;
 
     const accountStatus =
@@ -457,7 +449,7 @@ export function AccountDetailsModal({
         isOpen={isAddServiceDialogOpen}
         onClose={() => setIsAddServiceDialogOpen(false)}
         onSubmit={handleAddServiceToAccount}
-        availableServices={availableServices}
+        availableServices={services}
         existingServices={accountServices}
       />
     </Dialog>

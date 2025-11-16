@@ -36,6 +36,7 @@ import { ServiceTab } from '@/components/tabs/ServiceTab';
 import { FilterTab } from '@/components/tabs/FilterTab';
 import { toast } from 'sonner';
 import { useFetch } from '@/lib/hooks/useFetch';
+import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
 
 export default function Home() {
   const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
@@ -55,6 +56,8 @@ export default function Home() {
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] =
     useState<AccountWithAliases | null>(null);
+
+  const { invalidateServices, invalidateFilters } = useCacheInvalidation();
 
   // Hooks for operations
   const addAccountMutation = useAddAccount();

@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FieldBuilder } from './FieldBuilder';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, Plus } from 'lucide-react';
 
 interface ServiceFormProps {
   initialData?: {
@@ -100,82 +99,108 @@ export function ServiceForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-6">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-full">
+      <div className="flex-1 overflow-y-auto px-1 space-y-4 min-h-0">
+        {/* Basic Fields */}
+        <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="service-name" className="text-sm font-semibold">
-              Service Name <span className="text-destructive font-bold">*</span>
+            <Label htmlFor="service-name" className="text-sm font-medium">
+              Service Name
+              <span className="text-red-500 ml-1">*</span>
+              {mode === 'edit' && (
+                <span className="text-xs text-muted-foreground ml-2 font-normal">
+                  (cannot be changed)
+                </span>
+              )}
             </Label>
             <Input
               id="service-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., AliExpress, Augment"
+              placeholder="e.g., Social Media, Banking, E-commerce"
               disabled={mode === 'edit'}
-              className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              className={mode === 'edit' ? 'bg-muted cursor-not-allowed' : ''}
             />
-            {mode === 'edit' && (
-              <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                💡 Service name cannot be changed after creation
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
             <Label
               htmlFor="service-description"
-              className="text-sm font-semibold"
+              className="text-sm font-medium"
             >
               Description
+              <span className="text-muted-foreground ml-1 font-normal text-xs">
+                (optional)
+              </span>
             </Label>
             <Textarea
               id="service-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description of this service"
-              rows={3}
-              className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              placeholder="Describe the purpose of this service..."
+              rows={2}
+              className="resize-none"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Service Fields</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Define the fields that will be available for this service
-          </p>
-        </CardHeader>
-        <CardContent className="pt-6">
+        <div className="border-t my-4" />
+
+        {/* Service Fields */}
+        <div className="space-y-3 pb-4">
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-base font-semibold text-foreground">
+              Service Fields
+            </h3>
+            <Button
+              onClick={() => {
+                const newField: ServiceField = {
+                  name: '',
+                  type: 'string',
+                  required: false,
+                };
+                setFields([...fields, newField]);
+              }}
+              size="sm"
+              type="button"
+              variant="outline"
+              className="flex-shrink-0"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Field
+            </Button>
+          </div>
+
           <FieldBuilder fields={fields} onChange={setFields} />
-        </CardContent>
-      </Card>
+        </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
 
-      <footer className="flex justify-end gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 -mx-4 -mb-4 border-t">
+      <div className="flex-shrink-0 flex justify-end gap-3 pt-6 border-t my-3 bg-background">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
+          disabled={isSubmitting}
           className="min-w-[100px]"
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="min-w-[150px]">
+        <Button
+          type="submit"
+          disabled={isSubmitting || !name.trim()}
+          className="min-w-[140px]"
+        >
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {mode === 'create' ? 'Create Service' : 'Update Service'}
         </Button>
-      </footer>
+      </div>
     </form>
   );
 }

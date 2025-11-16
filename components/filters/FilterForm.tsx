@@ -5,7 +5,6 @@ import { FilterCondition, ServiceField } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -16,7 +15,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ConditionBuilder } from './ConditionBuilder';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, Plus } from 'lucide-react';
 
 interface FilterFormProps {
   initialData?: {
@@ -137,15 +136,14 @@ export function FilterForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-full">
+      <div className="flex-1 overflow-y-auto px-1 space-y-4 min-h-0">
+        {/* Basic Fields */}
+        <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="filter-name">
-              Filter Name <span className="text-destructive">*</span>
+            <Label htmlFor="filter-name" className="text-sm font-medium">
+              Filter Name
+              <span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
               id="filter-name"
@@ -156,15 +154,25 @@ export function FilterForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="filter-category">
-              Category (Service) <span className="text-destructive">*</span>
+            <Label htmlFor="filter-category" className="text-sm font-medium">
+              Category (Service)
+              <span className="text-red-500 ml-1">*</span>
+              {mode === 'edit' && (
+                <span className="text-xs text-muted-foreground ml-2 font-normal">
+                  (cannot be changed)
+                </span>
+              )}
             </Label>
             <Select
               value={categoryId}
               onValueChange={handleCategoryChange}
               disabled={mode === 'edit'}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger
+                className={
+                  mode === 'edit' ? 'bg-muted cursor-not-allowed' : ''
+                }
+              >
                 <SelectValue placeholder="Select a category..." />
               </SelectTrigger>
               <SelectContent>
@@ -175,75 +183,111 @@ export function FilterForm({
                 ))}
               </SelectContent>
             </Select>
-            {mode === 'edit' && (
-              <p className="text-xs text-muted-foreground">
-                Category cannot be changed after creation
-              </p>
-            )}
           </div>
 
-          <div className="space-y-4 border-t pt-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="show-as-tab"
-                checked={showAsTab}
-                onCheckedChange={(checked) => setShowAsTab(checked as boolean)}
-              />
-              <Label htmlFor="show-as-tab" className="cursor-pointer">
-                Show this filter as a tab on the main page
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="show-as-tab"
+              checked={showAsTab}
+              onCheckedChange={(checked) =>
+                setShowAsTab(checked as boolean)
+              }
+            />
+            <Label htmlFor="show-as-tab" className="cursor-pointer text-sm">
+              Show as tab
+            </Label>
+          </div>
+
+          {showAsTab && (
+            <div className="space-y-2 pl-6">
+              <Label htmlFor="tab-order" className="text-sm font-medium">
+                Tab Order
+                <span className="text-xs text-muted-foreground ml-2 font-normal">
+                  (lower = first)
+                </span>
               </Label>
+              <Input
+                id="tab-order"
+                type="number"
+                min="0"
+                value={tabOrder}
+                onChange={(e) => setTabOrder(parseInt(e.target.value) || 0)}
+                placeholder="0"
+                className="max-w-[120px]"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="border-t my-4" />
+
+        {/* Filter Conditions */}
+        {serviceFields.length > 0 && (
+          <div className="space-y-3 pb-4">
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-base font-semibold text-foreground">
+                Filter Conditions
+              </h3>
+              <Button
+                onClick={() => {
+                  const newCondition: FilterCondition = {
+                    field: serviceFields[0]?.name || '',
+                    operator: 'equals',
+                    value: '',
+                  };
+                  setConditions([...conditions, newCondition]);
+                }}
+                size="sm"
+                type="button"
+                variant="outline"
+                className="flex-shrink-0"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Condition
+              </Button>
             </div>
 
-            {showAsTab && (
-              <div className="space-y-2 pl-6">
-                <Label htmlFor="tab-order">
-                  Tab Order (0 = hidden, higher numbers appear later)
-                </Label>
-                <Input
-                  id="tab-order"
-                  type="number"
-                  min="0"
-                  value={tabOrder}
-                  onChange={(e) => setTabOrder(parseInt(e.target.value) || 0)}
-                  placeholder="e.g., 1, 2, 3..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  Use this to control the order of filter tabs. Lower numbers
-                  appear first.
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {serviceFields.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
             <ConditionBuilder
               conditions={conditions}
               serviceFields={serviceFields}
               onChange={setConditions}
             />
-          </CardContent>
-        </Card>
-      )}
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+            {conditions.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                All conditions must be met (AND logic) for the filter to match.
+              </p>
+            )}
+          </div>
+        )}
 
-      <footer className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
+
+      <div className="flex-shrink-0 flex justify-end gap-3 pt-6 border-t my-3 bg-background">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="min-w-[100px]"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting || !name.trim()}
+          className="min-w-[140px]"
+        >
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {mode === 'create' ? 'Create Filter' : 'Update Filter'}
         </Button>
-      </footer>
+      </div>
     </form>
   );
 }
