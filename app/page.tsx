@@ -50,8 +50,13 @@ export default function Home() {
   const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] =
     useState(false);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] =
-    useState<AccountWithAliases | null>(null);
+  const [selectedAccountIdForModal, setSelectedAccountIdForModal] =
+    useState<string | null>(null);
+
+  // Get selected account from store (always fresh data)
+  const selectedAccountForModal = selectedAccountIdForModal
+    ? accounts.find(acc => acc.id === selectedAccountIdForModal) || null
+    : null;
 
   // Hooks for operations
   const addAccountMutation = useAddAccount();
@@ -116,12 +121,9 @@ export default function Home() {
   };
 
   const handleSelectAccount = (accountId: string) => {
-    const account = accounts.find((acc) => acc.id === accountId);
-    if (account) {
-      setSelectedAccount(account);
-      setIsAccountDetailsModalOpen(true);
-      selectAccountMutation(accountId);
-    }
+    setSelectedAccountIdForModal(accountId);
+    setIsAccountDetailsModalOpen(true);
+    selectAccountMutation(accountId);
   };
 
   const handleAddAlias = (accountId: string) => {
@@ -350,9 +352,9 @@ export default function Home() {
         isOpen={isAccountDetailsModalOpen}
         onClose={() => {
           setIsAccountDetailsModalOpen(false);
-          setSelectedAccount(null);
+          setSelectedAccountIdForModal(null);
         }}
-        account={selectedAccount}
+        account={selectedAccountForModal}
         onAddAlias={handleAddAlias}
         onDelete={handleDeleteAccount}
         onServiceFieldUpdate={handleUpdateAliasServiceField}

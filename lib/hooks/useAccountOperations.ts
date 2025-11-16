@@ -117,7 +117,7 @@ export const useUpdateAccountServiceField = () => {
 };
 
 export const useAddServiceToAccount = () => {
-  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+  const addServiceToAccount = useAccountStore((state) => state.addServiceToAccount);
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
@@ -135,19 +135,31 @@ export const useAddServiceToAccount = () => {
           throw new Error(error.error || 'Failed to add service');
         }
 
-        // Refresh accounts to get updated account
-        await fetchAccounts();
+        const updatedAccount = await response.json();
+        console.log('[useAddServiceToAccount] Updated account:', updatedAccount);
+        console.log('[useAddServiceToAccount] Service name:', serviceName);
+        console.log('[useAddServiceToAccount] Status:', updatedAccount.status);
+
+        // Update store with the service fields from the response
+        const serviceFields = updatedAccount.status[serviceName];
+        console.log('[useAddServiceToAccount] Service fields:', serviceFields);
+
+        if (serviceFields) {
+          addServiceToAccount(accountId, serviceName, serviceFields);
+        } else {
+          console.error('[useAddServiceToAccount] No service fields found for', serviceName);
+        }
       } catch (error) {
         console.error('Error adding service to account:', error);
         throw error;
       }
     },
-    [fetchAccounts]
+    [addServiceToAccount]
   );
 };
 
 export const useRemoveServiceFromAccount = () => {
-  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+  const removeServiceFromAccount = useAccountStore((state) => state.removeServiceFromAccount);
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
@@ -163,13 +175,13 @@ export const useRemoveServiceFromAccount = () => {
           throw new Error('Failed to remove service');
         }
 
-        // Refresh accounts to get updated account
-        await fetchAccounts();
+        // Update store immediately
+        removeServiceFromAccount(accountId, serviceName);
       } catch (error) {
         console.error('Error removing service from account:', error);
         throw error;
       }
     },
-    [fetchAccounts]
+    [removeServiceFromAccount]
   );
 };

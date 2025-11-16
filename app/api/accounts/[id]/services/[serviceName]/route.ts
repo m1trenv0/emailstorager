@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/middleware';
 import { ServiceFieldValue } from '@/lib/types';
@@ -54,6 +55,9 @@ export async function DELETE(
       data: { status: updatedStatus },
       include: { aliases: true },
     });
+
+    // Revalidate the main page to show service removal
+    revalidatePath('/');
 
     return NextResponse.json(updatedAccount, { status: 200 });
   } catch (error) {

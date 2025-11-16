@@ -27,6 +27,8 @@ interface AccountActions {
     fieldName: string,
     value: ServiceFieldValue
   ) => void;
+  addServiceToAccount: (accountId: string, serviceName: string, initialFields: Record<string, ServiceFieldValue>) => void;
+  removeServiceFromAccount: (accountId: string, serviceName: string) => void;
 
   // Alias actions
   addAlias: (accountId: string, alias: AliasWithStatus) => void;
@@ -38,6 +40,8 @@ interface AccountActions {
   ) => void;
   updateAliasComment: (aliasId: string, comment: string) => void;
   deleteAlias: (aliasId: string) => void;
+  addServiceToAlias: (aliasId: string, serviceName: string, initialFields: Record<string, ServiceFieldValue>) => void;
+  removeServiceFromAlias: (aliasId: string, serviceName: string) => void;
 
   // Loading and error states
   setLoading: (loading: boolean) => void;
@@ -100,6 +104,36 @@ export const useAccountStore = create<AccountStore>()(
             ),
           })),
 
+        addServiceToAccount: (accountId, serviceName, initialFields) =>
+          set((state) => ({
+            accounts: state.accounts.map((account) =>
+              account.id === accountId
+                ? {
+                    ...account,
+                    status: {
+                      ...account.status,
+                      [serviceName]: initialFields,
+                    },
+                  }
+                : account
+            ),
+          })),
+
+        removeServiceFromAccount: (accountId, serviceName) =>
+          set((state) => ({
+            accounts: state.accounts.map((account) => {
+              if (account.id === accountId) {
+                const newStatus = { ...account.status };
+                delete newStatus[serviceName];
+                return {
+                  ...account,
+                  status: newStatus,
+                };
+              }
+              return account;
+            }),
+          })),
+
         // Alias actions
         addAlias: (accountId, alias) =>
           set((state) => ({
@@ -149,6 +183,42 @@ export const useAccountStore = create<AccountStore>()(
             accounts: state.accounts.map((account) => ({
               ...account,
               aliases: account.aliases.filter((alias) => alias.id !== aliasId),
+            })),
+          })),
+
+        addServiceToAlias: (aliasId, serviceName, initialFields) =>
+          set((state) => ({
+            accounts: state.accounts.map((account) => ({
+              ...account,
+              aliases: account.aliases.map((alias) =>
+                alias.id === aliasId
+                  ? {
+                      ...alias,
+                      status: {
+                        ...alias.status,
+                        [serviceName]: initialFields,
+                      },
+                    }
+                  : alias
+              ),
+            })),
+          })),
+
+        removeServiceFromAlias: (aliasId, serviceName) =>
+          set((state) => ({
+            accounts: state.accounts.map((account) => ({
+              ...account,
+              aliases: account.aliases.map((alias) => {
+                if (alias.id === aliasId) {
+                  const newStatus = { ...alias.status };
+                  delete newStatus[serviceName];
+                  return {
+                    ...alias,
+                    status: newStatus,
+                  };
+                }
+                return alias;
+              }),
             })),
           })),
 

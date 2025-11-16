@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
@@ -123,6 +124,9 @@ export async function PATCH(
       data: updateData,
     });
 
+    // Revalidate the main page to show updated alias
+    revalidatePath('/');
+
     return NextResponse.json(updatedAlias, { status: 200 });
   } catch (error) {
     console.error('Error updating alias:', error);
@@ -155,6 +159,9 @@ export async function DELETE(
     await prisma.alias.delete({
       where: { id: (await params).id },
     });
+
+    // Revalidate the main page to remove deleted alias
+    revalidatePath('/');
 
     return NextResponse.json(
       { message: 'Alias deleted successfully' },

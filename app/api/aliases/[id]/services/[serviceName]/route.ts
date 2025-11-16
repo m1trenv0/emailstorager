@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/middleware';
 import { ServiceFieldValue } from '@/lib/types';
@@ -49,6 +50,9 @@ export async function DELETE(
       where: { id: aliasId },
       data: { status: updatedStatus },
     });
+
+    // Revalidate the main page to show service removal
+    revalidatePath('/');
 
     return NextResponse.json(updatedAlias, { status: 200 });
   } catch (error) {

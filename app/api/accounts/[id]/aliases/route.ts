@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
@@ -168,6 +169,9 @@ export async function POST(
         },
       }),
     ]);
+
+    // Revalidate the main page to show new alias
+    revalidatePath('/');
 
     return NextResponse.json(alias, { status: 201 });
   } catch (error) {

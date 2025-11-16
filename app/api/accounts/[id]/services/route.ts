@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
@@ -97,6 +98,9 @@ export async function POST(
       data: { status: updatedStatus },
       include: { aliases: true },
     });
+
+    // Revalidate the main page to show new service
+    revalidatePath('/');
 
     return NextResponse.json(updatedAccount, { status: 200 });
   } catch (error) {

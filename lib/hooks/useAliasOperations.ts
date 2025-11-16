@@ -111,7 +111,7 @@ export const useUpdateAliasComment = () => {
 };
 
 export const useAddServiceToAlias = () => {
-  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+  const addServiceToAlias = useAccountStore((state) => state.addServiceToAlias);
 
   return useCallback(
     async (aliasId: string, serviceName: string) => {
@@ -129,19 +129,30 @@ export const useAddServiceToAlias = () => {
           throw new Error(error.error || 'Failed to add service');
         }
 
-        // Refresh accounts to get updated alias
-        await fetchAccounts();
+        const updatedAlias = await response.json();
+        console.log('[useAddServiceToAlias] Updated alias:', updatedAlias);
+        console.log('[useAddServiceToAlias] Service name:', serviceName);
+
+        // Update store with the service fields from the response
+        const serviceFields = updatedAlias.status[serviceName];
+        console.log('[useAddServiceToAlias] Service fields:', serviceFields);
+
+        if (serviceFields) {
+          addServiceToAlias(aliasId, serviceName, serviceFields);
+        } else {
+          console.error('[useAddServiceToAlias] No service fields found for', serviceName);
+        }
       } catch (error) {
         console.error('Error adding service to alias:', error);
         throw error;
       }
     },
-    [fetchAccounts]
+    [addServiceToAlias]
   );
 };
 
 export const useRemoveServiceFromAlias = () => {
-  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+  const removeServiceFromAlias = useAccountStore((state) => state.removeServiceFromAlias);
 
   return useCallback(
     async (aliasId: string, serviceName: string) => {
@@ -157,13 +168,13 @@ export const useRemoveServiceFromAlias = () => {
           throw new Error('Failed to remove service');
         }
 
-        // Refresh accounts to get updated alias
-        await fetchAccounts();
+        // Update store immediately
+        removeServiceFromAlias(aliasId, serviceName);
       } catch (error) {
         console.error('Error removing service from alias:', error);
         throw error;
       }
     },
-    [fetchAccounts]
+    [removeServiceFromAlias]
   );
 };
