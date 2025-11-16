@@ -137,30 +137,65 @@ export async function updateAllTrackingForService(
   }
 
   try {
-    // Find all aliases with the service and TrackNumber
+    // Find all aliases and accounts with the service and TrackNumber
     const aliases = await prisma.alias.findMany();
+    const accounts = await prisma.account.findMany();
 
     // Extract track numbers that need updating
     const trackNumbersToUpdate: Array<{
-      aliasId: string;
+      id: string;
+      type: 'alias' | 'account';
       trackNumber: string;
     }> = [];
 
+    // Process aliases
     for (const alias of aliases) {
       const status = alias.status as any;
       const serviceData = status[serviceName];
 
-      if (serviceData?.TrackNumber && !serviceData.isDelivered) {
-        // Check if cache needs update
-        const cached = await prisma.trackingCache.findUnique({
-          where: { trackNumber: serviceData.TrackNumber },
-        });
+      if (serviceData?.TrackNumber) {
+        // Always check for updates if not delivered OR if there's a tracking error (means it was previously not found)
+        const needsUpdate = !serviceData.isDelivered || serviceData.trackingError;
 
-        if (!cached || isCacheExpired(cached.lastUpdated)) {
-          trackNumbersToUpdate.push({
-            aliasId: alias.id,
-            trackNumber: serviceData.TrackNumber,
+        if (needsUpdate) {
+          // Check if cache needs update
+          const cached = await prisma.trackingCache.findUnique({
+            where: { trackNumber: serviceData.TrackNumber },
           });
+
+          if (!cached || isCacheExpired(cached.lastUpdated)) {
+            trackNumbersToUpdate.push({
+              id: alias.id,
+              type: 'alias',
+              trackNumber: serviceData.TrackNumber,
+            });
+          }
+        }
+      }
+    }
+
+    // Process accounts
+    for (const account of accounts) {
+      const status = account.status as any;
+      const serviceData = status[serviceName];
+
+      if (serviceData?.TrackNumber) {
+        // Always check for updates if not delivered OR if there's a tracking error (means it was previously not found)
+        const needsUpdate = !serviceData.isDelivered || serviceData.trackingError;
+
+        if (needsUpdate) {
+          // Check if cache needs update
+          const cached = await prisma.trackingCache.findUnique({
+            where: { trackNumber: serviceData.TrackNumber },
+          });
+
+          if (!cached || isCacheExpired(cached.lastUpdated)) {
+            trackNumbersToUpdate.push({
+              id: account.id,
+              type: 'account',
+              trackNumber: serviceData.TrackNumber,
+            });
+          }
         }
       }
     }
@@ -176,8 +211,8 @@ export async function updateAllTrackingForService(
     let updated = 0;
     let failed = 0;
 
-    // Update each alias
-    for (const { aliasId, trackNumber } of trackNumbersToUpdate) {
+    // Update each alias or account
+    for (const { id, type, trackNumber } of trackNumbersToUpdate) {
       const trackingInfo = trackingInfoMap.get(trackNumber);
 
       if (!trackingInfo) {
@@ -201,27 +236,66 @@ export async function updateAllTrackingForService(
         },
       });
 
-      // Update alias
-      const alias = await prisma.alias.findUnique({
-        where: { id: aliasId },
-      });
+      // Update alias or account
+      if (type === 'alias') {
+        const alias = await prisma.alias.findUnique({
+          where: { id },
+        });
 
-      if (alias) {
-        const status = alias.status as any;
-        if (status[serviceName]) {
-          status[serviceName] = {
-            ...status[serviceName],
-            isDelivered: trackingInfo.isDelivered,
-            trackingStatus: trackingInfo.status,
-            lastTrackingUpdate: trackingInfo.lastUpdate.toISOString(),
-          };
+        if (alias) {
+          const status = alias.status as any;
+          if (status[serviceName]) {
+            const updateData: any = {
+              ...status[serviceName],
+              isDelivered: trackingInfo.isDelivered,
+              trackingStatus: trackingInfo.status,
+              lastTrackingUpdate: trackingInfo.lastUpdate.toISOString(),
+            };
 
-          await prisma.alias.update({
-            where: { id: aliasId },
-            data: { status },
-          });
+            // Clear tracking error if we now have valid data
+            if (status[serviceName].trackingError) {
+              delete updateData.trackingError;
+            }
 
-          updated++;
+            status[serviceName] = updateData;
+
+            await prisma.alias.update({
+              where: { id },
+              data: { status },
+            });
+
+            updated++;
+          }
+        }
+      } else {
+        const account = await prisma.account.findUnique({
+          where: { id },
+        });
+
+        if (account) {
+          const status = account.status as any;
+          if (status[serviceName]) {
+            const updateData: any = {
+              ...status[serviceName],
+              isDelivered: trackingInfo.isDelivered,
+              trackingStatus: trackingInfo.status,
+              lastTrackingUpdate: trackingInfo.lastUpdate.toISOString(),
+            };
+
+            // Clear tracking error if we now have valid data
+            if (status[serviceName].trackingError) {
+              delete updateData.trackingError;
+            }
+
+            status[serviceName] = updateData;
+
+            await prisma.account.update({
+              where: { id },
+              data: { status },
+            });
+
+            updated++;
+          }
         }
       }
     }
@@ -235,6 +309,7 @@ export async function updateAllTrackingForService(
 
 /**
  * Check if any tracking data needs updating on user login
+ * This includes both expired cache and new packages without cache
  */
 export async function checkAndUpdateTrackingOnLogin(): Promise<void> {
   const apiKey = process.env.TRACK17_API_KEY;
@@ -244,26 +319,9 @@ export async function checkAndUpdateTrackingOnLogin(): Promise<void> {
   }
 
   try {
-    // Find tracking cache entries that are expired
-    const expiredEntries = await prisma.trackingCache.findMany({
-      where: {
-        isDelivered: false, // Only update non-delivered packages
-      },
-    });
+    // Run full tracking update in background on login
+    console.log('Running full tracking update on login');
 
-    const needsUpdate = expiredEntries.filter((entry) =>
-      isCacheExpired(entry.lastUpdated)
-    );
-
-    if (needsUpdate.length === 0) {
-      return;
-    }
-
-    console.log(
-      `Updating ${needsUpdate.length} expired tracking entries on login`
-    );
-
-    // Update in background
     updateAllTrackingForService('AliExpress').catch((error) =>
       console.error('Background tracking update failed:', error)
     );
