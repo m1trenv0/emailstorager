@@ -6,16 +6,22 @@ import { ServiceList } from '@/components/services/ServiceList';
 import { ServiceForm } from '@/components/services/ServiceForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-type ViewMode = 'list' | 'create' | 'edit';
+type DialogMode = 'create' | 'edit' | null;
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceWithCategories[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [editingService, setEditingService] =
     useState<ServiceWithCategories | null>(null);
 
@@ -54,7 +60,8 @@ export default function ServicesPage() {
     }
 
     await fetchServices();
-    setViewMode('list');
+    setDialogMode(null);
+    toast.success('Service created successfully');
   };
 
   const handleEdit = async (data: {
@@ -76,8 +83,9 @@ export default function ServicesPage() {
     }
 
     await fetchServices();
-    setViewMode('list');
+    setDialogMode(null);
     setEditingService(null);
+    toast.success('Service updated successfully');
   };
 
   const handleDelete = async (serviceId: string) => {
@@ -102,7 +110,7 @@ export default function ServicesPage() {
 
   const handleEditClick = (service: ServiceWithCategories) => {
     setEditingService(service);
-    setViewMode('edit');
+    setDialogMode('edit');
   };
 
   const handleClone = (service: ServiceWithCategories) => {
@@ -111,12 +119,16 @@ export default function ServicesPage() {
       name: `${service.name} (Copy)`,
       id: '',
     } as ServiceWithCategories);
-    setViewMode('create');
+    setDialogMode('create');
   };
 
   const handleCancel = () => {
-    setViewMode('list');
+    setDialogMode(null);
     setEditingService(null);
+  };
+
+  const handleOpenCreateDialog = () => {
+    setDialogMode('create');
   };
 
   if (isLoading) {
@@ -148,55 +160,70 @@ export default function ServicesPage() {
   return (
     <>
       <div className="mb-4 sm:mb-6 flex justify-end">
-        {viewMode === 'list' && (
-          <Button
-            onClick={() => setViewMode('create')}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Service
-          </Button>
-        )}
+        <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" />
+          Create Service
+        </Button>
       </div>
 
-      {viewMode === 'list' && (
-        <ServiceList
-          services={services}
-          onEdit={handleEditClick}
-          onDelete={handleDelete}
-          onClone={handleClone}
-        />
-      )}
+      <ServiceList
+        services={services}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+        onClone={handleClone}
+      />
 
-      {viewMode === 'create' && (
-        <ServiceForm
-          initialData={
-            editingService
-              ? {
-                  name: editingService.name,
-                  description: editingService.description,
-                  fields: editingService.fields,
-                }
-              : undefined
-          }
-          onSubmit={handleCreate}
-          onCancel={handleCancel}
-          mode="create"
-        />
-      )}
+      {/* Create Service Modal */}
+      <Dialog
+        open={dialogMode === 'create'}
+        onOpenChange={(open) => !open && handleCancel()}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingService?.id === '' ? 'Clone Service' : 'Create Service'}
+            </DialogTitle>
+          </DialogHeader>
+          <ServiceForm
+            initialData={
+              editingService
+                ? {
+                    name: editingService.name,
+                    description: editingService.description,
+                    fields: editingService.fields,
+                  }
+                : undefined
+            }
+            onSubmit={handleCreate}
+            onCancel={handleCancel}
+            mode="create"
+          />
+        </DialogContent>
+      </Dialog>
 
-      {viewMode === 'edit' && editingService && (
-        <ServiceForm
-          initialData={{
-            name: editingService.name,
-            description: editingService.description,
-            fields: editingService.fields,
-          }}
-          onSubmit={handleEdit}
-          onCancel={handleCancel}
-          mode="edit"
-        />
-      )}
+      {/* Edit Service Modal */}
+      <Dialog
+        open={dialogMode === 'edit'}
+        onOpenChange={(open) => !open && handleCancel()}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Service</DialogTitle>
+          </DialogHeader>
+          {editingService && (
+            <ServiceForm
+              initialData={{
+                name: editingService.name,
+                description: editingService.description,
+                fields: editingService.fields,
+              }}
+              onSubmit={handleEdit}
+              onCancel={handleCancel}
+              mode="edit"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

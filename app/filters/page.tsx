@@ -6,11 +6,17 @@ import { FilterList } from '@/components/filters/FilterList';
 import { FilterForm } from '@/components/filters/FilterForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-type ViewMode = 'list' | 'create' | 'edit';
+type DialogMode = 'create' | 'edit' | null;
 
 interface FilterWithCategory {
   id: string;
@@ -43,7 +49,7 @@ export default function FiltersPage() {
   const [categories, setCategories] = useState<FilterCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [editingFilter, setEditingFilter] = useState<FilterWithCategory | null>(
     null
   );
@@ -94,7 +100,8 @@ export default function FiltersPage() {
     }
 
     await fetchData();
-    setViewMode('list');
+    setDialogMode(null);
+    toast.success('Filter created successfully');
   };
 
   const handleEdit = async (data: {
@@ -118,8 +125,9 @@ export default function FiltersPage() {
     }
 
     await fetchData();
-    setViewMode('list');
+    setDialogMode(null);
     setEditingFilter(null);
+    toast.success('Filter updated successfully');
   };
 
   const handleDelete = async (filterId: string) => {
@@ -144,12 +152,16 @@ export default function FiltersPage() {
 
   const handleEditClick = (filter: FilterWithCategory) => {
     setEditingFilter(filter);
-    setViewMode('edit');
+    setDialogMode('edit');
   };
 
   const handleCancel = () => {
-    setViewMode('list');
+    setDialogMode(null);
     setEditingFilter(null);
+  };
+
+  const handleOpenCreateDialog = () => {
+    setDialogMode('create');
   };
 
   if (isLoading) {
@@ -200,7 +212,7 @@ export default function FiltersPage() {
     }
   };
 
-  if (categories.length === 0 && viewMode === 'list') {
+  if (categories.length === 0) {
     return (
       <>
         <Card className="mx-auto w-full max-w-2xl">
@@ -229,49 +241,62 @@ export default function FiltersPage() {
   return (
     <>
       <div className="mb-4 sm:mb-6 flex justify-end">
-        {viewMode === 'list' && (
-          <Button
-            onClick={() => setViewMode('create')}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Filter
-          </Button>
-        )}
+        <Button onClick={handleOpenCreateDialog} className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" />
+          Create Filter
+        </Button>
       </div>
 
-      {viewMode === 'list' && (
-        <FilterList
-          filters={filters}
-          onEdit={handleEditClick}
-          onDelete={handleDelete}
-        />
-      )}
+      <FilterList
+        filters={filters}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+      />
 
-      {viewMode === 'create' && (
-        <FilterForm
-          categories={categories}
-          onSubmit={handleCreate}
-          onCancel={handleCancel}
-          mode="create"
-        />
-      )}
+      {/* Create Filter Modal */}
+      <Dialog
+        open={dialogMode === 'create'}
+        onOpenChange={(open) => !open && handleCancel()}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Filter</DialogTitle>
+          </DialogHeader>
+          <FilterForm
+            categories={categories}
+            onSubmit={handleCreate}
+            onCancel={handleCancel}
+            mode="create"
+          />
+        </DialogContent>
+      </Dialog>
 
-      {viewMode === 'edit' && editingFilter && (
-        <FilterForm
-          initialData={{
-            name: editingFilter.name,
-            categoryId: editingFilter.categoryId,
-            conditions: editingFilter.conditions,
-            showAsTab: editingFilter.showAsTab,
-            tabOrder: editingFilter.tabOrder,
-          }}
-          categories={categories}
-          onSubmit={handleEdit}
-          onCancel={handleCancel}
-          mode="edit"
-        />
-      )}
+      {/* Edit Filter Modal */}
+      <Dialog
+        open={dialogMode === 'edit'}
+        onOpenChange={(open) => !open && handleCancel()}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Filter</DialogTitle>
+          </DialogHeader>
+          {editingFilter && (
+            <FilterForm
+              initialData={{
+                name: editingFilter.name,
+                categoryId: editingFilter.categoryId,
+                conditions: editingFilter.conditions,
+                showAsTab: editingFilter.showAsTab,
+                tabOrder: editingFilter.tabOrder,
+              }}
+              categories={categories}
+              onSubmit={handleEdit}
+              onCancel={handleCancel}
+              mode="edit"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
