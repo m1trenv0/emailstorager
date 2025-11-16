@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
+import { setServiceField } from '@/lib/service-utils';
+import { ServiceFieldValue } from '@/lib/types';
 
 const updateAccountSchema = z.object({
   primaryEmail: z.string().email().optional(),
   recoveryEmail: z.string().email().optional(),
   recoveryPassword: z.string().min(1).optional(),
+  // For dynamic service field updates
+  serviceName: z.string().optional(),
+  fieldName: z.string().optional(),
+  value: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional(),
 });
 
 // GET /api/accounts/[id] - Fetch a specific account
@@ -74,10 +80,43 @@ export async function PATCH(
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
+    // Prepare update data
+    const updateData: Record<string, unknown> = {};
+
+    // Handle dynamic service field updates
+    if (
+      validationResult.data.serviceName &&
+      validationResult.data.fieldName !== undefined
+    ) {
+      const currentStatus =
+        typeof existingAccount.status === 'object' &&
+        existingAccount.status !== null
+          ? existingAccount.status
+          : {};
+
+      updateData.status = setServiceField(
+        currentStatus as Record<string, Record<string, ServiceFieldValue>>,
+        validationResult.data.serviceName,
+        validationResult.data.fieldName,
+        validationResult.data.value ?? null
+      );
+    }
+
+    // Handle other account field updates
+    if (validationResult.data.primaryEmail) {
+      updateData.primaryEmail = validationResult.data.primaryEmail;
+    }
+    if (validationResult.data.recoveryEmail) {
+      updateData.recoveryEmail = validationResult.data.recoveryEmail;
+    }
+    if (validationResult.data.recoveryPassword) {
+      updateData.recoveryPassword = validationResult.data.recoveryPassword;
+    }
+
     // Update account
     const updatedAccount = await prisma.account.update({
       where: { id },
-      data: validationResult.data,
+      data: updateData,
       include: {
         aliases: true,
       },

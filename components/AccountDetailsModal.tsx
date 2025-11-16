@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { AccountWithAliases } from '@/lib/types';
+import { AccountWithAliases, Service } from '@/lib/types';
 import {
   Mail,
   Calendar,
@@ -20,10 +20,15 @@ import {
   Trash2,
   ExternalLink,
   CheckCircle2,
+  ChevronDown,
+  Edit2,
 } from 'lucide-react';
 import { AliasCard } from './AliasCard';
 import { ServiceFieldValue } from '@/lib/types';
 import { useConfirm } from '@/lib/hooks/useConfirm';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ServiceFieldEditor } from './ServiceFieldEditor';
+import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -40,6 +45,14 @@ interface AccountDetailsModalProps {
   onUpdateAliasComment?: (aliasId: string, comment: string) => Promise<void>;
   onAddService?: (aliasId: string, serviceName: string) => Promise<void>;
   onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
+  onAccountServiceFieldUpdate?: (
+    accountId: string,
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => Promise<void>;
+  onAddServiceToAccount?: (accountId: string, serviceName: string) => Promise<void>;
+  onRemoveServiceFromAccount?: (accountId: string, serviceName: string) => Promise<void>;
 }
 
 export function AccountDetailsModal({
@@ -52,9 +65,33 @@ export function AccountDetailsModal({
   onUpdateAliasComment,
   onAddService,
   onRemoveService,
+  onAccountServiceFieldUpdate,
+  onAddServiceToAccount,
+  onRemoveServiceFromAccount,
 }: AccountDetailsModalProps) {
   const [copied, setCopied] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
+  const [availableServices, setAvailableServices] = useState<Service[]>([]);
+  const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
+  const [isAccountServicesOpen, setIsAccountServicesOpen] = useState(false);
+  const [editingService, setEditingService] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch('/api/services');
+        if (response.ok) {
+          const servicesData = await response.json();
+          setAvailableServices(servicesData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   if (!account) return null;
 
@@ -109,6 +146,133 @@ export function AccountDetailsModal({
     return account.aliasesAddedInPeriod < MAX_ALIASES_PER_PERIOD;
   };
 
+  const handleAccountFieldUpdate = async (
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => {
+    if (!onAccountServiceFieldUpdate) return;
+    setIsUpdating(true);
+    try {
+      await onAccountServiceFieldUpdate(account.id, serviceName, fieldName, value);
+    } catch (error) {
+      console.error('Failed to update account service field:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleAddServiceToAccount = async (serviceName: string) => {
+    if (!onAddServiceToAccount) return;
+    setIsUpdating(true);
+    try {
+      await onAddServiceToAccount(account.id, serviceName);
+    } catch (error) {
+      console.error('Failed to add service to account:', error);
+      throw error;
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleRemoveServiceFromAccount = async (serviceName: string) => {
+    if (!onRemoveServiceFromAccount) return;
+    const confirmed = await confirm({
+      title: 'Remove Service',
+      description: `Are you sure you want to remove ${serviceName} from this account?`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+
+    setIsUpdating(true);
+    try {
+      await onRemoveServiceFromAccount(account.id, serviceName);
+    } catch (error) {
+      console.error('Failed to remove service from account:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const renderAccountServiceEditor = (serviceName: string) => {
+    const service = availableServices.find((s) => s.name === serviceName);
+    if (!service) return null;
+
+    const accountStatus =
+      typeof account.status === 'object' && account.status !== null
+        ? (account.status as Record<string, Record<string, ServiceFieldValue>>)
+        : {};
+    const currentValues = accountStatus[serviceName] || {};
+    const isEditing = editingService === serviceName;
+
+    return (
+      <div key={serviceName} className="rounded border bg-card">
+        <div className="p-2 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="outline" className="text-xs capitalize shrink-0">
+              {serviceName}
+            </Badge>
+            <div className="flex items-center gap-1 shrink-0">
+              {!isEditing ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 shrink-0"
+                    onClick={() => setEditingService(serviceName)}
+                    disabled={isUpdating}
+                  >
+                    <Edit2 className="h-3 w-3 mr-1" />
+                    <span className="text-xs">Edit</span>
+                  </Button>
+                  {onRemoveServiceFromAccount && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleRemoveServiceFromAccount(serviceName)}
+                      disabled={isUpdating}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          <ServiceFieldEditor
+            serviceName={serviceName}
+            serviceFields={service.fields}
+            currentValues={currentValues}
+            onUpdate={async (fieldName, value) =>
+              await handleAccountFieldUpdate(serviceName, fieldName, value)
+            }
+            onEditStart={() => setEditingService(serviceName)}
+            onEditComplete={() => setEditingService(null)}
+            isEditing={isEditing}
+            isUpdating={isUpdating}
+            renderEditButton={isEditing}
+            renderFieldsOnly={true}
+            onRemoveService={
+              onRemoveServiceFromAccount
+                ? () => handleRemoveServiceFromAccount(serviceName)
+                : undefined
+            }
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const accountStatus =
+    typeof account.status === 'object' && account.status !== null
+      ? (account.status as Record<string, Record<string, ServiceFieldValue>>)
+      : {};
+  const accountServices = Object.keys(accountStatus);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-3xl overflow-y-auto p-4 sm:p-6">
@@ -162,6 +326,61 @@ export function AccountDetailsModal({
                 )}
               </Button>
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Account Services Section */}
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Account Services
+            </h3>
+            <Collapsible
+              open={isAccountServicesOpen}
+              onOpenChange={setIsAccountServicesOpen}
+            >
+              <div className="flex items-center justify-between">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center gap-1.5 cursor-pointer hover:opacity-70">
+                    <ChevronDown
+                      className="h-3 w-3 transition-transform"
+                      style={{
+                        transform: isAccountServicesOpen
+                          ? 'rotate(0deg)'
+                          : 'rotate(-90deg)',
+                      }}
+                    />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Services ({accountServices.length})
+                    </span>
+                  </div>
+                </CollapsibleTrigger>
+                {onAddServiceToAccount && isAccountServicesOpen && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-5 w-5 p-0"
+                    onClick={() => setIsAddServiceDialogOpen(true)}
+                    disabled={isUpdating}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <CollapsibleContent className="mt-2 space-y-2">
+                {accountServices.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic px-2">
+                    No services added to this account yet
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {accountServices.map((serviceName) =>
+                      renderAccountServiceEditor(serviceName)
+                    )}
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           <Separator />
@@ -233,6 +452,14 @@ export function AccountDetailsModal({
         </div>
       </DialogContent>
       <ConfirmDialog />
+      {/* Add Service to Account Dialog */}
+      <AddServiceToAliasDialog
+        isOpen={isAddServiceDialogOpen}
+        onClose={() => setIsAddServiceDialogOpen(false)}
+        onSubmit={handleAddServiceToAccount}
+        availableServices={availableServices}
+        existingServices={accountServices}
+      />
     </Dialog>
   );
 }

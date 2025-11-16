@@ -17,6 +17,9 @@ import {
   useAddAccount,
   useDeleteAccount,
   useSelectAccount,
+  useUpdateAccountServiceField,
+  useAddServiceToAccount,
+  useRemoveServiceFromAccount,
 } from '@/lib/hooks/useAccountOperations';
 import {
   useAddAlias,
@@ -55,6 +58,9 @@ export default function Home() {
   const addAccountMutation = useAddAccount();
   const deleteAccountMutation = useDeleteAccount();
   const selectAccountMutation = useSelectAccount();
+  const updateAccountServiceFieldMutation = useUpdateAccountServiceField();
+  const addServiceToAccountMutation = useAddServiceToAccount();
+  const removeServiceFromAccountMutation = useRemoveServiceFromAccount();
   const addAliasMutation = useAddAlias();
   const updateAliasServiceFieldMutation = useUpdateAliasServiceField();
   const updateAliasCommentMutation = useUpdateAliasComment();
@@ -228,6 +234,52 @@ export default function Home() {
     }
   };
 
+  const handleUpdateAccountServiceField = async (
+    accountId: string,
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => {
+    try {
+      await updateAccountServiceFieldMutation(
+        accountId,
+        serviceName,
+        fieldName,
+        value
+      );
+    } catch {
+      toast.error('Failed to update account service field');
+    }
+  };
+
+  const handleAddServiceToAccount = async (
+    accountId: string,
+    serviceName: string
+  ) => {
+    try {
+      await addServiceToAccountMutation(accountId, serviceName);
+      toast.success('Service added to account successfully');
+    } catch (error) {
+      toast.error('Failed to add service to account', {
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+      });
+      throw error;
+    }
+  };
+
+  const handleRemoveServiceFromAccount = async (
+    accountId: string,
+    serviceName: string
+  ) => {
+    try {
+      await removeServiceFromAccountMutation(accountId, serviceName);
+      toast.success('Service removed from account successfully');
+    } catch {
+      toast.error('Failed to remove service from account');
+    }
+  };
+
   const filteredAccounts = accounts.filter(
     (account) =>
       account.primaryEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -373,6 +425,9 @@ export default function Home() {
         onUpdateAliasComment={handleUpdateAliasComment}
         onAddService={handleAddServiceToAlias}
         onRemoveService={handleRemoveServiceFromAlias}
+        onAccountServiceFieldUpdate={handleUpdateAccountServiceField}
+        onAddServiceToAccount={handleAddServiceToAccount}
+        onRemoveServiceFromAccount={handleRemoveServiceFromAccount}
       />
     </>
   );

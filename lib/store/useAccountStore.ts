@@ -21,6 +21,12 @@ interface AccountActions {
   updateAccount: (id: string, account: Partial<AccountWithAliases>) => void;
   deleteAccount: (id: string) => void;
   selectAccount: (id: string | null) => void;
+  updateAccountServiceField: (
+    accountId: string,
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => void;
 
   // Alias actions
   addAlias: (accountId: string, alias: AliasWithStatus) => void;
@@ -76,6 +82,23 @@ export const useAccountStore = create<AccountStore>()(
           })),
 
         selectAccount: (id) => set({ selectedAccountId: id }),
+
+        updateAccountServiceField: (accountId, serviceName, fieldName, value) =>
+          set((state) => ({
+            accounts: state.accounts.map((account) =>
+              account.id === accountId
+                ? {
+                    ...account,
+                    status: setServiceField(
+                      account.status,
+                      serviceName,
+                      fieldName,
+                      value
+                    ),
+                  }
+                : account
+            ),
+          })),
 
         // Alias actions
         addAlias: (accountId, alias) =>
