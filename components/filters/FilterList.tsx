@@ -37,70 +37,42 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {filters.map((filter) => (
         <Card
           key={filter.id}
-          className="overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-primary/20 hover:border-l-primary"
+          className="flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg border-2 py-0"
         >
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <header className="mb-3 flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <FilterIcon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex items-center gap-2 flex-1">
-                    <h3 className="text-xl font-semibold">{filter.name}</h3>
-                    <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
-                      {filter.category.service.name}
-                    </span>
-                  </div>
-                </header>
-
-                <div className="mb-3 space-y-2">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Category: {filter.category.name}
-                  </p>
-                  <div className="space-y-1">
-                    {filter.conditions.map((condition, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 text-sm flex-wrap"
-                      >
-                        <Badge variant="outline">{condition.field}</Badge>
-                        <span className="text-muted-foreground">
-                          {condition.operator}
-                        </span>
-                        {condition.value !== undefined && (
-                          <code className="rounded bg-muted px-2 py-1">
-                            {String(condition.value)}
-                          </code>
-                        )}
-                        {idx < filter.conditions.length - 1 && (
-                          <span className="font-semibold text-muted-foreground">
-                            AND
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+          <CardContent className="p-0 flex flex-col h-full">
+            {/* Header with Actions */}
+            <div className="bg-accent/50 p-3 border-b-2 flex items-center justify-between gap-3 px-4">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold truncate">{filter.name}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {filter.category.service.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground">
+                    {filter.category.name}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex gap-2 ml-4">
+              <div className="flex gap-1 flex-shrink-0">
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8 border"
                   onClick={() => onEdit(filter)}
-                  title="Edit filter"
-                  className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                  title="Edit"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8"
                   onClick={async () => {
                     const confirmed = await confirm({
                       title: 'Delete Filter',
@@ -113,11 +85,50 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
                       onDelete(filter.id);
                     }
                   }}
-                  title="Delete filter"
-                  className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  title="Delete"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
+              </div>
+            </div>
+
+            {/* Conditions - Fixed height area with scroll */}
+            <div className="px-3 py-3 flex-1 min-h-[180px] max-h-[180px] overflow-y-auto">
+              <div className="space-y-2">
+                {filter.conditions.map((condition, idx) => (
+                  <div key={idx}>
+                    <div className="flex items-center gap-2 text-sm bg-muted/80 rounded px-3 py-2 border">
+                      <span className="font-semibold flex-1">{condition.field}</span>
+                      <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-0.5 rounded flex-shrink-0 border">
+                        {condition.operator}
+                      </span>
+                      {condition.value !== undefined && (
+                        <code className="text-xs font-semibold bg-background border rounded px-2 py-0.5 flex-shrink-0 max-w-[40%] truncate">
+                          {String(condition.value)}
+                        </code>
+                      )}
+                    </div>
+                    {idx < filter.conditions.length - 1 && (
+                      <div className="text-xs font-bold text-center text-muted-foreground py-1">
+                        AND
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-accent/30 px-3 py-2.5 border-t-2 mt-auto">
+              <div className="flex items-center justify-between text-xs">
+                <div className="font-semibold text-foreground">
+                  {filter.conditions.length} condition{filter.conditions.length !== 1 && 's'}
+                </div>
+                {filter.showAsTab && (
+                  <Badge variant="default" className="text-xs">
+                    Tab #{filter.tabOrder}
+                  </Badge>
+                )}
               </div>
             </div>
           </CardContent>
