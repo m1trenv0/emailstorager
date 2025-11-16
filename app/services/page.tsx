@@ -180,9 +180,7 @@ export default function ServicesPage() {
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingService?.id === '' ? 'Clone Service' : 'Create Service'}
-            </DialogTitle>
+            <DialogTitle>Create Service</DialogTitle>
           </DialogHeader>
           <ServiceForm
             initialData={

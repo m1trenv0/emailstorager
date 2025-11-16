@@ -101,8 +101,8 @@ export function ServiceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card className="border-l-4 border-l-primary/30">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+      <Card>
+        <CardHeader>
           <CardTitle className="text-xl">Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
@@ -144,8 +144,8 @@ export function ServiceForm({
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-primary/30">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+      <Card>
+        <CardHeader>
           <CardTitle className="text-xl">Service Fields</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
             Define the fields that will be available for this service
