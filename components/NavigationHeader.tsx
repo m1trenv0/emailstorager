@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Settings, Filter, Home } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface NavigationHeaderProps {
   onAddAccount?: () => void;
@@ -54,6 +55,7 @@ export const NavigationHeader = ({
             </Button>
           )}
           {customAction}
+          <ThemeToggle />
         </div>
       </div>
       <nav className="flex gap-2 flex-wrap min-h-[36px]">

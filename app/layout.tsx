@@ -84,6 +84,17 @@ export default function RootLayout({
           name="description"
           content="Open-source NextJS application for managing Outlook email accounts and aliases with AliExpress and Augment service status tracking. Self-hosted secure solution with 7-day alias addition limit."
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('theme');
+                const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) document.documentElement.classList.add('dark');
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
