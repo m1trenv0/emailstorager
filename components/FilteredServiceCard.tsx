@@ -43,12 +43,13 @@ export function FilteredServiceCard({
   const [editingService, setEditingService] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const { data: servicesData = [] } = useFetch<Service[]>('/api/services', {
+  const { data: servicesData } = useFetch<Service[]>('/api/services', {
     cache: true,
     cacheTTL: 30000,
   });
 
-  const service = servicesData.find((s) => s.name === serviceName);
+  const services = servicesData || [];
+  const service = services.find((s) => s.name === serviceName);
 
   const handleSaveComment = async () => {
     if (!onCommentUpdate) return;

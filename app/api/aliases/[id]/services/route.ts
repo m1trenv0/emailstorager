@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // Initialize service fields with default values
-    const fields = service.fields as ServiceField[];
+    const fields = service.fields as unknown as ServiceField[];
     const initialServiceStatus: Record<string, ServiceFieldValue> = {};
 
     for (const field of fields) {

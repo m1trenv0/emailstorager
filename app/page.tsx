@@ -31,23 +31,18 @@ import {
 } from '@/lib/hooks/useAliasOperations';
 import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
-import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
-import { ServiceTab } from '@/components/tabs/ServiceTab';
 import { FilterTab } from '@/components/tabs/FilterTab';
 import { toast } from 'sonner';
 import { useFetch } from '@/lib/hooks/useFetch';
-import { useCacheInvalidation } from '@/lib/hooks/useCacheInvalidation';
 
 export default function Home() {
   const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
     useAccountStore();
 
   const allAccounts = useAllAccounts();
-  const [services, setServices] = useState<Service[]>([]);
   const [filters, setFilters] = useState<
     Array<Filter & { category: { service: { name: string } } }>
   >([]);
-  const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
@@ -56,8 +51,6 @@ export default function Home() {
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] =
     useState<AccountWithAliases | null>(null);
-
-  const { invalidateServices, invalidateFilters } = useCacheInvalidation();
 
   // Hooks for operations
   const addAccountMutation = useAddAccount();
@@ -73,26 +66,8 @@ export default function Home() {
   const removeServiceFromAliasMutation = useRemoveServiceFromAlias();
 
   // Compute derived data
-  const unregisteredAliases = useMemo(
-    () =>
-      allAccounts.flatMap((account) =>
-        account.aliases.filter((alias) => {
-          // Check if alias has no service registrations
-          return Object.keys(alias.status).length === 0;
-        })
-      ),
-    [allAccounts]
-  );
 
-  // Use cached fetch hooks for services and filters
-  const { data: servicesData, loading: servicesLoading } = useFetch<Service[]>(
-    '/api/services',
-    {
-      cache: true,
-      cacheTTL: 30000, // 30 seconds
-    }
-  );
-
+  // Use cached fetch hooks for filters
   const { data: filtersData, loading: filtersLoading } = useFetch<
     Array<Filter & { category: { service: { name: string } } }>
   >('/api/filters', {
@@ -104,14 +79,6 @@ export default function Home() {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  // Derive services from servicesData
-  useEffect(() => {
-    if (servicesData) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      setServices(servicesData);
-    }
-  }, [servicesData]);
-
   // Derive filters from filtersData
   useEffect(() => {
     if (filtersData) {
@@ -120,21 +87,6 @@ export default function Home() {
     }
   }, [filtersData]);
 
-  // Derive loading state
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    setIsLoadingServices(servicesLoading || filtersLoading);
-  }, [servicesLoading, filtersLoading]);
-
-  // Get aliases by service dynamically
-  const getAliasesByServiceName = (serviceName: string) => {
-    return allAccounts.flatMap((account) =>
-      account.aliases.filter((alias) => {
-        const serviceStatus = alias.status[serviceName];
-        return serviceStatus && Object.keys(serviceStatus).length > 0;
-      })
-    );
-  };
 
   // Handlers
   const handleAddAccount = async (accountData: {
@@ -300,7 +252,7 @@ export default function Home() {
       account.recoveryEmail.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (isLoading || isLoadingServices) {
+  if (isLoading || filtersLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -331,22 +283,6 @@ export default function Home() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full">
             <TabsTrigger value="all">All Accounts</TabsTrigger>
-            <TabsTrigger value="unregistered">
-              <span className="hidden sm:inline">Not Registered</span>
-              <span className="sm:hidden">Unreg.</span>
-              <span className="ml-1">({unregisteredAliases.length})</span>
-            </TabsTrigger>
-            {services.map((service) => {
-              const count = getAliasesByServiceName(service.name).length;
-              return (
-                <TabsTrigger
-                  key={service.id}
-                  value={service.name.toLowerCase()}
-                >
-                  {service.name} ({count})
-                </TabsTrigger>
-              );
-            })}
             {filters
               .sort((a, b) => a.tabOrder - b.tabOrder)
               .map((filter) => (
@@ -365,36 +301,6 @@ export default function Home() {
               selectedAccountId={selectedAccountId}
             />
           </TabsContent>
-
-          <TabsContent value="unregistered" className="mt-4 sm:mt-6">
-            <UnregisteredTab
-              unregisteredAliases={unregisteredAliases}
-              onServiceFieldUpdate={handleUpdateAliasServiceField}
-              onCommentUpdate={handleUpdateAliasComment}
-              onAddService={handleAddServiceToAlias}
-              onRemoveService={handleRemoveServiceFromAlias}
-            />
-          </TabsContent>
-
-          {services.map((service) => {
-            const serviceAliases = getAliasesByServiceName(service.name);
-            return (
-              <TabsContent
-                key={service.id}
-                value={service.name.toLowerCase()}
-                className="mt-4 sm:mt-6"
-              >
-                <ServiceTab
-                  aliases={serviceAliases}
-                  serviceName={service.name}
-                  onServiceFieldUpdate={handleUpdateAliasServiceField}
-                  onCommentUpdate={handleUpdateAliasComment}
-                  onAddService={handleAddServiceToAlias}
-                  onRemoveService={handleRemoveServiceFromAlias}
-                />
-              </TabsContent>
-            );
-          })}
 
           {filters.map((filter) => {
             // Include both primary accounts and aliases

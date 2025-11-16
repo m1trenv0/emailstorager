@@ -1,10 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Settings, Filter, Home } from 'lucide-react';
+import { Plus, Settings, Filter, Home, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { toast } from 'sonner';
 
 interface NavigationHeaderProps {
   onAddAccount?: () => void;
@@ -18,6 +19,26 @@ export const NavigationHeader = ({
   customAction,
 }: NavigationHeaderProps) => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to logout');
+      }
+
+      toast.success('Logged out successfully');
+      router.push('/auth/login');
+      router.refresh();
+    } catch (error) {
+      toast.error('Failed to logout');
+      console.error('Logout error:', error);
+    }
+  };
 
   const getPageTitle = () => {
     if (pathname === '/') return 'Email Storage Manager';
@@ -58,6 +79,15 @@ export const NavigationHeader = ({
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </div>
       </div>
       <nav className="flex gap-2 flex-wrap min-h-[36px]">

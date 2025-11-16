@@ -12,8 +12,8 @@ interface DynamicServiceTabsProps {
     serviceName: string,
     fieldName: string,
     value: ServiceFieldValue
-  ) => void;
-  onCommentUpdate: (aliasId: string, comment: string) => void;
+  ) => Promise<void>;
+  onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
 }
 
 export function DynamicServiceTabs({
