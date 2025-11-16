@@ -145,7 +145,7 @@ export function AccountCard({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col space-y-4">
         {/* Recovery Information */}
         <section className="space-y-2">
           <div className="flex items-center justify-between rounded-lg bg-muted p-3">
@@ -171,7 +171,7 @@ export function AccountCard({
         <Separator />
 
         {/* Alias Addition Status */}
-        <section className="space-y-2">
+        <section className="space-y-2 flex-1">
           {timeRemaining ? (
             <Alert
               variant="default"
