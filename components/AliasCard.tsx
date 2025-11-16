@@ -88,16 +88,9 @@ export function AliasCard({
     value: ServiceFieldValue
   ) => {
     if (!onServiceFieldUpdate) return;
-    console.log('[AliasCard] handleFieldUpdate:', {
-      aliasId: alias.id,
-      serviceName,
-      fieldName,
-      value,
-    });
     setIsUpdating(true);
     try {
       await onServiceFieldUpdate(alias.id, serviceName, fieldName, value);
-      console.log('[AliasCard] Field updated successfully');
     } catch (error) {
       console.error('[AliasCard] Failed to update field:', error);
     } finally {

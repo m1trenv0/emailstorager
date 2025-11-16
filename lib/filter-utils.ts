@@ -20,9 +20,6 @@ export function evaluateCondition(
       typeof serviceStatus === 'object' &&
       Object.keys(serviceStatus).length > 0
     );
-    console.log(
-      `[evaluateCondition] ${alias.email} - Service: ${serviceName}, isRegistered: ${isRegistered}, operator: ${condition.operator}, result: ${condition.operator === 'exists' ? isRegistered : !isRegistered}`
-    );
     if (condition.operator === 'exists') {
       return isRegistered;
     }
@@ -152,25 +149,9 @@ export function filterAliases(
   conditions: FilterCondition[],
   serviceName: string
 ): AliasWithStatus[] {
-  console.log('[filterAliases] Starting filter:', {
-    totalAliases: aliases.length,
-    serviceName,
-    conditions: JSON.stringify(conditions, null, 2),
-  });
-
-  const results = aliases.filter((alias) => {
-    const result = evaluateFilter(alias, conditions, serviceName);
-    console.log(`[filterAliases] Alias ${alias.email}:`, {
-      hasService: !!alias.status[serviceName],
-      result,
-    });
-    return result;
-  });
-
-  console.log('[filterAliases] Filtered results:', {
-    totalMatches: results.length,
-    emails: results.map((a) => a.email),
-  });
+  const results = aliases.filter((alias) =>
+    evaluateFilter(alias, conditions, serviceName)
+  );
 
   return results;
 }

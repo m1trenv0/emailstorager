@@ -409,10 +409,6 @@ export default function Home() {
               // Include all aliases
               ...account.aliases,
             ]);
-            console.log('[FilterTab] All aliases including primaries:', {
-              total: allAliases.length,
-              emails: allAliases.map((a) => a.email),
-            });
             return (
               <TabsContent
                 key={filter.id}

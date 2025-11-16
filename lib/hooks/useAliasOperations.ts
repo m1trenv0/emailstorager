@@ -47,15 +47,13 @@ export const useUpdateAliasServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
-      console.log('[useUpdateAliasServiceField] Starting update:', { aliasId, serviceName, fieldName, value });
       try {
         const requestBody = {
           serviceName,
           fieldName,
           value,
         };
-        console.log('[useUpdateAliasServiceField] Request body:', requestBody);
-        
+
         const response = await fetch(`/api/aliases/${aliasId}`, {
           method: 'PATCH',
           headers: {
@@ -64,8 +62,6 @@ export const useUpdateAliasServiceField = () => {
           body: JSON.stringify(requestBody),
         });
 
-        console.log('[useUpdateAliasServiceField] Response status:', response.status);
-        
         if (!response.ok) {
           const errorData = await response.json();
           console.error('[useUpdateAliasServiceField] API error:', errorData);
@@ -73,10 +69,8 @@ export const useUpdateAliasServiceField = () => {
         }
 
         const responseData = await response.json();
-        console.log('[useUpdateAliasServiceField] Response data:', responseData);
-        
+
         updateAliasServiceField(aliasId, serviceName, fieldName, value);
-        console.log('[useUpdateAliasServiceField] Store updated successfully');
       } catch (error) {
         console.error('[useUpdateAliasServiceField] Error updating service field:', error);
         throw error;

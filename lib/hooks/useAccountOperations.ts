@@ -83,15 +83,13 @@ export const useUpdateAccountServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
-      console.log('[useUpdateAccountServiceField] Starting update:', { accountId, serviceName, fieldName, value });
       try {
         const requestBody = {
           serviceName,
           fieldName,
           value,
         };
-        console.log('[useUpdateAccountServiceField] Request body:', requestBody);
-        
+
         const response = await fetch(`/api/accounts/${accountId}`, {
           method: 'PATCH',
           headers: {
@@ -100,8 +98,6 @@ export const useUpdateAccountServiceField = () => {
           body: JSON.stringify(requestBody),
         });
 
-        console.log('[useUpdateAccountServiceField] Response status:', response.status);
-        
         if (!response.ok) {
           const errorData = await response.json();
           console.error('[useUpdateAccountServiceField] API error:', errorData);
@@ -109,10 +105,8 @@ export const useUpdateAccountServiceField = () => {
         }
 
         const responseData = await response.json();
-        console.log('[useUpdateAccountServiceField] Response data:', responseData);
-        
+
         updateAccountServiceField(accountId, serviceName, fieldName, value);
-        console.log('[useUpdateAccountServiceField] Store updated successfully');
       } catch (error) {
         console.error('[useUpdateAccountServiceField] Error updating service field:', error);
         throw error;

@@ -62,8 +62,6 @@ export function ServiceFieldEditor({
       serviceFields.forEach(field => {
         initial[field.name] = currentValues[field.name] ?? null;
       });
-      console.log(`[${serviceName}] Initial editedValues:`, initial);
-      console.log(`[${serviceName}] currentValues:`, currentValues);
       return initial;
     });
   const [hasChanges, setHasChanges] = useState(false);
@@ -83,36 +81,20 @@ export function ServiceFieldEditor({
     const hasAnyChanges = serviceFields.some(field => {
       const editedValue = editedValues[field.name];
       const currentValue = currentValues[field.name] ?? null;
-      const changed = editedValue !== currentValue;
-      console.log(`[${serviceName}] Field "${field.name}":`, {
-        editedValue,
-        currentValue,
-        changed,
-        editedType: typeof editedValue,
-        currentType: typeof currentValue
-      });
-      return changed;
+      return editedValue !== currentValue;
     });
-    console.log(`[${serviceName}] hasChanges:`, hasAnyChanges);
     setHasChanges(hasAnyChanges);
-  }, [editedValues, currentValues, serviceFields, serviceName]);
+  }, [editedValues, currentValues, serviceFields]);
 
   const handleChange = (fieldName: string, value: ServiceFieldValue) => {
-    console.log(`[${serviceName}] handleChange:`, { fieldName, value, type: typeof value });
-    setEditedValues((prev) => {
-      const updated = {
-        ...prev,
-        [fieldName]: value,
-      };
-      console.log(`[${serviceName}] Updated editedValues:`, updated);
-      return updated;
-    });
+    setEditedValues((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
   };
 
   const handleSave = async () => {
-    console.log(`[${serviceName}] handleSave called:`, { hasChanges, editedValues, currentValues });
     if (!hasChanges) {
-      console.log(`[${serviceName}] No changes detected, closing editor`);
       handleEditComplete();
       return;
     }
@@ -124,13 +106,10 @@ export function ServiceFieldEditor({
         const editedValue = editedValues[field.name];
         const currentValue = currentValues[field.name] ?? null;
         if (editedValue !== currentValue) {
-          console.log(`[${serviceName}] Updating field "${field.name}":`, editedValue);
           updatePromises.push(onUpdate(field.name, editedValue));
         }
       }
-      console.log(`[${serviceName}] Sending ${updatePromises.length} updates...`);
       await Promise.all(updatePromises);
-      console.log(`[${serviceName}] All updates completed successfully`);
       handleEditComplete();
       setHasChanges(false);
     } catch (error) {
