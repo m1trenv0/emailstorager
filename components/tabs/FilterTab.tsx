@@ -1,14 +1,18 @@
 import { FilteredServiceCard } from '@/components/FilteredServiceCard';
-import { AliasWithStatus, ServiceFieldValue, Filter } from '@/lib/types';
+import { AliasWithStatus, ServiceFieldValue, Filter, ServiceField } from '@/lib/types';
 import { filterAliases } from '@/lib/filter-utils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { QuickRegisterModal } from '@/components/QuickRegisterModal';
 
 interface FilterTabProps {
   allAliases: AliasWithStatus[];
   filter: Filter;
   serviceName: string;
+  serviceFields: ServiceField[];
   onServiceFieldUpdate: (
     aliasId: string,
     serviceName: string,
@@ -25,10 +29,14 @@ export const FilterTab = ({
   allAliases,
   filter,
   serviceName,
+  serviceFields,
   onServiceFieldUpdate,
   onCommentUpdate,
   onRemoveService,
 }: FilterTabProps) => {
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [selectedAlias, setSelectedAlias] = useState<AliasWithStatus | null>(null);
+
   const filteredAliases = useMemo(() => {
     return filterAliases(allAliases, filter.conditions, serviceName);
   }, [allAliases, filter.conditions, serviceName]);
@@ -39,6 +47,16 @@ export const FilterTab = ({
       condition.field === SERVICE_REGISTRATION_FIELD &&
       condition.operator === 'not_exists'
   );
+
+  const handleQuickRegister = (alias: AliasWithStatus) => {
+    setSelectedAlias(alias);
+    setRegisterModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setRegisterModalOpen(false);
+    setSelectedAlias(null);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -62,13 +80,26 @@ export const FilterTab = ({
             return (
               <Card key={alias.id} className="w-full max-w-md">
                 <CardContent className="space-y-3 pt-4 pb-4 px-4">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold leading-none break-all">
-                      {alias.email}
-                    </h4>
-                    <Badge variant="secondary" className="text-xs w-fit">
-                      Not Registered
-                    </Badge>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold leading-none break-all">
+                        {alias.email}
+                      </h4>
+                      <Badge variant="secondary" className="text-xs w-fit">
+                        Not Registered
+                      </Badge>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 rounded-md hover:bg-muted flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleQuickRegister(alias);
+                      }}
+                    >
+                      <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
                   </div>
                   <div className="rounded border border-dashed bg-muted/30 p-3">
                     <p className="text-xs text-muted-foreground text-center">
@@ -99,6 +130,17 @@ export const FilterTab = ({
             />
           );
         })
+      )}
+      {selectedAlias && (
+        <QuickRegisterModal
+          isOpen={registerModalOpen}
+          onClose={handleCloseModal}
+          aliasEmail={selectedAlias.email}
+          serviceName={serviceName}
+          serviceFields={serviceFields}
+          onSubmit={onServiceFieldUpdate}
+          aliasId={selectedAlias.id}
+        />
       )}
     </div>
   );

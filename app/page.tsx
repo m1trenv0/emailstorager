@@ -12,6 +12,7 @@ import {
   ServiceFieldValue,
   Service,
   Filter,
+  ServiceField,
 } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import {
@@ -41,7 +42,7 @@ export default function Home() {
 
   const allAccounts = useAllAccounts();
   const [filters, setFilters] = useState<
-    Array<Filter & { category: { service: { name: string } } }>
+    Array<Filter & { category: { service: { name: string; fields: ServiceField[] } } }>
   >([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -69,7 +70,7 @@ export default function Home() {
 
   // Use cached fetch hooks for filters
   const { data: filtersData, loading: filtersLoading } = useFetch<
-    Array<Filter & { category: { service: { name: string } } }>
+    Array<Filter & { category: { service: { name: string; fields: ServiceField[] } } }>
   >('/api/filters', {
     cache: true,
     cacheTTL: 30000, // 30 seconds
@@ -328,6 +329,7 @@ export default function Home() {
                   allAliases={allAliases}
                   filter={filter}
                   serviceName={filter.category.service.name}
+                  serviceFields={filter.category.service.fields}
                   onServiceFieldUpdate={handleUpdateAliasServiceField}
                   onCommentUpdate={handleUpdateAliasComment}
                   onRemoveService={handleRemoveServiceFromAlias}
