@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit2, Save, X } from 'lucide-react';
+import { Loader2, Edit2, Save, X, Trash2 } from 'lucide-react';
 
 interface ServiceFieldEditorProps {
   serviceName: string;
@@ -19,6 +19,8 @@ interface ServiceFieldEditorProps {
   renderFieldsOnly?: boolean;
   isEditing?: boolean;
   onEditComplete?: () => void;
+  onEditStart?: () => void;
+  onRemoveService?: () => void;
 }
 
 export function ServiceFieldEditor({
@@ -31,59 +33,118 @@ export function ServiceFieldEditor({
   renderFieldsOnly = false,
   isEditing: externalIsEditing,
   onEditComplete,
+  onEditStart,
+  onRemoveService,
 }: ServiceFieldEditorProps) {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
-  const setIsEditing = externalIsEditing !== undefined 
-    ? (value: boolean) => { if (!value && onEditComplete) onEditComplete(); }
-    : setInternalIsEditing;
+  
+  const handleEditStart = () => {
+    if (onEditStart) {
+      onEditStart();
+    } else {
+      setInternalIsEditing(true);
+    }
+  };
+  
+  const handleEditComplete = () => {
+    if (onEditComplete) {
+      onEditComplete();
+    } else {
+      setInternalIsEditing(false);
+    }
+  };
+  
   const [editedValues, setEditedValues] =
-    useState<Record<string, ServiceFieldValue>>(currentValues);
+    useState<Record<string, ServiceFieldValue>>(() => {
+      // Initialize with all fields from serviceFields
+      const initial: Record<string, ServiceFieldValue> = {};
+      serviceFields.forEach(field => {
+        initial[field.name] = currentValues[field.name] ?? null;
+      });
+      console.log(`[${serviceName}] Initial editedValues:`, initial);
+      console.log(`[${serviceName}] currentValues:`, currentValues);
+      return initial;
+    });
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    setEditedValues(currentValues);
+    // Update editedValues when currentValues change
+    const updated: Record<string, ServiceFieldValue> = {};
+    serviceFields.forEach(field => {
+      updated[field.name] = currentValues[field.name] ?? null;
+    });
+    setEditedValues(updated);
     setHasChanges(false);
-  }, [currentValues]);
+  }, [currentValues, serviceFields]);
 
   useEffect(() => {
     // Check if there are any changes compared to current values
-    const hasAnyChanges = Object.keys(editedValues).some(
-      (key) => editedValues[key] !== currentValues[key]
-    );
+    const hasAnyChanges = serviceFields.some(field => {
+      const editedValue = editedValues[field.name];
+      const currentValue = currentValues[field.name] ?? null;
+      const changed = editedValue !== currentValue;
+      console.log(`[${serviceName}] Field "${field.name}":`, {
+        editedValue,
+        currentValue,
+        changed,
+        editedType: typeof editedValue,
+        currentType: typeof currentValue
+      });
+      return changed;
+    });
+    console.log(`[${serviceName}] hasChanges:`, hasAnyChanges);
     setHasChanges(hasAnyChanges);
-  }, [editedValues, currentValues]);
+  }, [editedValues, currentValues, serviceFields, serviceName]);
 
   const handleChange = (fieldName: string, value: ServiceFieldValue) => {
-    setEditedValues((prev) => ({
-      ...prev,
-      [fieldName]: value,
-    }));
+    console.log(`[${serviceName}] handleChange:`, { fieldName, value, type: typeof value });
+    setEditedValues((prev) => {
+      const updated = {
+        ...prev,
+        [fieldName]: value,
+      };
+      console.log(`[${serviceName}] Updated editedValues:`, updated);
+      return updated;
+    });
   };
 
   const handleSave = async () => {
+    console.log(`[${serviceName}] handleSave called:`, { hasChanges, editedValues, currentValues });
     if (!hasChanges) {
-      setIsEditing(false);
+      console.log(`[${serviceName}] No changes detected, closing editor`);
+      handleEditComplete();
       return;
     }
 
     try {
       // Update all changed fields
-      for (const [fieldName, value] of Object.entries(editedValues)) {
-        if (currentValues[fieldName] !== value) {
-          await onUpdate(fieldName, value);
+      const updatePromises = [];
+      for (const field of serviceFields) {
+        const editedValue = editedValues[field.name];
+        const currentValue = currentValues[field.name] ?? null;
+        if (editedValue !== currentValue) {
+          console.log(`[${serviceName}] Updating field "${field.name}":`, editedValue);
+          updatePromises.push(onUpdate(field.name, editedValue));
         }
       }
-      setIsEditing(false);
+      console.log(`[${serviceName}] Sending ${updatePromises.length} updates...`);
+      await Promise.all(updatePromises);
+      console.log(`[${serviceName}] All updates completed successfully`);
+      handleEditComplete();
       setHasChanges(false);
     } catch (error) {
-      console.error('Failed to save changes:', error);
+      console.error(`[${serviceName}] Failed to save changes:`, error);
     }
   };
 
   const handleCancel = () => {
-    setEditedValues(currentValues);
-    setIsEditing(false);
+    const restored: Record<string, ServiceFieldValue> = {};
+    serviceFields.forEach(field => {
+      restored[field.name] = currentValues[field.name] ?? null;
+    });
+    setEditedValues(restored);
+    handleEditComplete();
     setHasChanges(false);
   };
 
@@ -114,44 +175,45 @@ export function ServiceFieldEditor({
       case 'date':
         return (
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label htmlFor={`${serviceName}-${field.name}`} className="text-xs">
-                {field.name}
-                {field.required && (
-                  <span className="text-destructive ml-1">*</span>
-                )}
-              </Label>
+            <Label htmlFor={`${serviceName}-${field.name}`} className="text-xs">
+              {field.name}
+              {field.required && (
+                <span className="text-destructive ml-1">*</span>
+              )}
+            </Label>
+            <div className="flex gap-1">
+              <Input
+                id={`${serviceName}-${field.name}`}
+                type="date"
+                value={
+                  value
+                    ? new Date(value as string | number)
+                        .toISOString()
+                        .split('T')[0]
+                    : ''
+                }
+                onChange={(e) =>
+                  handleChange(
+                    field.name,
+                    e.target.value ? new Date(e.target.value).toISOString() : null
+                  )
+                }
+                disabled={!isEditing || isUpdating}
+                className="flex-1 text-xs h-7"
+              />
               {isEditing && (
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-5 px-1 text-xs"
+                  className="h-7 px-2 text-xs whitespace-nowrap"
                   onClick={() => handleChange(field.name, new Date().toISOString())}
+                  disabled={isUpdating}
                 >
-                  Set Current Day
+                  Today
                 </Button>
               )}
             </div>
-            <Input
-              id={`${serviceName}-${field.name}`}
-              type="date"
-              value={
-                value
-                  ? new Date(value as string | number)
-                      .toISOString()
-                      .split('T')[0]
-                  : ''
-              }
-              onChange={(e) =>
-                handleChange(
-                  field.name,
-                  e.target.value ? new Date(e.target.value).toISOString() : null
-                )
-              }
-              disabled={!isEditing || isUpdating}
-              className="w-full text-xs h-7"
-            />
           </div>
         );
 
@@ -194,7 +256,10 @@ export function ServiceFieldEditor({
               id={`${serviceName}-${field.name}`}
               type="text"
               value={(value as string) ?? ''}
-              onChange={(e) => handleChange(field.name, e.target.value || null)}
+              onChange={(e) => {
+                const newValue = e.target.value.trim() || null;
+                handleChange(field.name, newValue);
+              }}
               disabled={!isEditing || isUpdating}
               className="w-full text-xs h-7"
               placeholder={field.description}
@@ -239,17 +304,17 @@ export function ServiceFieldEditor({
             size="sm"
             variant="ghost"
             className="h-5 px-1"
-            onClick={() => setIsEditing(true)}
+            onClick={handleEditStart}
             disabled={isUpdating}
           >
             <Edit2 className="h-3 w-3 mr-0.5" />
             <span className="text-xs">Edit</span>
           </Button>
         ) : (
-          <div className="flex gap-1">
+          <div className="flex gap-1 shrink-0">
             <Button
               size="sm"
-              className="h-5 px-1.5 text-xs"
+              className="h-5 px-1.5 text-xs shrink-0"
               onClick={handleSave}
               disabled={!hasChanges || isUpdating}
             >
@@ -263,12 +328,23 @@ export function ServiceFieldEditor({
             <Button
               size="sm"
               variant="outline"
-              className="h-5 px-1.5"
+              className="h-5 px-1.5 shrink-0"
               onClick={handleCancel}
               disabled={isUpdating}
             >
               <X className="h-3 w-3" />
             </Button>
+            {onRemoveService && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={onRemoveService}
+                disabled={isUpdating}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         )
       )}
@@ -309,7 +385,7 @@ export function ServiceFieldEditor({
                 size="sm"
                 variant="ghost"
                 className="h-6 px-1"
-                onClick={() => setIsEditing(true)}
+                onClick={handleEditStart}
                 disabled={isUpdating}
               >
                 <Edit2 className="h-3 w-3 mr-1" />

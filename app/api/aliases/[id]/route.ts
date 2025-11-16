@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
+import { setServiceField } from '@/lib/service-utils';
+import { ServiceFieldValue } from '@/lib/types';
 
 const updateAliasSchema = z.object({
   status: z
@@ -15,6 +17,10 @@ const updateAliasSchema = z.object({
     })
     .optional(),
   comments: z.string().optional(),
+  // New format for dynamic service field updates
+  serviceName: z.string().optional(),
+  fieldName: z.string().optional(),
+  value: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional(),
 });
 
 // GET /api/aliases/[id] - Fetch a specific alias
@@ -79,8 +85,22 @@ export async function PATCH(
     // Prepare update data
     const updateData: Record<string, unknown> = {};
 
-    if (validationResult.data.status) {
-      // Merge existing status with new status
+    // Handle dynamic service field updates
+    if (validationResult.data.serviceName && validationResult.data.fieldName !== undefined) {
+      const currentStatus =
+        typeof existingAlias.status === 'object' &&
+        existingAlias.status !== null
+          ? existingAlias.status
+          : {};
+
+      updateData.status = setServiceField(
+        currentStatus as Record<string, Record<string, ServiceFieldValue>>,
+        validationResult.data.serviceName,
+        validationResult.data.fieldName,
+        validationResult.data.value ?? null
+      );
+    } else if (validationResult.data.status) {
+      // Legacy format - merge existing status with new status
       const currentStatus =
         typeof existingAlias.status === 'object' &&
         existingAlias.status !== null

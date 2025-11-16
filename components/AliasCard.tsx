@@ -77,11 +77,13 @@ export function AliasCard({
     value: ServiceFieldValue
   ) => {
     if (!onServiceFieldUpdate) return;
+    console.log('[AliasCard] handleFieldUpdate:', { aliasId: alias.id, serviceName, fieldName, value });
     setIsUpdating(true);
     try {
       await onServiceFieldUpdate(alias.id, serviceName, fieldName, value);
+      console.log('[AliasCard] Field updated successfully');
     } catch (error) {
-      console.error('Failed to update field:', error);
+      console.error('[AliasCard] Failed to update field:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -138,57 +140,56 @@ export function AliasCard({
 
     return (
       <div key={serviceName} className="rounded border bg-card">
-        <div className="flex items-center justify-between gap-2 px-2 py-1.5 border-b bg-muted/30">
-          <h6 className="text-xs font-medium">{serviceName}</h6>
-          <div className="flex items-center gap-1">
-            {!isEditing ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-5 px-1"
-                onClick={() => setEditingService(serviceName)}
-                disabled={isUpdating}
-              >
-                <Edit2 className="h-3 w-3 mr-0.5" />
-                <span className="text-xs">Edit</span>
-              </Button>
-            ) : (
-              <ServiceFieldEditor
-                serviceName={serviceName}
-                serviceFields={service.fields}
-                currentValues={currentValues}
-                onUpdate={async (fieldName, value) => {
-                  await handleFieldUpdate(serviceName, fieldName, value);
-                }}
-                onEditComplete={() => setEditingService(null)}
-                isUpdating={isUpdating}
-                renderEditButton
-              />
-            )}
-            {onRemoveService && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => handleRemoveService(serviceName)}
-                disabled={isUpdating}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
+        <div className="p-2 space-y-2">
+          {/* Header with service name, edit/save and remove buttons */}
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="outline" className="text-xs capitalize shrink-0">
+              {serviceName}
+            </Badge>
+            <div className="flex items-center gap-1 shrink-0">
+              {!isEditing ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 shrink-0"
+                    onClick={() => setEditingService(serviceName)}
+                    disabled={isUpdating}
+                  >
+                    <Edit2 className="h-3 w-3 mr-1" />
+                    <span className="text-xs">Edit</span>
+                  </Button>
+                  {onRemoveService && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleRemoveService(serviceName)}
+                      disabled={isUpdating}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </>
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className="p-2">
+
+          {/* Fields editor */}
           <ServiceFieldEditor
             serviceName={serviceName}
             serviceFields={service.fields}
             currentValues={currentValues}
-            onUpdate={(fieldName, value) =>
-              handleFieldUpdate(serviceName, fieldName, value)
+            onUpdate={async (fieldName, value) =>
+              await handleFieldUpdate(serviceName, fieldName, value)
             }
+            onEditStart={() => setEditingService(serviceName)}
+            onEditComplete={() => setEditingService(null)}
             isEditing={isEditing}
             isUpdating={isUpdating}
-            renderFieldsOnly
+            renderEditButton={isEditing}
+            renderFieldsOnly={true}
+            onRemoveService={onRemoveService ? () => handleRemoveService(serviceName) : undefined}
           />
         </div>
       </div>
