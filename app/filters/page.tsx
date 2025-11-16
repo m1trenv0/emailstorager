@@ -4,10 +4,9 @@ import { useEffect, useState } from 'react';
 import { FilterCondition, ServiceField } from '@/lib/types';
 import { FilterList } from '@/components/filters/FilterList';
 import { FilterForm } from '@/components/filters/FilterForm';
-import { NavigationHeader } from '@/components/NavigationHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -175,9 +174,7 @@ export default function FiltersPage() {
 
   if (categories.length === 0 && viewMode === 'list') {
     return (
-      <main className="container mx-auto min-h-screen p-3 sm:p-6">
-        <NavigationHeader />
-
+      <>
         <Card className="mx-auto w-full max-w-2xl">
           <CardContent className="py-12 text-center">
             <h3 className="mb-2 text-lg font-semibold">
@@ -191,25 +188,23 @@ export default function FiltersPage() {
             </Link>
           </CardContent>
         </Card>
-      </main>
+      </>
     );
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-3 sm:p-6">
-      <NavigationHeader
-        customAction={
-          viewMode === 'list' ? (
-            <Button
-              onClick={() => setViewMode('create')}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Filter
-            </Button>
-          ) : undefined
-        }
-      />
+    <>
+      <div className="mb-4 sm:mb-6 flex justify-end">
+        {viewMode === 'list' && (
+          <Button
+            onClick={() => setViewMode('create')}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Filter
+          </Button>
+        )}
+      </div>
 
       {viewMode === 'list' && (
         <FilterList
@@ -241,6 +236,6 @@ export default function FiltersPage() {
           mode="edit"
         />
       )}
-    </main>
+    </>
   );
 }

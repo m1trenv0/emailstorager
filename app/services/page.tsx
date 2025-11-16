@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import { ServiceWithCategories, ServiceField } from '@/lib/types';
 import { ServiceList } from '@/components/services/ServiceList';
 import { ServiceForm } from '@/components/services/ServiceForm';
-import { NavigationHeader } from '@/components/NavigationHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'create' | 'edit';
@@ -148,20 +146,18 @@ export default function ServicesPage() {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-3 sm:p-6">
-      <NavigationHeader
-        customAction={
-          viewMode === 'list' ? (
-            <Button
-              onClick={() => setViewMode('create')}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Service
-            </Button>
-          ) : undefined
-        }
-      />
+    <>
+      <div className="mb-4 sm:mb-6 flex justify-end">
+        {viewMode === 'list' && (
+          <Button
+            onClick={() => setViewMode('create')}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Service
+          </Button>
+        )}
+      </div>
 
       {viewMode === 'list' && (
         <ServiceList
@@ -201,6 +197,6 @@ export default function ServicesPage() {
           mode="edit"
         />
       )}
-    </main>
+    </>
   );
 }

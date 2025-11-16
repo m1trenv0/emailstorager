@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddAliasModal } from '@/components/AddAliasModal';
-import { AddAccountModal } from '@/components/AddAccountModal';
 import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
 import { AccountWithAliases, ServiceFieldValue, Service } from '@/lib/types';
@@ -21,8 +20,6 @@ import {
   useAddServiceToAlias,
   useRemoveServiceFromAlias,
 } from '@/lib/hooks/useAliasOperations';
-import { Header } from '@/components/Header';
-import { NavigationHeader } from '@/components/NavigationHeader';
 import { SearchBar } from '@/components/SearchBar';
 import { AllAccountsTab } from '@/components/tabs/AllAccountsTab';
 import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
@@ -39,7 +36,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
-  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] =
     useState(false);
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
@@ -237,12 +233,7 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto min-h-screen p-3 sm:p-6">
-      <NavigationHeader
-        onAddAccount={() => setIsAddAccountModalOpen(true)}
-        showAddAccount={true}
-      />
-
+    <>
       <div className="space-y-4 sm:space-y-6">
         <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
@@ -312,12 +303,6 @@ export default function Home() {
         onSubmit={handleAddAliasSubmit}
       />
 
-      <AddAccountModal
-        isOpen={isAddAccountModalOpen}
-        onClose={() => setIsAddAccountModalOpen(false)}
-        onSubmit={handleAddAccount}
-      />
-
       <AccountDetailsModal
         isOpen={isAccountDetailsModalOpen}
         onClose={() => {
@@ -332,6 +317,6 @@ export default function Home() {
         onAddService={handleAddServiceToAlias}
         onRemoveService={handleRemoveServiceFromAlias}
       />
-    </main>
+    </>
   );
 }

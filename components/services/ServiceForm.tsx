@@ -101,14 +101,14 @@ export function ServiceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
+      <Card className="border-l-4 border-l-primary/30">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+          <CardTitle className="text-xl">Basic Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="service-name">
-              Service Name <span className="text-destructive">*</span>
+            <Label htmlFor="service-name" className="text-sm font-semibold">
+              Service Name <span className="text-destructive font-bold">*</span>
             </Label>
             <Input
               id="service-name"
@@ -116,28 +116,41 @@ export function ServiceForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., AliExpress, Augment"
               disabled={mode === 'edit'}
+              className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
             {mode === 'edit' && (
-              <p className="text-xs text-muted-foreground">
-                Service name cannot be changed after creation
+              <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                💡 Service name cannot be changed after creation
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="service-description">Description</Label>
+            <Label
+              htmlFor="service-description"
+              className="text-sm font-semibold"
+            >
+              Description
+            </Label>
             <Textarea
               id="service-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description of this service"
               rows={3}
+              className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-l-4 border-l-primary/30">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+          <CardTitle className="text-xl">Service Fields</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Define the fields that will be available for this service
+          </p>
+        </CardHeader>
         <CardContent className="pt-6">
           <FieldBuilder fields={fields} onChange={setFields} />
         </CardContent>
@@ -149,11 +162,16 @@ export function ServiceForm({
         </Alert>
       )}
 
-      <footer className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <footer className="flex justify-end gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 -mx-4 -mb-4 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="min-w-[100px]"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="min-w-[150px]">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {mode === 'create' ? 'Create Service' : 'Update Service'}
         </Button>
