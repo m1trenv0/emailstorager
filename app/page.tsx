@@ -35,6 +35,7 @@ import { UnregisteredTab } from '@/components/tabs/UnregisteredTab';
 import { ServiceTab } from '@/components/tabs/ServiceTab';
 import { FilterTab } from '@/components/tabs/FilterTab';
 import { toast } from 'sonner';
+import { useFetch } from '@/lib/hooks/useFetch';
 
 export default function Home() {
   const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
@@ -80,38 +81,47 @@ export default function Home() {
     [allAccounts]
   );
 
+  // Use cached fetch hooks for services and filters
+  const { data: servicesData, loading: servicesLoading } = useFetch<Service[]>(
+    '/api/services',
+    {
+      cache: true,
+      cacheTTL: 30000, // 30 seconds
+    }
+  );
+
+  const { data: filtersData, loading: filtersLoading } = useFetch<
+    Array<Filter & { category: { service: { name: string } } }>
+  >('/api/filters', {
+    cache: true,
+    cacheTTL: 30000, // 30 seconds
+  });
+
   useEffect(() => {
     fetchAccounts();
-    fetchServices();
-    fetchFilters();
   }, [fetchAccounts]);
 
-  const fetchServices = async () => {
-    try {
-      setIsLoadingServices(true);
-      const response = await fetch('/api/services');
-      if (response.ok) {
-        const data = await response.json();
-        setServices(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch services:', err);
-    } finally {
-      setIsLoadingServices(false);
+  // Derive services from servicesData
+  useEffect(() => {
+    if (servicesData) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      setServices(servicesData);
     }
-  };
+  }, [servicesData]);
 
-  const fetchFilters = async () => {
-    try {
-      const response = await fetch('/api/filters');
-      if (response.ok) {
-        const data = await response.json();
-        setFilters(data.filter((f: Filter) => f.showAsTab));
-      }
-    } catch (err) {
-      console.error('Failed to fetch filters:', err);
+  // Derive filters from filtersData
+  useEffect(() => {
+    if (filtersData) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      setFilters(filtersData.filter((f) => f.showAsTab));
     }
-  };
+  }, [filtersData]);
+
+  // Derive loading state
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    setIsLoadingServices(servicesLoading || filtersLoading);
+  }, [servicesLoading, filtersLoading]);
 
   // Get aliases by service dynamically
   const getAliasesByServiceName = (serviceName: string) => {

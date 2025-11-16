@@ -58,26 +58,51 @@ export function validateInput<T>(
 // Rate Limiting (simple in-memory for demo)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
+// Cleanup old entries periodically
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (now > value.resetTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }, 60000); // Clean up every minute
+}
+
 export function rateLimit(
   request: NextRequest,
-  maxRequests = 100,
-  windowMs = 15 * 60 * 1000
+  maxRequests = 1000, // Increased from 100 to 1000
+  windowMs = 60 * 1000 // Changed from 15 minutes to 1 minute
 ) {
   const ip =
     request.headers.get('x-forwarded-for') ||
     request.headers.get('x-real-ip') ||
     'unknown';
   const now = Date.now();
-  const windowStart = now - windowMs;
 
   const current = rateLimitMap.get(ip);
-  if (!current || current.resetTime < windowStart) {
+  if (!current || now > current.resetTime) {
     rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
     return null;
   }
 
   if (current.count >= maxRequests) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    return NextResponse.json(
+      {
+        error: 'Too many requests. Please try again later.',
+        retryAfter: Math.ceil((current.resetTime - now) / 1000),
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((current.resetTime - now) / 1000)),
+          'X-RateLimit-Limit': String(maxRequests),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(current.resetTime),
+        },
+      }
+    );
   }
 
   current.count++;

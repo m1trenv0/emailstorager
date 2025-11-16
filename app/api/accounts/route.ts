@@ -30,7 +30,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(accounts, { status: 200 });
+    return NextResponse.json(accounts, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+      },
+    });
   } catch (error) {
     console.error('Error fetching accounts:', error);
     return NextResponse.json(

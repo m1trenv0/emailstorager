@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(services, { status: 200 });
+    return NextResponse.json(services, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Error fetching services:', error);
     return NextResponse.json(
