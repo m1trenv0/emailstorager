@@ -346,7 +346,6 @@ export default function Home() {
                   serviceName={filter.category.service.name}
                   onServiceFieldUpdate={handleUpdateAliasServiceField}
                   onCommentUpdate={handleUpdateAliasComment}
-                  onAddService={handleAddServiceToAlias}
                   onRemoveService={handleRemoveServiceFromAlias}
                 />
               </TabsContent>

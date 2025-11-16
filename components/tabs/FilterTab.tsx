@@ -1,4 +1,4 @@
-import { AliasCard } from '@/components/AliasCard';
+import { FilteredServiceCard } from '@/components/FilteredServiceCard';
 import { AliasWithStatus, ServiceFieldValue, Filter } from '@/lib/types';
 import { filterAliases } from '@/lib/filter-utils';
 import { useMemo } from 'react';
@@ -14,7 +14,6 @@ interface FilterTabProps {
     value: ServiceFieldValue
   ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
-  onAddService?: (aliasId: string, serviceName: string) => Promise<void>;
   onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
 }
 
@@ -24,7 +23,6 @@ export const FilterTab = ({
   serviceName,
   onServiceFieldUpdate,
   onCommentUpdate,
-  onAddService,
   onRemoveService,
 }: FilterTabProps) => {
   const filteredAliases = useMemo(() => {
@@ -32,21 +30,21 @@ export const FilterTab = ({
   }, [allAliases, filter.conditions, serviceName]);
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {filteredAliases.length === 0 ? (
-        <div className="flex h-32 items-center justify-center">
+        <div className="col-span-full flex h-32 items-center justify-center">
           <p className="text-muted-foreground">
             No aliases match this filter criteria.
           </p>
         </div>
       ) : (
         filteredAliases.map((alias) => (
-          <AliasCard
+          <FilteredServiceCard
             key={alias.id}
             alias={alias}
+            serviceName={serviceName}
             onServiceFieldUpdate={onServiceFieldUpdate}
             onCommentUpdate={onCommentUpdate}
-            onAddService={onAddService}
             onRemoveService={onRemoveService}
           />
         ))
