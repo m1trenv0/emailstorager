@@ -5,9 +5,20 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { AliasWithStatus, ServiceFieldValue, Service } from '@/lib/types';
-import { Calendar, ChevronDown, Edit2, MessageSquare, Plus, Trash2 } from 'lucide-react';
+import {
+  Calendar,
+  ChevronDown,
+  Edit2,
+  MessageSquare,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
 import { useConfirm } from '@/lib/hooks/useConfirm';
@@ -77,7 +88,12 @@ export function AliasCard({
     value: ServiceFieldValue
   ) => {
     if (!onServiceFieldUpdate) return;
-    console.log('[AliasCard] handleFieldUpdate:', { aliasId: alias.id, serviceName, fieldName, value });
+    console.log('[AliasCard] handleFieldUpdate:', {
+      aliasId: alias.id,
+      serviceName,
+      fieldName,
+      value,
+    });
     setIsUpdating(true);
     try {
       await onServiceFieldUpdate(alias.id, serviceName, fieldName, value);
@@ -142,7 +158,7 @@ export function AliasCard({
       <div key={serviceName} className="rounded border bg-card">
         <div className="p-2 space-y-2">
           {/* Header with service name, edit/save and remove buttons */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 min-w-0">
             <Badge variant="outline" className="text-xs capitalize shrink-0">
               {serviceName}
             </Badge>
@@ -152,7 +168,7 @@ export function AliasCard({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 px-2 shrink-0"
+                    className="h-6 px-2 shrink-0 whitespace-nowrap"
                     onClick={() => setEditingService(serviceName)}
                     disabled={isUpdating}
                   >
@@ -171,7 +187,27 @@ export function AliasCard({
                     </Button>
                   )}
                 </>
-              ) : null}
+              ) : (
+                <ServiceFieldEditor
+                  serviceName={serviceName}
+                  serviceFields={service.fields}
+                  currentValues={currentValues}
+                  onUpdate={async (fieldName, value) =>
+                    await handleFieldUpdate(serviceName, fieldName, value)
+                  }
+                  onEditStart={() => setEditingService(serviceName)}
+                  onEditComplete={() => setEditingService(null)}
+                  isEditing={isEditing}
+                  isUpdating={isUpdating}
+                  renderEditButton={true}
+                  renderFieldsOnly={false}
+                  onRemoveService={
+                    onRemoveService
+                      ? () => handleRemoveService(serviceName)
+                      : undefined
+                  }
+                />
+              )}
             </div>
           </div>
 
@@ -187,9 +223,9 @@ export function AliasCard({
             onEditComplete={() => setEditingService(null)}
             isEditing={isEditing}
             isUpdating={isUpdating}
-            renderEditButton={isEditing}
+            renderEditButton={false}
             renderFieldsOnly={true}
-            onRemoveService={onRemoveService ? () => handleRemoveService(serviceName) : undefined}
+            onRemoveService={undefined}
           />
         </div>
       </div>
@@ -230,7 +266,9 @@ export function AliasCard({
                 <ChevronDown
                   className="h-3 w-3 transition-transform"
                   style={{
-                    transform: isServicesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                    transform: isServicesOpen
+                      ? 'rotate(0deg)'
+                      : 'rotate(-90deg)',
                   }}
                 />
                 <span className="text-xs font-medium text-muted-foreground">
@@ -257,7 +295,9 @@ export function AliasCard({
               </p>
             ) : (
               <div className="space-y-2">
-                {services.map((serviceName) => renderServiceEditor(serviceName))}
+                {services.map((serviceName) =>
+                  renderServiceEditor(serviceName)
+                )}
               </div>
             )}
           </CollapsibleContent>
@@ -274,7 +314,9 @@ export function AliasCard({
                 }}
               />
               <MessageSquare className="h-3 w-3" />
-              <span className="text-xs font-medium text-muted-foreground">Comments</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Comments
+              </span>
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 space-y-2">
@@ -314,7 +356,9 @@ export function AliasCard({
               <div className="space-y-2">
                 {alias.comments ? (
                   <div className="rounded bg-muted px-2 py-1">
-                    <p className="text-xs whitespace-pre-wrap">{alias.comments}</p>
+                    <p className="text-xs whitespace-pre-wrap">
+                      {alias.comments}
+                    </p>
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground italic px-2">

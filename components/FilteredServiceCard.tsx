@@ -134,37 +134,82 @@ export function FilteredServiceCard({
         <div className="rounded border bg-card">
           <div className="p-2 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              {!isEditing ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-2 shrink-0"
-                  onClick={() => setEditingService(serviceName)}
-                  disabled={isUpdating}
-                >
-                  <Edit2 className="h-3 w-3 mr-1" />
-                  <span className="text-xs">Edit</span>
-                </Button>
-              ) : null}
+              <Badge variant="outline" className="text-xs capitalize shrink-0">
+                {serviceName}
+              </Badge>
+              <div className="flex items-center gap-1 shrink-0">
+                {!isEditing ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 shrink-0"
+                    onClick={() => setEditingService(serviceName)}
+                    disabled={isUpdating}
+                  >
+                    <Edit2 className="h-3 w-3 mr-1" />
+                    <span className="text-xs">Edit</span>
+                  </Button>
+                ) : (
+                  <ServiceFieldEditor
+                    serviceName={serviceName}
+                    serviceFields={service.fields}
+                    currentValues={currentValues}
+                    onUpdate={async (fieldName, value) =>
+                      await handleFieldUpdate(fieldName, value)
+                    }
+                    onEditStart={() => setEditingService(serviceName)}
+                    onEditComplete={() => setEditingService(null)}
+                    isEditing={isEditing}
+                    isUpdating={isUpdating}
+                    renderEditButton={true}
+                    renderFieldsOnly={false}
+                    onRemoveService={
+                      onRemoveService ? handleRemoveService : undefined
+                    }
+                  />
+                )}
+              </div>
             </div>
 
-            <ServiceFieldEditor
-              serviceName={serviceName}
-              serviceFields={service.fields}
-              currentValues={currentValues}
-              onUpdate={async (fieldName, value) =>
-                await handleFieldUpdate(fieldName, value)
-              }
-              onEditStart={() => setEditingService(serviceName)}
-              onEditComplete={() => setEditingService(null)}
-              isEditing={isEditing}
-              isUpdating={isUpdating}
-              renderEditButton={isEditing}
-              renderFieldsOnly={true}
-              onRemoveService={
-                onRemoveService ? handleRemoveService : undefined
-              }
-            />
+            {!isEditing && (
+              <ServiceFieldEditor
+                serviceName={serviceName}
+                serviceFields={service.fields}
+                currentValues={currentValues}
+                onUpdate={async (fieldName, value) =>
+                  await handleFieldUpdate(fieldName, value)
+                }
+                onEditStart={() => setEditingService(serviceName)}
+                onEditComplete={() => setEditingService(null)}
+                isEditing={false}
+                isUpdating={isUpdating}
+                renderEditButton={false}
+                renderFieldsOnly={true}
+                onRemoveService={
+                  onRemoveService ? handleRemoveService : undefined
+                }
+              />
+            )}
+
+            {isEditing && (
+              <ServiceFieldEditor
+                serviceName={serviceName}
+                serviceFields={service.fields}
+                currentValues={currentValues}
+                onUpdate={async (fieldName, value) =>
+                  await handleFieldUpdate(fieldName, value)
+                }
+                onEditStart={() => setEditingService(serviceName)}
+                onEditComplete={() => setEditingService(null)}
+                isEditing={true}
+                isUpdating={isUpdating}
+                renderEditButton={false}
+                renderFieldsOnly={true}
+                onRemoveService={
+                  onRemoveService ? handleRemoveService : undefined
+                }
+              />
+            )}
           </div>
         </div>
 

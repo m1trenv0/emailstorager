@@ -8,6 +8,7 @@ import { AccountDetailsModal } from '@/components/AccountDetailsModal';
 import { useAccountStore, useAllAccounts } from '@/lib/store/useAccountStore';
 import {
   AccountWithAliases,
+  AliasWithStatus,
   ServiceFieldValue,
   Service,
   Filter,
@@ -383,9 +384,25 @@ export default function Home() {
           })}
 
           {filters.map((filter) => {
-            const allAliases = allAccounts.flatMap(
-              (account) => account.aliases
-            );
+            // Include both primary accounts and aliases
+            const allAliases = allAccounts.flatMap((account) => [
+              // Include primary account as an "alias" for filtering
+              {
+                id: account.id,
+                accountId: account.id,
+                email: account.primaryEmail,
+                status: account.status,
+                comments: null,
+                createdAt: account.createdAt,
+                countsTowardLimit: false,
+              } as AliasWithStatus,
+              // Include all aliases
+              ...account.aliases,
+            ]);
+            console.log('[FilterTab] All aliases including primaries:', {
+              total: allAliases.length,
+              emails: allAliases.map((a) => a.email),
+            });
             return (
               <TabsContent
                 key={filter.id}

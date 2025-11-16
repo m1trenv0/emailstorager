@@ -20,6 +20,9 @@ interface ConditionBuilderProps {
   onChange: (conditions: FilterCondition[]) => void;
 }
 
+// Special pseudo-field for service registration status
+const SERVICE_REGISTRATION_FIELD = '__service_registered__';
+
 const OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: 'equals', label: 'Equals' },
   { value: 'not_equals', label: 'Not Equals' },
@@ -49,9 +52,20 @@ export function ConditionBuilder({
   serviceFields,
   onChange,
 }: ConditionBuilderProps) {
+  // Add the special service registration field to the available fields
+  const allFields = [
+    {
+      name: SERVICE_REGISTRATION_FIELD,
+      type: 'boolean' as const,
+      required: false,
+      description: 'Whether the account is registered on this service',
+    },
+    ...serviceFields,
+  ];
+
   const addCondition = () => {
     const newCondition: FilterCondition = {
-      field: serviceFields[0]?.name || '',
+      field: allFields[0]?.name || '',
       operator: 'equals',
       value: '',
     };
@@ -72,11 +86,33 @@ export function ConditionBuilder({
   };
 
   const getFieldType = (fieldName: string): string => {
+    if (fieldName === SERVICE_REGISTRATION_FIELD) {
+      return 'boolean';
+    }
     const field = serviceFields.find((f) => f.name === fieldName);
     return field?.type || 'string';
   };
 
+  const isServiceRegistrationField = (fieldName: string): boolean => {
+    return fieldName === SERVICE_REGISTRATION_FIELD;
+  };
+
+  const getAvailableOperators = (fieldName: string): typeof OPERATORS => {
+    // For service registration field, only show exists/not_exists operators
+    if (isServiceRegistrationField(fieldName)) {
+      return OPERATORS.filter(
+        (op) => op.value === 'exists' || op.value === 'not_exists'
+      );
+    }
+    return OPERATORS;
+  };
+
   const renderValueInput = (condition: FilterCondition, index: number) => {
+    // Service registration field doesn't need value input
+    if (isServiceRegistrationField(condition.field)) {
+      return null;
+    }
+
     const needsValue = OPERATORS_NEEDING_VALUE.includes(condition.operator);
     if (!needsValue) return null;
 
@@ -138,8 +174,8 @@ export function ConditionBuilder({
       {conditions.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
-            No conditions added yet. Click "Add Condition" to create your first
-            filter rule.
+            No conditions added yet. Click &ldquo;Add Condition&rdquo; to create
+            your first filter rule.
           </CardContent>
         </Card>
       ) : (
@@ -177,6 +213,14 @@ export function ConditionBuilder({
                         <SelectValue placeholder="Select field..." />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem
+                          key={SERVICE_REGISTRATION_FIELD}
+                          value={SERVICE_REGISTRATION_FIELD}
+                        >
+                          <span className="font-semibold">
+                            Service Registration Status
+                          </span>
+                        </SelectItem>
                         {serviceFields.map((field) => (
                           <SelectItem key={field.name} value={field.name}>
                             {field.name} ({field.type})
@@ -202,7 +246,7 @@ export function ConditionBuilder({
                         <SelectValue placeholder="Select operator..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {OPERATORS.map((op) => (
+                        {getAvailableOperators(condition.field).map((op) => (
                           <SelectItem key={op.value} value={op.value}>
                             {op.label}
                           </SelectItem>

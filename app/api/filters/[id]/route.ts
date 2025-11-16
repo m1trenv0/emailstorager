@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
 
+// Special pseudo-field for service registration status
+const SERVICE_REGISTRATION_FIELD = '__service_registered__';
+
 // Validation schema for filter condition
 const filterConditionSchema = z.object({
   field: z.string().min(1, 'Field name is required'),
@@ -136,6 +139,23 @@ export async function PUT(
       const serviceFieldNames = serviceFields.map((f) => f.name);
 
       for (const condition of conditions) {
+        // Allow the special service registration field
+        if (condition.field === SERVICE_REGISTRATION_FIELD) {
+          // Validate that only exists/not_exists operators are used
+          if (
+            condition.operator !== 'exists' &&
+            condition.operator !== 'not_exists'
+          ) {
+            return NextResponse.json(
+              {
+                error: `Service Registration Status field only supports "exists" or "not_exists" operators`,
+              },
+              { status: 400 }
+            );
+          }
+          continue;
+        }
+
         if (!serviceFieldNames.includes(condition.field)) {
           return NextResponse.json(
             {
