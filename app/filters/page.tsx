@@ -178,6 +178,28 @@ export default function FiltersPage() {
     );
   }
 
+  const handleSyncCategories = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/filter-categories/sync', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to sync filter categories');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+      await fetchData();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to sync categories'
+      );
+      setIsLoading(false);
+    }
+  };
+
   if (categories.length === 0 && viewMode === 'list') {
     return (
       <>
@@ -187,11 +209,17 @@ export default function FiltersPage() {
               No filter categories available
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">
-              You need to create services first before you can create filters.
+              Filter categories are required to create filters. Click below to
+              automatically create categories for your existing services.
             </p>
-            <Link href="/services">
-              <Button>Go to Services</Button>
-            </Link>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={handleSyncCategories}>
+                Create Filter Categories
+              </Button>
+              <Link href="/services">
+                <Button variant="outline">Go to Services</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </>
