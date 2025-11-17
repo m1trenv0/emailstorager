@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { ServiceField, ServiceFieldValue } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit2, Save, X, Trash2 } from 'lucide-react';
+import { ServiceFieldEditorActions, ServiceFieldInput, ServiceFieldView } from '@/components/service-fields';
+import { useServiceFieldEditing } from '@/lib/hooks/useServiceFieldEditing';
 
 interface ServiceFieldEditorProps {
   serviceName: string;
@@ -37,8 +34,7 @@ export function ServiceFieldEditor({
   onRemoveService,
 }: ServiceFieldEditorProps): React.ReactElement {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
-  const isEditing =
-    externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 
   const handleEditStart = (): void => {
     if (onEditStart) {
@@ -56,48 +52,13 @@ export function ServiceFieldEditor({
     }
   };
 
-  const [editedValues, setEditedValues] = useState<
-    Record<string, ServiceFieldValue>
-  >(() => {
-    // Initialize with all fields from serviceFields
-    const initial: Record<string, ServiceFieldValue> = {};
-    serviceFields.forEach((field) => {
-      initial[field.name] = currentValues[field.name] ?? null;
-    });
-    return initial;
-  });
-
-  // Memoize the initial edited values
-  const initialEditedValues = useMemo(() => {
-    const initial: Record<string, ServiceFieldValue> = {};
-    serviceFields.forEach((field) => {
-      initial[field.name] = currentValues[field.name] ?? null;
-    });
-    return initial;
-  }, [currentValues, serviceFields]);
-
-  useEffect(() => {
-    // Only update editedValues when not editing to avoid losing changes
-    if (!isEditing) {
-      setEditedValues(initialEditedValues);
-    }
-  }, [initialEditedValues, isEditing]);
-
-  // Memoize change detection to avoid setState in effect
-  const hasChanges = useMemo(() => {
-    return serviceFields.some((field) => {
-      const editedValue = editedValues[field.name];
-      const currentValue = currentValues[field.name] ?? null;
-      return editedValue !== currentValue;
-    });
-  }, [editedValues, currentValues, serviceFields]);
-
-  const handleChange = (fieldName: string, value: ServiceFieldValue): void => {
-    setEditedValues((prev) => ({
-      ...prev,
-      [fieldName]: value,
-    }));
-  };
+  const {
+    editedValues,
+    hasChanges,
+    handleChange,
+    resetValues,
+    getChangedFields,
+  } = useServiceFieldEditing(serviceFields, currentValues, isEditing);
 
   const handleSave = async (): Promise<void> => {
     if (!hasChanges) {
@@ -106,21 +67,10 @@ export function ServiceFieldEditor({
     }
 
     try {
-      // Collect all changed fields
-      const changedFields: Array<{ name: string; value: ServiceFieldValue }> = [];
-      for (const field of serviceFields) {
-        const editedValue = editedValues[field.name];
-        const currentValue = currentValues[field.name] ?? null;
-        if (editedValue !== currentValue) {
-          changedFields.push({ name: field.name, value: editedValue });
-        }
-      }
-
-      // Execute updates sequentially to avoid race conditions
+      const changedFields = getChangedFields();
       for (const { name, value } of changedFields) {
         await onUpdate(name, value);
       }
-
       handleEditComplete();
     } catch (error) {
       console.error('Failed to save changes:', error);
@@ -128,360 +78,114 @@ export function ServiceFieldEditor({
   };
 
   const handleCancel = (): void => {
-    const restored: Record<string, ServiceFieldValue> = {};
-    serviceFields.forEach((field) => {
-      restored[field.name] = currentValues[field.name] ?? null;
-    });
-    setEditedValues(restored);
+    resetValues();
     handleEditComplete();
   };
 
-  const renderFieldInput = (field: ServiceField): React.ReactElement => {
-    const value = editedValues[field.name];
+  // Render only action buttons
+  if (renderEditButton) {
+    return (
+      <ServiceFieldEditorActions
+        isEditing={isEditing}
+        isUpdating={isUpdating}
+        hasChanges={hasChanges}
+        onEditStart={handleEditStart}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        onRemoveService={onRemoveService}
+      />
+    );
+  }
 
-    switch (field.type) {
-      case 'boolean':
-        return (
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`${serviceName}-${field.name}`}
-              checked={value === true}
-              onCheckedChange={(checked) =>
-                handleChange(field.name, checked === true)
-              }
-              disabled={!isEditing || isUpdating}
-            />
-            <Label
-              htmlFor={`${serviceName}-${field.name}`}
-              className="text-xs font-normal cursor-pointer"
-            >
-              {field.name}
-            </Label>
-          </div>
-        );
-
-      case 'date':
-        return (
-          <div className="space-y-1">
-            <Label htmlFor={`${serviceName}-${field.name}`} className="text-xs">
-              {field.name}
-              {field.required && (
-                <span className="text-destructive ml-1">*</span>
-              )}
-            </Label>
-            <div className="flex gap-1">
-              <Input
-                id={`${serviceName}-${field.name}`}
-                type="date"
-                value={
-                  value
-                    ? new Date(value as string | number)
-                        .toISOString()
-                        .split('T')[0]
-                    : ''
-                }
-                onChange={(e) =>
-                  handleChange(
-                    field.name,
-                    e.target.value
-                      ? new Date(e.target.value).toISOString()
-                      : null
-                  )
-                }
-                disabled={!isEditing || isUpdating}
-                className="flex-1 text-xs h-7"
+  // Render only fields (no header/actions)
+  if (renderFieldsOnly) {
+    return (
+      <div className="space-y-1">
+        {isEditing ? (
+          <>
+            {serviceFields.map((field) => (
+              <div key={field.name} className="text-sm">
+                <ServiceFieldInput
+                  serviceName={serviceName}
+                  field={field}
+                  value={editedValues[field.name]}
+                  isEditing={isEditing}
+                  isUpdating={isUpdating}
+                  onChange={(value) => handleChange(field.name, value)}
+                />
+              </div>
+            ))}
+            <div className="flex gap-1 pt-2">
+              <ServiceFieldEditorActions
+                isEditing={true}
+                isUpdating={isUpdating}
+                hasChanges={hasChanges}
+                onEditStart={handleEditStart}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                onRemoveService={onRemoveService}
               />
-              {isEditing && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs whitespace-nowrap"
-                  onClick={() =>
-                    handleChange(field.name, new Date().toISOString())
-                  }
-                  disabled={isUpdating}
-                >
-                  Today
-                </Button>
-              )}
             </div>
-          </div>
-        );
-
-      case 'number':
-        return (
-          <div className="space-y-1">
-            <Label htmlFor={`${serviceName}-${field.name}`} className="text-xs">
-              {field.name}
-              {field.required && (
-                <span className="text-destructive ml-1">*</span>
-              )}
-            </Label>
-            <Input
-              id={`${serviceName}-${field.name}`}
-              type="number"
-              value={(value as number) ?? ''}
-              onChange={(e) =>
-                handleChange(
-                  field.name,
-                  e.target.value ? Number(e.target.value) : null
-                )
-              }
-              disabled={!isEditing || isUpdating}
-              className="w-full text-xs h-7"
-            />
-          </div>
-        );
-
-      case 'string':
-      default:
-        return (
-          <div className="space-y-1">
-            <Label htmlFor={`${serviceName}-${field.name}`} className="text-xs">
-              {field.name}
-              {field.required && (
-                <span className="text-destructive ml-1">*</span>
-              )}
-            </Label>
-            <Input
-              id={`${serviceName}-${field.name}`}
-              type="text"
-              value={(value as string) ?? ''}
-              onChange={(e) => {
-                const newValue = e.target.value.trim() || null;
-                handleChange(field.name, newValue);
-              }}
-              disabled={!isEditing || isUpdating}
-              className="w-full text-xs h-7"
-              placeholder={field.description}
-            />
-          </div>
-        );
-    }
-  };
-
-  const renderFieldValue = (
-    field: ServiceField
-  ): React.ReactElement | string => {
-    const value = currentValues[field.name];
-
-    if (value === null || value === undefined) {
-      return <span className="text-muted-foreground italic">Not set</span>;
-    }
-
-    switch (field.type) {
-      case 'boolean':
-        return (
-          <Badge variant={value ? 'default' : 'secondary'}>
-            {value ? 'Yes' : 'No'}
-          </Badge>
-        );
-
-      case 'date':
-        return new Date(value as string | number).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
-
-      default:
-        return <span className="font-medium">{String(value)}</span>;
-    }
-  };
-
-  return (
-    <>
-      {renderEditButton &&
-        (!isEditing ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-5 px-1"
-            onClick={handleEditStart}
-            disabled={isUpdating}
-          >
-            <Edit2 className="h-3 w-3 mr-0.5" />
-            <span className="text-xs">Edit</span>
-          </Button>
+          </>
         ) : (
-          <div className="flex gap-1 shrink-0">
-            <Button
-              size="sm"
-              className="h-5 px-1.5 text-xs shrink-0"
-              onClick={handleSave}
-              disabled={!hasChanges || isUpdating}
-            >
-              {isUpdating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Save className="h-3 w-3 mr-0.5" />
-              )}
-              Save
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-5 px-1.5 shrink-0"
-              onClick={handleCancel}
-              disabled={isUpdating}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-            {onRemoveService && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 w-5 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={onRemoveService}
-                disabled={isUpdating}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
+          <div className="space-y-0.5">
+            {serviceFields.map((field) => (
+              <ServiceFieldView
+                key={field.name}
+                field={field}
+                value={currentValues[field.name]}
+              />
+            ))}
           </div>
-        ))}
-      {renderFieldsOnly && (
-        <div className="space-y-1">
-          {isEditing ? (
-            // Edit mode - show inputs and buttons together
-            <>
-              {serviceFields.map((field) => (
-                <div key={field.name} className="text-sm">
-                  {renderFieldInput(field)}
-                </div>
-              ))}
-              {/* Render buttons here when in edit mode */}
-              {!renderEditButton && (
-                <div className="flex gap-1 pt-2">
-                  <Button
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={handleSave}
-                    disabled={!hasChanges || isUpdating}
-                  >
-                    {isUpdating ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Save className="h-3 w-3 mr-1" />
-                    )}
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-6 px-2"
-                    onClick={handleCancel}
-                    disabled={isUpdating}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                  {onRemoveService && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={onRemoveService}
-                      disabled={isUpdating}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              )}
-            </>
-          ) : (
-            // View mode - show values
-            <div className="space-y-0.5">
-              {serviceFields.map((field) => (
-                <div
-                  key={field.name}
-                  className="flex items-center justify-between gap-2 py-0.5"
-                >
-                  <span className="text-xs text-muted-foreground">
-                    {field.name}:
-                  </span>
-                  <div className="text-xs">{renderFieldValue(field)}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {!renderEditButton && !renderFieldsOnly && (
-        <div className="space-y-2">
-          {/* Header */}
-          <div className="flex items-center justify-between gap-2">
-            <Badge variant="outline" className="text-xs capitalize">
-              {serviceName}
-            </Badge>
-            {!isEditing ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 px-1"
-                onClick={handleEditStart}
-                disabled={isUpdating}
-              >
-                <Edit2 className="h-3 w-3 mr-1" />
-                <span className="text-xs">Edit</span>
-              </Button>
-            ) : (
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={handleSave}
-                  disabled={!hasChanges || isUpdating}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Save className="h-3 w-3 mr-1" />
-                  )}
-                  Save
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 px-2"
-                  onClick={handleCancel}
-                  disabled={isUpdating}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-          </div>
+        )}
+      </div>
+    );
+  }
 
-          {/* Fields */}
-          <div className="space-y-1">
-            {isEditing ? (
-              // Edit mode - show inputs
-              serviceFields.map((field) => (
-                <div key={field.name} className="text-sm">
-                  {renderFieldInput(field)}
-                </div>
-              ))
-            ) : (
-              // View mode - show values
-              <div className="space-y-0.5">
-                {serviceFields.map((field) => (
-                  <div
-                    key={field.name}
-                    className="flex items-center justify-between gap-2 py-0.5"
-                  >
-                    <span className="text-xs text-muted-foreground">
-                      {field.name}:
-                    </span>
-                    <div className="text-xs">{renderFieldValue(field)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+  // Full render with header and actions
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="outline" className="text-xs capitalize">
+          {serviceName}
+        </Badge>
+        <ServiceFieldEditorActions
+          isEditing={isEditing}
+          isUpdating={isUpdating}
+          hasChanges={hasChanges}
+          onEditStart={handleEditStart}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onRemoveService={onRemoveService}
+        />
+      </div>
+
+      <div className="space-y-1">
+        {isEditing ? (
+          serviceFields.map((field) => (
+            <div key={field.name} className="text-sm">
+              <ServiceFieldInput
+                serviceName={serviceName}
+                field={field}
+                value={editedValues[field.name]}
+                isEditing={isEditing}
+                isUpdating={isUpdating}
+                onChange={(value) => handleChange(field.name, value)}
+              />
+            </div>
+          ))
+        ) : (
+          <div className="space-y-0.5">
+            {serviceFields.map((field) => (
+              <ServiceFieldView
+                key={field.name}
+                field={field}
+                value={currentValues[field.name]}
+              />
+            ))}
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }
