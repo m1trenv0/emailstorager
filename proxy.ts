@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 const publicPaths = ['/auth/login', '/auth/setup'];
 
 // API paths that don't require authentication
-const publicApiPaths = ['/api/auth/login', '/api/auth/setup', '/api/auth/check-setup'];
+const publicApiPaths = ['/api/auth/login', '/api/auth/setup', '/api/auth/check-setup', '/api/auth/csrf-token'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -27,8 +27,10 @@ export async function proxy(request: NextRequest) {
     const userCount = await prisma.user.count();
 
     if (userCount === 0) {
-      // No users exist, redirect to setup
-      if (!pathname.startsWith('/auth/setup')) {
+      // No users exist
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Setup required' }, { status: 401 });
+      } else if (!pathname.startsWith('/auth/setup')) {
         return NextResponse.redirect(new URL('/auth/setup', request.url));
       }
       return NextResponse.next();
