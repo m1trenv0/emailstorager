@@ -142,61 +142,7 @@ export function AliasCard({
     return (
       <div key={serviceName} className="rounded border bg-card">
         <div className="p-2 space-y-2">
-          {/* Header with service name, edit/save and remove buttons */}
-          <div className="flex items-center justify-between gap-2 min-w-0">
-            <Badge variant="outline" className="text-xs capitalize shrink-0">
-              {serviceName}
-            </Badge>
-            <div className="flex items-center gap-1 shrink-0">
-              {!isEditing ? (
-                <>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 px-2 shrink-0 whitespace-nowrap"
-                    onClick={() => setEditingService(serviceName)}
-                    disabled={isUpdating}
-                  >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    <span className="text-xs">Edit</span>
-                  </Button>
-                  {onRemoveService && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => handleRemoveService(serviceName)}
-                      disabled={isUpdating}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <ServiceFieldEditor
-                  serviceName={serviceName}
-                  serviceFields={service.fields}
-                  currentValues={currentValues}
-                  onUpdate={async (fieldName, value) =>
-                    await handleFieldUpdate(serviceName, fieldName, value)
-                  }
-                  onEditStart={() => setEditingService(serviceName)}
-                  onEditComplete={() => setEditingService(null)}
-                  isEditing={isEditing}
-                  isUpdating={isUpdating}
-                  renderEditButton={true}
-                  renderFieldsOnly={false}
-                  onRemoveService={
-                    onRemoveService
-                      ? () => handleRemoveService(serviceName)
-                      : undefined
-                  }
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Fields editor */}
+          {/* Service editor with header and fields */}
           <ServiceFieldEditor
             serviceName={serviceName}
             serviceFields={service.fields}
@@ -209,8 +155,12 @@ export function AliasCard({
             isEditing={isEditing}
             isUpdating={isUpdating}
             renderEditButton={false}
-            renderFieldsOnly={true}
-            onRemoveService={undefined}
+            renderFieldsOnly={false}
+            onRemoveService={
+              onRemoveService
+                ? () => handleRemoveService(serviceName)
+                : undefined
+            }
           />
         </div>
       </div>

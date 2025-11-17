@@ -26,13 +26,32 @@ export function setServiceField(
   fieldName: string,
   value: ServiceFieldValue
 ): AliasStatus {
-  return {
+  console.log(
+    `[setServiceField] Setting field ${serviceName}.${fieldName} to value:`,
+    {
+      value: JSON.stringify(value),
+      valueType: typeof value,
+      serviceName,
+      fieldName,
+      currentServiceStatus: JSON.stringify(status[serviceName] || {}),
+      fullStatusBefore: JSON.stringify(status),
+    }
+  );
+
+  const newStatus = {
     ...status,
     [serviceName]: {
       ...(status[serviceName] || {}),
       [fieldName]: value,
     },
   };
+
+  console.log(
+    `[setServiceField] New status after setting ${serviceName}.${fieldName}:`,
+    JSON.stringify(newStatus)
+  );
+
+  return newStatus;
 }
 
 /**

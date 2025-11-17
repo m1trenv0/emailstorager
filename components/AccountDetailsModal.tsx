@@ -246,8 +246,8 @@ export function AccountDetailsModal({
             onEditComplete={() => setEditingService(null)}
             isEditing={isEditing}
             isUpdating={isUpdating}
-            renderEditButton={isEditing}
-            renderFieldsOnly={true}
+            renderEditButton={false}
+            renderFieldsOnly={false}
             onRemoveService={
               onRemoveServiceFromAccount
                 ? () => handleRemoveServiceFromAccount(serviceName)

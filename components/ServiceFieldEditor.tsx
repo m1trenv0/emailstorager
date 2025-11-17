@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ServiceField, ServiceFieldValue } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,99 +35,108 @@ export function ServiceFieldEditor({
   onEditComplete,
   onEditStart,
   onRemoveService,
-}: ServiceFieldEditorProps) {
+}: ServiceFieldEditorProps): React.ReactElement {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
-  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
-  
-  const handleEditStart = () => {
+  const isEditing =
+    externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+
+  const handleEditStart = (): void => {
     if (onEditStart) {
       onEditStart();
     } else {
       setInternalIsEditing(true);
     }
   };
-  
-  const handleEditComplete = () => {
+
+  const handleEditComplete = (): void => {
     if (onEditComplete) {
       onEditComplete();
     } else {
       setInternalIsEditing(false);
     }
   };
-  
-  const [editedValues, setEditedValues] =
-    useState<Record<string, ServiceFieldValue>>(() => {
-      // Initialize with all fields from serviceFields
-      const initial: Record<string, ServiceFieldValue> = {};
-      serviceFields.forEach(field => {
-        initial[field.name] = currentValues[field.name] ?? null;
-      });
-      return initial;
-    });
-  const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    // Update editedValues when currentValues change
-    const updated: Record<string, ServiceFieldValue> = {};
-    serviceFields.forEach(field => {
-      updated[field.name] = currentValues[field.name] ?? null;
+  const [editedValues, setEditedValues] = useState<
+    Record<string, ServiceFieldValue>
+  >(() => {
+    // Initialize with all fields from serviceFields
+    const initial: Record<string, ServiceFieldValue> = {};
+    serviceFields.forEach((field) => {
+      initial[field.name] = currentValues[field.name] ?? null;
     });
-    setEditedValues(updated);
-    setHasChanges(false);
+    return initial;
+  });
+
+  // Memoize the initial edited values
+  const initialEditedValues = useMemo(() => {
+    const initial: Record<string, ServiceFieldValue> = {};
+    serviceFields.forEach((field) => {
+      initial[field.name] = currentValues[field.name] ?? null;
+    });
+    return initial;
   }, [currentValues, serviceFields]);
 
   useEffect(() => {
-    // Check if there are any changes compared to current values
-    const hasAnyChanges = serviceFields.some(field => {
+    // Only update editedValues when not editing to avoid losing changes
+    if (!isEditing) {
+      setEditedValues(initialEditedValues);
+    }
+  }, [initialEditedValues, isEditing]);
+
+  // Memoize change detection to avoid setState in effect
+  const hasChanges = useMemo(() => {
+    return serviceFields.some((field) => {
       const editedValue = editedValues[field.name];
       const currentValue = currentValues[field.name] ?? null;
       return editedValue !== currentValue;
     });
-    setHasChanges(hasAnyChanges);
   }, [editedValues, currentValues, serviceFields]);
 
-  const handleChange = (fieldName: string, value: ServiceFieldValue) => {
+  const handleChange = (fieldName: string, value: ServiceFieldValue): void => {
     setEditedValues((prev) => ({
       ...prev,
       [fieldName]: value,
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!hasChanges) {
       handleEditComplete();
       return;
     }
 
     try {
-      // Update all changed fields
-      const updatePromises = [];
+      // Collect all changed fields
+      const changedFields: Array<{ name: string; value: ServiceFieldValue }> = [];
       for (const field of serviceFields) {
         const editedValue = editedValues[field.name];
         const currentValue = currentValues[field.name] ?? null;
         if (editedValue !== currentValue) {
-          updatePromises.push(onUpdate(field.name, editedValue));
+          changedFields.push({ name: field.name, value: editedValue });
         }
       }
-      await Promise.all(updatePromises);
+
+      // Execute updates sequentially to avoid race conditions
+      for (const { name, value } of changedFields) {
+        await onUpdate(name, value);
+      }
+
       handleEditComplete();
-      setHasChanges(false);
     } catch (error) {
-      console.error(`[${serviceName}] Failed to save changes:`, error);
+      console.error('Failed to save changes:', error);
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     const restored: Record<string, ServiceFieldValue> = {};
-    serviceFields.forEach(field => {
+    serviceFields.forEach((field) => {
       restored[field.name] = currentValues[field.name] ?? null;
     });
     setEditedValues(restored);
     handleEditComplete();
-    setHasChanges(false);
   };
 
-  const renderFieldInput = (field: ServiceField) => {
+  const renderFieldInput = (field: ServiceField): React.ReactElement => {
     const value = editedValues[field.name];
 
     switch (field.type) {
@@ -174,7 +183,9 @@ export function ServiceFieldEditor({
                 onChange={(e) =>
                   handleChange(
                     field.name,
-                    e.target.value ? new Date(e.target.value).toISOString() : null
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null
                   )
                 }
                 disabled={!isEditing || isUpdating}
@@ -186,7 +197,9 @@ export function ServiceFieldEditor({
                   variant="outline"
                   size="sm"
                   className="h-7 px-2 text-xs whitespace-nowrap"
-                  onClick={() => handleChange(field.name, new Date().toISOString())}
+                  onClick={() =>
+                    handleChange(field.name, new Date().toISOString())
+                  }
                   disabled={isUpdating}
                 >
                   Today
@@ -248,7 +261,9 @@ export function ServiceFieldEditor({
     }
   };
 
-  const renderFieldValue = (field: ServiceField) => {
+  const renderFieldValue = (
+    field: ServiceField
+  ): React.ReactElement | string => {
     const value = currentValues[field.name];
 
     if (value === null || value === undefined) {
@@ -277,8 +292,8 @@ export function ServiceFieldEditor({
 
   return (
     <>
-      {renderEditButton && (
-        !isEditing ? (
+      {renderEditButton &&
+        (!isEditing ? (
           <Button
             size="sm"
             variant="ghost"
@@ -325,15 +340,56 @@ export function ServiceFieldEditor({
               </Button>
             )}
           </div>
-        )
-      )}
+        ))}
       {renderFieldsOnly && (
         <div className="space-y-1">
           {isEditing ? (
-            // Edit mode - show inputs
-            serviceFields.map((field) => (
-              <div key={field.name} className="text-sm">{renderFieldInput(field)}</div>
-            ))
+            // Edit mode - show inputs and buttons together
+            <>
+              {serviceFields.map((field) => (
+                <div key={field.name} className="text-sm">
+                  {renderFieldInput(field)}
+                </div>
+              ))}
+              {/* Render buttons here when in edit mode */}
+              {!renderEditButton && (
+                <div className="flex gap-1 pt-2">
+                  <Button
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={handleSave}
+                    disabled={!hasChanges || isUpdating}
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Save className="h-3 w-3 mr-1" />
+                    )}
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2"
+                    onClick={handleCancel}
+                    disabled={isUpdating}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                  {onRemoveService && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={onRemoveService}
+                      disabled={isUpdating}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             // View mode - show values
             <div className="space-y-0.5">
@@ -403,7 +459,9 @@ export function ServiceFieldEditor({
             {isEditing ? (
               // Edit mode - show inputs
               serviceFields.map((field) => (
-                <div key={field.name} className="text-sm">{renderFieldInput(field)}</div>
+                <div key={field.name} className="text-sm">
+                  {renderFieldInput(field)}
+                </div>
               ))
             ) : (
               // View mode - show values

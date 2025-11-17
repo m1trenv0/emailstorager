@@ -83,6 +83,17 @@ export const useUpdateAccountServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
+      console.log(
+        `[useUpdateAccountServiceField] Starting update for account ${accountId}, service ${serviceName}, field ${fieldName}:`,
+        {
+          accountId,
+          serviceName,
+          fieldName,
+          value: JSON.stringify(value),
+          valueType: typeof value,
+        }
+      );
+
       try {
         const requestBody = {
           serviceName,
@@ -90,6 +101,12 @@ export const useUpdateAccountServiceField = () => {
           value,
         };
 
+        console.log(
+          `[useUpdateAccountServiceField] Sending PATCH request to /api/accounts/${accountId} with body:`,
+          requestBody
+        );
+
+        const startTime = Date.now();
         const response = await fetch(`/api/accounts/${accountId}`, {
           method: 'PATCH',
           headers: {
@@ -97,18 +114,52 @@ export const useUpdateAccountServiceField = () => {
           },
           body: JSON.stringify(requestBody),
         });
+        const fetchTime = Date.now() - startTime;
+
+        console.log(
+          `[useUpdateAccountServiceField] Fetch completed in ${fetchTime}ms, response status: ${response.status}`
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('[useUpdateAccountServiceField] API error:', errorData);
+          console.error('[useUpdateAccountServiceField] API error response:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData,
+            accountId,
+            serviceName,
+            fieldName,
+            value,
+          });
           throw new Error('Failed to update service field');
         }
 
         const responseData = await response.json();
+        console.log(
+          `[useUpdateAccountServiceField] API response data:`,
+          responseData
+        );
 
+        console.log(
+          `[useUpdateAccountServiceField] Updating store with new value`
+        );
         updateAccountServiceField(accountId, serviceName, fieldName, value);
+
+        console.log(
+          `[useUpdateAccountServiceField] Update completed successfully for ${serviceName}.${fieldName}`
+        );
       } catch (error) {
-        console.error('[useUpdateAccountServiceField] Error updating service field:', error);
+        console.error(
+          '[useUpdateAccountServiceField] Error updating service field:',
+          {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            accountId,
+            serviceName,
+            fieldName,
+            value,
+          }
+        );
         throw error;
       }
     },
@@ -117,7 +168,9 @@ export const useUpdateAccountServiceField = () => {
 };
 
 export const useAddServiceToAccount = () => {
-  const addServiceToAccount = useAccountStore((state) => state.addServiceToAccount);
+  const addServiceToAccount = useAccountStore(
+    (state) => state.addServiceToAccount
+  );
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
@@ -136,7 +189,10 @@ export const useAddServiceToAccount = () => {
         }
 
         const updatedAccount = await response.json();
-        console.log('[useAddServiceToAccount] Updated account:', updatedAccount);
+        console.log(
+          '[useAddServiceToAccount] Updated account:',
+          updatedAccount
+        );
         console.log('[useAddServiceToAccount] Service name:', serviceName);
         console.log('[useAddServiceToAccount] Status:', updatedAccount.status);
 
@@ -147,7 +203,10 @@ export const useAddServiceToAccount = () => {
         if (serviceFields) {
           addServiceToAccount(accountId, serviceName, serviceFields);
         } else {
-          console.error('[useAddServiceToAccount] No service fields found for', serviceName);
+          console.error(
+            '[useAddServiceToAccount] No service fields found for',
+            serviceName
+          );
         }
       } catch (error) {
         console.error('Error adding service to account:', error);
@@ -159,7 +218,9 @@ export const useAddServiceToAccount = () => {
 };
 
 export const useRemoveServiceFromAccount = () => {
-  const removeServiceFromAccount = useAccountStore((state) => state.removeServiceFromAccount);
+  const removeServiceFromAccount = useAccountStore(
+    (state) => state.removeServiceFromAccount
+  );
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
