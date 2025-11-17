@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit } from '@/lib/middleware';
-
-// Special pseudo-field for service registration status
-const SERVICE_REGISTRATION_FIELD = '__service_registered__';
+import { successResponse, errorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api/response-helpers';
+import { validateFilterConditions } from '@/lib/api/filter-helpers';
 
 // Validation schema for filter condition
 const filterConditionSchema = z.object({
@@ -42,7 +41,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Apply rate limiting
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
@@ -59,17 +57,12 @@ export async function GET(
       },
     });
 
-    if (!filter) {
-      return NextResponse.json({ error: 'Filter not found' }, { status: 404 });
-    }
+    if (!filter) return notFoundResponse('Filter not found');
 
-    return NextResponse.json(filter, { status: 200 });
+    return successResponse(filter);
   } catch (error) {
     console.error('Error fetching filter:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch filter' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to fetch filter');
   }
 }
 
@@ -79,7 +72,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Apply rate limiting
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
@@ -89,10 +81,7 @@ export async function PUT(
     // Validate input
     const validationResult = validateInput(updateFilterSchema, body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error },
-        { status: 400 }
-      );
+      return validationErrorResponse(validationResult.error);
     }
 
     const { name, categoryId, conditions, showAsTab, tabOrder } =
@@ -103,9 +92,7 @@ export async function PUT(
       where: { id },
     });
 
-    if (!existingFilter) {
-      return NextResponse.json({ error: 'Filter not found' }, { status: 404 });
-    }
+    if (!existingFilter) return notFoundResponse('Filter not found');
 
     // If category is being changed, validate it exists and get service info
     let category;
@@ -117,12 +104,7 @@ export async function PUT(
         },
       });
 
-      if (!category) {
-        return NextResponse.json(
-          { error: 'Filter category not found' },
-          { status: 404 }
-        );
-      }
+      if (!category) return notFoundResponse('Filter category not found');
     } else if (conditions) {
       // If only conditions are being updated, get current category
       category = await prisma.filterCategory.findUnique({
@@ -138,55 +120,13 @@ export async function PUT(
       const serviceFields = category.service.fields as Array<{ name: string }>;
       const serviceFieldNames = serviceFields.map((f) => f.name);
 
-      for (const condition of conditions) {
-        // Allow the special service registration field
-        if (condition.field === SERVICE_REGISTRATION_FIELD) {
-          // Validate that only exists/not_exists operators are used
-          if (
-            condition.operator !== 'exists' &&
-            condition.operator !== 'not_exists'
-          ) {
-            return NextResponse.json(
-              {
-                error: `Service Registration Status field only supports "exists" or "not_exists" operators`,
-              },
-              { status: 400 }
-            );
-          }
-          continue;
-        }
+      const validationError = validateFilterConditions(
+        conditions,
+        serviceFieldNames
+      );
 
-        if (!serviceFieldNames.includes(condition.field)) {
-          return NextResponse.json(
-            {
-              error: `Field "${condition.field}" does not exist in service "${category.service.name}"`,
-            },
-            { status: 400 }
-          );
-        }
-
-        // Validate that value is provided for operators that need it
-        const operatorsNeedingValue = [
-          'equals',
-          'not_equals',
-          'contains',
-          'not_contains',
-          'gt',
-          'gte',
-          'lt',
-          'lte',
-        ];
-        if (
-          operatorsNeedingValue.includes(condition.operator) &&
-          condition.value === undefined
-        ) {
-          return NextResponse.json(
-            {
-              error: `Operator "${condition.operator}" requires a value`,
-            },
-            { status: 400 }
-          );
-        }
+      if (validationError) {
+        return errorResponse(validationError, 400);
       }
     }
 
@@ -211,13 +151,10 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(updatedFilter, { status: 200 });
+    return successResponse(updatedFilter);
   } catch (error) {
     console.error('Error updating filter:', error);
-    return NextResponse.json(
-      { error: 'Failed to update filter' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to update filter');
   }
 }
 
@@ -227,7 +164,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Apply rate limiting
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
@@ -238,24 +174,16 @@ export async function DELETE(
       where: { id },
     });
 
-    if (!existingFilter) {
-      return NextResponse.json({ error: 'Filter not found' }, { status: 404 });
-    }
+    if (!existingFilter) return notFoundResponse('Filter not found');
 
     // Delete filter
     await prisma.filter.delete({
       where: { id },
     });
 
-    return NextResponse.json(
-      { message: 'Filter deleted successfully' },
-      { status: 200 }
-    );
+    return successResponse({ message: 'Filter deleted successfully' });
   } catch (error) {
     console.error('Error deleting filter:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete filter' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to delete filter');
   }
 }
