@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useAccountStore } from '@/lib/store/useAccountStore';
 import { ServiceFieldValue } from '@/lib/types';
+import { useCSRFToken } from '@/lib/hooks/useCSRFToken';
 
 export const useAddAlias = () => {
   const addAlias = useAccountStore((state) => state.addAlias);
@@ -39,6 +40,7 @@ export const useUpdateAliasServiceField = () => {
   const updateAliasServiceField = useAccountStore(
     (state) => state.updateAliasServiceField
   );
+  const { getCSRFHeaders, isLoaded } = useCSRFToken();
 
   return useCallback(
     async (
@@ -47,6 +49,10 @@ export const useUpdateAliasServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
+      if (!isLoaded) {
+        throw new Error('CSRF token not loaded yet. Please try again.');
+      }
+
       try {
         const requestBody = {
           serviceName,
@@ -76,7 +82,7 @@ export const useUpdateAliasServiceField = () => {
         throw error;
       }
     },
-    [updateAliasServiceField]
+    [updateAliasServiceField, isLoaded]
   );
 };
 
@@ -84,6 +90,7 @@ export const useUpdateAliasComment = () => {
   const updateAliasComment = useAccountStore(
     (state) => state.updateAliasComment
   );
+  const { getCSRFHeaders } = useCSRFToken();
 
   return useCallback(
     async (aliasId: string, comment: string) => {
@@ -92,6 +99,7 @@ export const useUpdateAliasComment = () => {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify({ comments: comment }),
         });
