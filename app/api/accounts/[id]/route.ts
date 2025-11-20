@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { validateInput, rateLimit } from '@/lib/middleware';
+import { validateInput, rateLimit, csrfProtection } from '@/lib/middleware';
 import { successResponse, errorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api/response-helpers';
 import { buildAccountUpdateData } from '@/lib/api/account-helpers';
 
@@ -62,6 +62,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Apply CSRF protection
+    const csrfResult = csrfProtection(request);
+    if (csrfResult) return csrfResult;
+
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 
@@ -111,6 +115,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Apply CSRF protection
+    const csrfResult = csrfProtection(request);
+    if (csrfResult) return csrfResult;
+
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
 

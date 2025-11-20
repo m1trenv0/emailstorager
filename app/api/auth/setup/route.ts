@@ -10,6 +10,7 @@ import {
 } from '@/lib/auth/cookies';
 import { setupSchema } from '@/lib/auth/validation';
 import { createDefaultAliExpressService } from '@/lib/setup/createDefaultService';
+import { csrfProtection, rateLimit } from '@/lib/middleware';
 
 /**
  * POST /api/auth/setup
@@ -17,6 +18,14 @@ import { createDefaultAliExpressService } from '@/lib/setup/createDefaultService
  */
 export async function POST(request: NextRequest) {
   try {
+    // Apply CSRF protection
+    const csrfResult = csrfProtection(request);
+    if (csrfResult) return csrfResult;
+
+    // Apply rate limiting
+    const rateLimitResult = rateLimit(request);
+    if (rateLimitResult) return rateLimitResult;
+
     // Check if a user already exists
     const existingUser = await prisma.user.findFirst();
     if (existingUser) {

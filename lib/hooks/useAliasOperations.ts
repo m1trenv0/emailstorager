@@ -40,7 +40,7 @@ export const useUpdateAliasServiceField = () => {
   const updateAliasServiceField = useAccountStore(
     (state) => state.updateAliasServiceField
   );
-  const { getCSRFHeaders, isLoaded } = useCSRFToken();
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (
@@ -49,9 +49,8 @@ export const useUpdateAliasServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
-      if (!isLoaded) {
-        throw new Error('CSRF token not loaded yet. Please try again.');
-      }
+      // Ensure CSRF token is loaded before proceeding
+      await ensureTokenLoaded();
 
       try {
         const requestBody = {
@@ -82,7 +81,7 @@ export const useUpdateAliasServiceField = () => {
         throw error;
       }
     },
-    [updateAliasServiceField, isLoaded]
+    [updateAliasServiceField]
   );
 };
 
@@ -90,10 +89,13 @@ export const useUpdateAliasComment = () => {
   const updateAliasComment = useAccountStore(
     (state) => state.updateAliasComment
   );
-  const { getCSRFHeaders } = useCSRFToken();
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (aliasId: string, comment: string) => {
+      // Ensure CSRF token is loaded before proceeding
+      await ensureTokenLoaded();
+
       try {
         const response = await fetch(`/api/aliases/${aliasId}`, {
           method: 'PATCH',

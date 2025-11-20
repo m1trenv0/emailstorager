@@ -1,9 +1,11 @@
 import { useCallback } from 'react';
 import { useAccountStore } from '@/lib/store/useAccountStore';
 import { ServiceFieldValue } from '@/lib/types';
+import { useCSRFToken } from '@/lib/hooks/useCSRFToken';
 
 export const useAddAccount = () => {
   const addAccount = useAccountStore((state) => state.addAccount);
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (accountData: {
@@ -11,11 +13,15 @@ export const useAddAccount = () => {
       recoveryEmail: string;
       recoveryPassword: string;
     }) => {
+      // Ensure CSRF token is loaded before proceeding
+      await ensureTokenLoaded();
+
       try {
         const response = await fetch('/api/accounts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify(accountData),
         });
@@ -38,12 +44,19 @@ export const useAddAccount = () => {
 
 export const useDeleteAccount = () => {
   const deleteAccount = useAccountStore((state) => state.deleteAccount);
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (accountId: string) => {
+      // Ensure CSRF token is loaded before proceeding
+      await ensureTokenLoaded();
+
       try {
         const response = await fetch(`/api/accounts/${accountId}`, {
           method: 'DELETE',
+          headers: {
+            ...getCSRFHeaders(),
+          },
         });
 
         if (!response.ok) {
@@ -75,6 +88,7 @@ export const useUpdateAccountServiceField = () => {
   const updateAccountServiceField = useAccountStore(
     (state) => state.updateAccountServiceField
   );
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (
@@ -95,6 +109,8 @@ export const useUpdateAccountServiceField = () => {
       );
 
       try {
+        // Ensure CSRF token is loaded before proceeding
+        await ensureTokenLoaded();
         const requestBody = {
           serviceName,
           fieldName,
@@ -107,10 +123,12 @@ export const useUpdateAccountServiceField = () => {
         );
 
         const startTime = Date.now();
+        const csrfHeaders = getCSRFHeaders();
         const response = await fetch(`/api/accounts/${accountId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            ...csrfHeaders,
           },
           body: JSON.stringify(requestBody),
         });

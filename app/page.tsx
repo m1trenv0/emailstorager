@@ -13,6 +13,8 @@ import { useFetch } from '@/lib/hooks/useFetch';
 import { usePageHandlers } from '@/lib/hooks/usePageHandlers';
 import { LoadingState, ErrorState } from '@/components/page/LoadingAndError';
 import { filterAccounts, getAllAliases } from '@/lib/utils/page-utils';
+import { useModalState } from '@/lib/hooks/useModalState';
+import { usePageState } from '@/lib/hooks/usePageState';
 
 export default function Home() {
   const { accounts, selectedAccountId, isLoading, error, fetchAccounts } = useAccountStore();
@@ -21,15 +23,14 @@ export default function Home() {
   const [filters, setFilters] = useState<
     Array<Filter & { category: { service: { name: string; fields: ServiceField[] } } }>
   >([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-  const [isAddAliasModalOpen, setIsAddAliasModalOpen] = useState(false);
-  const [isAccountDetailsModalOpen, setIsAccountDetailsModalOpen] = useState(false);
-  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
-  const [selectedAccountIdForModal, setSelectedAccountIdForModal] = useState<string | null>(null);
+  const pageState = usePageState();
+  const { searchQuery, setSearchQuery, activeTab, setActiveTab } = pageState;
 
-  const selectedAccountForModal = selectedAccountIdForModal
-    ? accounts.find((acc) => acc.id === selectedAccountIdForModal) || null
+  const addAliasModal = useModalState();
+  const accountDetailsModal = useModalState();
+
+  const selectedAccountForModal = accountDetailsModal.currentId
+    ? accounts.find((acc) => acc.id === accountDetailsModal.currentId) || null
     : null;
 
   const {
@@ -63,22 +64,20 @@ export default function Home() {
   }, [filtersData]);
 
   const handleSelectAccountForModal = (accountId: string) => {
-    setSelectedAccountIdForModal(accountId);
-    setIsAccountDetailsModalOpen(true);
+    accountDetailsModal.open(accountId);
     handleSelectAccount(accountId, () => {});
   };
 
   const handleAddAliasClick = (accountId: string) => {
-    setCurrentAccountId(accountId);
-    setIsAddAliasModalOpen(true);
+    addAliasModal.open(accountId);
   };
 
   const handleAddAliasSubmit = async (email: string, countsTowardLimit: boolean) => {
-    if (!currentAccountId) return;
+    if (!addAliasModal.currentId) return;
 
     try {
-      await handleAddAlias(currentAccountId, email, countsTowardLimit);
-      setIsAddAliasModalOpen(false);
+      await handleAddAlias(addAliasModal.currentId, email, countsTowardLimit);
+      addAliasModal.close();
     } catch (error) {
       // Error already handled in hook with toast
     }
@@ -134,6 +133,7 @@ export default function Home() {
                 serviceName={filter.category.service.name}
                 serviceFields={filter.category.service.fields}
                 onServiceFieldUpdate={handleUpdateAliasServiceField}
+                onAccountServiceFieldUpdate={handleUpdateAccountServiceField}
                 onCommentUpdate={handleUpdateAliasComment}
                 onRemoveService={handleRemoveServiceFromAlias}
               />
@@ -143,16 +143,15 @@ export default function Home() {
       </div>
 
       <AddAliasModal
-        isOpen={isAddAliasModalOpen}
-        onClose={() => setIsAddAliasModalOpen(false)}
+        isOpen={addAliasModal.isOpen}
+        onClose={addAliasModal.close}
         onSubmit={handleAddAliasSubmit}
       />
 
       <AccountDetailsModal
-        isOpen={isAccountDetailsModalOpen}
+        isOpen={accountDetailsModal.isOpen}
         onClose={() => {
-          setIsAccountDetailsModalOpen(false);
-          setSelectedAccountIdForModal(null);
+          accountDetailsModal.close();
         }}
         account={selectedAccountForModal}
         onAddAlias={handleAddAliasClick}

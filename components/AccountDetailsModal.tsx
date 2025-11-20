@@ -19,6 +19,7 @@ import { AccountDetailsActions } from './account-details/AccountDetailsActions';
 import { RecoveryCredentials } from './account-details/RecoveryCredentials';
 import { AccountServices } from './account-details/AccountServices';
 import { AccountAliasesList } from './account-details/AccountAliasesList';
+import { canAddAlias, formatDate } from '@/lib/business-logic';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export function AccountDetailsModal({
 
   if (!account) return null;
 
-  const formatDate = (date: Date) => {
+  const formatDateLong = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -90,21 +91,7 @@ export function AccountDetailsModal({
     });
   };
 
-  const canAddAlias = () => {
-    const MAX_ALIASES_PER_PERIOD = 2;
-
-    if (!account.lastAliasAddedAt) return true;
-
-    const lastAdded = new Date(account.lastAliasAddedAt);
-    const now = new Date();
-    const daysSinceLastAlias = Math.floor(
-      (now.getTime() - lastAdded.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysSinceLastAlias >= 7) return true;
-
-    return account.aliasesAddedInPeriod < MAX_ALIASES_PER_PERIOD;
-  };
+  const aliasResult = canAddAlias(account.lastAliasAddedAt, account.aliasesAddedInPeriod);
 
   const handleDelete = async () => {
     const confirmed = await confirm({
@@ -191,7 +178,7 @@ export function AccountDetailsModal({
           <DialogDescription className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
             <span className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
               <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="hidden sm:inline">{formatDate(account.createdAt)}</span>
+              <span className="hidden sm:inline">{formatDateLong(account.createdAt)}</span>
               <span className="sm:hidden">{formatDateShort(account.createdAt)}</span>
             </span>
             <Badge variant="secondary" className="text-xs">
@@ -201,50 +188,58 @@ export function AccountDetailsModal({
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6">
-          <RecoveryCredentials
-            email={account.recoveryEmail}
-            password={account.recoveryPassword}
-          />
+          <section>
+            <RecoveryCredentials
+              email={account.recoveryEmail}
+              password={account.recoveryPassword}
+            />
+          </section>
 
           <Separator />
 
-          <AccountServices
-            accountId={account.id}
-            accountStatus={accountStatus}
-            services={services}
-            isUpdating={isUpdating}
-            onFieldUpdate={handleAccountFieldUpdate}
-            onAddService={
-              onAddServiceToAccount
-                ? () => setIsAddServiceDialogOpen(true)
-                : undefined
-            }
-            onRemoveService={
-              onRemoveServiceFromAccount
-                ? handleRemoveServiceFromAccount
-                : undefined
-            }
-          />
+          <section>
+            <AccountServices
+              accountId={account.id}
+              accountStatus={accountStatus}
+              services={services}
+              isUpdating={isUpdating}
+              onFieldUpdate={handleAccountFieldUpdate}
+              onAddService={
+                onAddServiceToAccount
+                  ? () => setIsAddServiceDialogOpen(true)
+                  : undefined
+              }
+              onRemoveService={
+                onRemoveServiceFromAccount
+                  ? handleRemoveServiceFromAccount
+                  : undefined
+              }
+            />
+          </section>
 
           <Separator />
 
-          <AccountDetailsActions
-            accountId={account.id}
-            canAddAlias={canAddAlias()}
-            onAddAlias={onAddAlias}
-            onDelete={handleDelete}
-            onClose={onClose}
-          />
+          <section>
+            <AccountDetailsActions
+              accountId={account.id}
+              canAddAlias={aliasResult.canAdd}
+              onAddAlias={onAddAlias}
+              onDelete={handleDelete}
+              onClose={onClose}
+            />
+          </section>
 
           <Separator />
 
-          <AccountAliasesList
-            aliases={aliases}
-            onServiceFieldUpdate={onServiceFieldUpdate}
-            onCommentUpdate={onUpdateAliasComment}
-            onAddService={onAddService}
-            onRemoveService={onRemoveService}
-          />
+          <section>
+            <AccountAliasesList
+              aliases={aliases}
+              onServiceFieldUpdate={onServiceFieldUpdate}
+              onCommentUpdate={onUpdateAliasComment}
+              onAddService={onAddService}
+              onRemoveService={onRemoveService}
+            />
+          </section>
         </div>
       </DialogContent>
       <ConfirmDialog />

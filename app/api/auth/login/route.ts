@@ -9,6 +9,7 @@ import {
 } from '@/lib/auth/cookies';
 import { loginSchema } from '@/lib/auth/validation';
 import { checkAndUpdateTrackingOnLogin } from '@/lib/tracking/trackingService';
+import { csrfProtection, rateLimit } from '@/lib/middleware';
 
 /**
  * POST /api/auth/login
@@ -16,6 +17,10 @@ import { checkAndUpdateTrackingOnLogin } from '@/lib/tracking/trackingService';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = rateLimit(request);
+    if (rateLimitResult) return rateLimitResult;
+
     // Parse and validate request body
     const body = await request.json();
     const result = loginSchema.safeParse(body);
@@ -65,6 +70,9 @@ export async function POST(request: NextRequest) {
     const accessToken = generateAccessToken(user.id, user.username);
     const refreshToken = generateRefreshToken(user.id, user.username);
 
+    // Generate CSRF token for the session
+    const csrfToken = crypto.randomUUID();
+
     // Create response with cookies
     const response = NextResponse.json(
       {
@@ -73,6 +81,7 @@ export async function POST(request: NextRequest) {
           id: user.id,
           username: user.username,
         },
+        csrfToken, // Include CSRF token in response for client to use
       },
       { status: 200 }
     );
@@ -85,6 +94,16 @@ export async function POST(request: NextRequest) {
     response.headers.append(
       'Set-Cookie',
       serializeCookie('refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+    );
+    response.headers.append(
+      'Set-Cookie',
+      serializeCookie('csrf-token', csrfToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      })
     );
 
     return response;

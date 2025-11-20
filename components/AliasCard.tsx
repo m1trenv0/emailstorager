@@ -105,44 +105,46 @@ export function AliasCard({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2 pt-2 sm:pt-3 px-3 sm:px-6">
-        <AliasCardHeader
-          email={alias.email}
-          createdAt={alias.createdAt}
-          countsTowardLimit={alias.countsTowardLimit}
-        />
-      </CardHeader>
+    <article className="w-full">
+      <Card>
+        <CardHeader className="pb-2 pt-2 sm:pt-3 px-3 sm:px-6">
+          <AliasCardHeader
+            email={alias.email}
+            createdAt={alias.createdAt}
+            countsTowardLimit={alias.countsTowardLimit}
+          />
+        </CardHeader>
 
-      <CardContent className="space-y-2 pt-0 pb-2 sm:pb-3 px-3 sm:px-6">
-        <AliasServices
-          aliasId={alias.id}
-          aliasStatus={alias.status}
-          services={services}
-          isUpdating={isUpdating}
-          onFieldUpdate={handleFieldUpdate}
-          onAddService={
-            onAddService ? () => setIsAddServiceDialogOpen(true) : undefined
-          }
-          onRemoveService={onRemoveService ? handleRemoveService : undefined}
-        />
+        <CardContent className="space-y-2 pt-0 pb-2 sm:pb-3 px-3 sm:px-6">
+          <AliasServices
+            aliasId={alias.id}
+            aliasStatus={alias.status}
+            services={services}
+            isUpdating={isUpdating}
+            onFieldUpdate={handleFieldUpdate}
+            onAddService={
+              onAddService ? () => setIsAddServiceDialogOpen(true) : undefined
+            }
+            onRemoveService={onRemoveService ? handleRemoveService : undefined}
+          />
 
-        <AliasComments
-          aliasId={alias.id}
-          comments={alias.comments}
-          isUpdating={isUpdating}
-          onCommentUpdate={onCommentUpdate ? handleCommentUpdate : undefined}
-        />
-      </CardContent>
+          <AliasComments
+            aliasId={alias.id}
+            comments={alias.comments}
+            isUpdating={isUpdating}
+            onCommentUpdate={onCommentUpdate ? handleCommentUpdate : undefined}
+          />
+        </CardContent>
 
-      <AddServiceToAliasDialog
-        isOpen={isAddServiceDialogOpen}
-        onClose={() => setIsAddServiceDialogOpen(false)}
-        onSubmit={handleAddService}
-        availableServices={services}
-        existingServices={Object.keys(alias.status)}
-      />
-      <ConfirmDialog />
-    </Card>
+        <AddServiceToAliasDialog
+          isOpen={isAddServiceDialogOpen}
+          onClose={() => setIsAddServiceDialogOpen(false)}
+          onSubmit={handleAddService}
+          availableServices={services}
+          existingServices={Object.keys(alias.status)}
+        />
+        <ConfirmDialog />
+      </Card>
+    </article>
   );
 }

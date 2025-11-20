@@ -19,6 +19,12 @@ interface FilterTabProps {
     fieldName: string,
     value: ServiceFieldValue
   ) => Promise<void>;
+  onAccountServiceFieldUpdate?: (
+    accountId: string,
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => Promise<void>;
   onCommentUpdate: (aliasId: string, comment: string) => Promise<void>;
   onRemoveService?: (aliasId: string, serviceName: string) => Promise<void>;
 }
@@ -31,6 +37,7 @@ export const FilterTab = ({
   serviceName,
   serviceFields,
   onServiceFieldUpdate,
+  onAccountServiceFieldUpdate,
   onCommentUpdate,
   onRemoveService,
 }: FilterTabProps) => {
@@ -124,7 +131,11 @@ export const FilterTab = ({
               key={alias.id}
               alias={alias}
               serviceName={serviceName}
-              onServiceFieldUpdate={onServiceFieldUpdate}
+              onServiceFieldUpdate={
+                alias.id === alias.accountId && onAccountServiceFieldUpdate
+                  ? (id, service, field, value) => onAccountServiceFieldUpdate(id, service, field, value)
+                  : onServiceFieldUpdate
+              }
               onCommentUpdate={onCommentUpdate}
               onRemoveService={onRemoveService}
             />

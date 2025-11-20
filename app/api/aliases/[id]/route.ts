@@ -78,10 +78,15 @@ export async function PATCH(
       );
     }
 
+    const aliasId = (await params).id;
+    console.log('[PATCH /api/aliases/[id]] Received alias ID:', aliasId);
+
     // Check if alias exists
     const existingAlias = await prisma.alias.findUnique({
-      where: { id: (await params).id },
+      where: { id: aliasId },
     });
+
+    console.log('[PATCH /api/aliases/[id]] Alias found:', !!existingAlias);
 
     if (!existingAlias) {
       return NextResponse.json({ error: 'Alias not found' }, { status: 404 });

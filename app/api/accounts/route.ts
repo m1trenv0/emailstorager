@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { validateInput, rateLimit } from '@/lib/middleware';
+import { validateInput, rateLimit, csrfProtection } from '@/lib/middleware';
 
 // Validation schema for creating an account
 const createAccountSchema = z.object({
@@ -49,6 +49,10 @@ export async function GET(request: NextRequest) {
 // POST /api/accounts - Create a new account
 export async function POST(request: NextRequest) {
   try {
+    // Apply CSRF protection
+    const csrfResult = csrfProtection(request);
+    if (csrfResult) return csrfResult;
+
     // Apply rate limiting
     const rateLimitResult = rateLimit(request);
     if (rateLimitResult) return rateLimitResult;
