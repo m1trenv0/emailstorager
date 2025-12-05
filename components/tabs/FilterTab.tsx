@@ -1,5 +1,5 @@
 import { FilteredServiceCard } from '@/components/FilteredServiceCard';
-import { AliasWithStatus, ServiceFieldValue, Filter, ServiceField } from '@/lib/types';
+import { AliasWithStatus, ServiceFieldValue, Filter, ServiceField, AccountWithAliases } from '@/lib/types';
 import { filterAliases } from '@/lib/filter-utils';
 import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { QuickRegisterModal } from '@/components/QuickRegisterModal';
 
 interface FilterTabProps {
   allAliases: AliasWithStatus[];
+  accounts: AccountWithAliases[];
   filter: Filter;
   serviceName: string;
   serviceFields: ServiceField[];
@@ -33,6 +34,7 @@ const SERVICE_REGISTRATION_FIELD = '__service_registered__';
 
 export const FilterTab = ({
   allAliases,
+  accounts,
   filter,
   serviceName,
   serviceFields,
@@ -125,6 +127,9 @@ export const FilterTab = ({
               </Card>
             );
           }
+
+          const account = accounts.find(a => a.id === alias.accountId);
+          const isPrimaryEmail = account ? alias.email === account.primaryEmail : false;
 
           return (
             <FilteredServiceCard

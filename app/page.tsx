@@ -129,6 +129,7 @@ export default function Home() {
             >
               <FilterTab
                 allAliases={allAliases}
+                accounts={allAccounts}
                 filter={filter}
                 serviceName={filter.category.service.name}
                 serviceFields={filter.category.service.fields}

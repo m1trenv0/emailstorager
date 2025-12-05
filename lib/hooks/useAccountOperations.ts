@@ -108,6 +108,18 @@ export const useUpdateAccountServiceField = () => {
         }
       );
 
+      await ensureTokenLoaded();
+
+      const response = await fetch(`/api/accounts/${accountId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getCSRFHeaders(),
+        },
+        body: JSON.stringify({ serviceName, fieldName, value }),
+      });
+
+      try {
         if (!response.ok) {
           let errorData: unknown;
           try {
