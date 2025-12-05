@@ -97,17 +97,6 @@ export const useUpdateAccountServiceField = () => {
       fieldName: string,
       value: ServiceFieldValue
     ) => {
-      console.log(
-        `[useUpdateAccountServiceField] Starting update for account ${accountId}, service ${serviceName}, field ${fieldName}:`,
-        {
-          accountId,
-          serviceName,
-          fieldName,
-          value: JSON.stringify(value),
-          valueType: typeof value,
-        }
-      );
-
       await ensureTokenLoaded();
 
       const response = await fetch(`/api/accounts/${accountId}`, {
@@ -133,19 +122,10 @@ export const useUpdateAccountServiceField = () => {
             await refreshToken();
           }
           
-          console.error('[useUpdateAccountServiceField] API error response:', 
-            `status=${response.status}`,
-            `statusText=${response.statusText}`,
-            `errorData=${JSON.stringify(errorData)}`,
-            `accountId=${accountId}`,
-            `serviceName=${serviceName}`,
-            `fieldName=${fieldName}`,
-            `value=${JSON.stringify(value)}`
-          );
           throw new Error(`Failed to update service field: ${response.status} - ${JSON.stringify(errorData)}`);
         }
 
-        const responseData = await response.json();
+        await response.json();
 
         updateAccountServiceField(accountId, serviceName, fieldName, value);
       } catch (error) {
@@ -189,16 +169,9 @@ export const useAddServiceToAccount = () => {
         }
 
         const updatedAccount = await response.json();
-        console.log(
-          '[useAddServiceToAccount] Updated account:',
-          updatedAccount
-        );
-        console.log('[useAddServiceToAccount] Service name:', serviceName);
-        console.log('[useAddServiceToAccount] Status:', updatedAccount.status);
 
         // Update store with the service fields from the response
         const serviceFields = updatedAccount.status[serviceName];
-        console.log('[useAddServiceToAccount] Service fields:', serviceFields);
 
         if (serviceFields) {
           addServiceToAccount(accountId, serviceName, serviceFields);

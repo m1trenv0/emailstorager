@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,14 +11,15 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { AccountWithAliases, Service, ServiceFieldValue } from '@/lib/types';
 import { Mail, Calendar } from 'lucide-react';
-import { useConfirm } from '@/lib/hooks/useConfirm';
 import { useFetch } from '@/lib/hooks/useFetch';
+import { useAccountDetailsModalHandlers } from '@/lib/hooks/useAccountDetailsModalHandlers';
+import { formatDateLong, formatDateShort } from '@/lib/utils/dateFormatters';
 import { AddServiceToAliasDialog } from './AddServiceToAliasDialog';
 import { AccountDetailsActions } from './account-details/AccountDetailsActions';
 import { RecoveryCredentials } from './account-details/RecoveryCredentials';
 import { AccountServices } from './account-details/AccountServices';
 import { AccountAliasesList } from './account-details/AccountAliasesList';
-import { canAddAlias, formatDate } from '@/lib/business-logic';
+import { canAddAlias } from '@/lib/business-logic';
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -60,9 +60,23 @@ export function AccountDetailsModal({
   onAddServiceToAccount,
   onRemoveServiceFromAccount,
 }: AccountDetailsModalProps) {
-  const { confirm, ConfirmDialog } = useConfirm();
-  const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    isUpdating,
+    isAddServiceDialogOpen,
+    setIsAddServiceDialogOpen,
+    handleDelete,
+    handleAccountFieldUpdate,
+    handleAddServiceToAccount,
+    handleRemoveServiceFromAccount,
+    ConfirmDialog,
+  } = useAccountDetailsModalHandlers({
+    account,
+    onDelete,
+    onClose,
+    onAccountServiceFieldUpdate,
+    onAddServiceToAccount,
+    onRemoveServiceFromAccount,
+  });
 
   const { data: availableServices } = useFetch<Service[]>('/api/services', {
     cache: true,
@@ -73,89 +87,7 @@ export function AccountDetailsModal({
 
   if (!account) return null;
 
-  const formatDateLong = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatDateShort = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   const aliasResult = canAddAlias(account.lastAliasAddedAt, account.aliasesAddedInPeriod);
-
-  const handleDelete = async () => {
-    const confirmed = await confirm({
-      title: 'Delete Account',
-      description: `Are you sure you want to delete ${account.primaryEmail} and all its ${account.aliases.length} aliases? This action cannot be undone.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      variant: 'destructive',
-    });
-    if (confirmed) {
-      onDelete(account.id);
-      onClose();
-    }
-  };
-
-  const handleAccountFieldUpdate = async (
-    serviceName: string,
-    fieldName: string,
-    value: ServiceFieldValue
-  ) => {
-    if (!onAccountServiceFieldUpdate) return;
-    setIsUpdating(true);
-    try {
-      await onAccountServiceFieldUpdate(account.id, serviceName, fieldName, value);
-    } catch (error) {
-      console.error('Failed to update account service field:', error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleAddServiceToAccount = async (serviceName: string) => {
-    if (!onAddServiceToAccount) return;
-    setIsUpdating(true);
-    try {
-      await onAddServiceToAccount(account.id, serviceName);
-    } catch (error) {
-      console.error('Failed to add service to account:', error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleRemoveServiceFromAccount = async (serviceName: string) => {
-    if (!onRemoveServiceFromAccount) return;
-    const confirmed = await confirm({
-      title: 'Remove Service',
-      description: `Are you sure you want to remove ${serviceName} from this account?`,
-      confirmText: 'Remove',
-      cancelText: 'Cancel',
-      variant: 'destructive',
-    });
-    if (!confirmed) return;
-
-    setIsUpdating(true);
-    try {
-      await onRemoveServiceFromAccount(account.id, serviceName);
-    } catch (error) {
-      console.error('Failed to remove service from account:', error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const accountStatus =
     typeof account.status === 'object' && account.status !== null

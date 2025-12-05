@@ -1,240 +1,41 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import {
-  AccountWithAliases,
-  AliasWithStatus,
-  ServiceFieldValue,
-} from '@/lib/types';
-import { setServiceField } from '@/lib/service-utils';
+import { AccountStore, INITIAL_STATE } from './accountStoreTypes';
+import { createAccountActions } from './accountActions';
+import { createAliasActions } from './aliasActions';
 
-interface AccountState {
-  accounts: AccountWithAliases[];
-  selectedAccountId: string | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-interface AccountActions {
-  // Account actions
-  setAccounts: (accounts: AccountWithAliases[]) => void;
-  addAccount: (account: AccountWithAliases) => void;
-  updateAccount: (id: string, account: Partial<AccountWithAliases>) => void;
-  deleteAccount: (id: string) => void;
-  selectAccount: (id: string | null) => void;
-  updateAccountServiceField: (
-    accountId: string,
-    serviceName: string,
-    fieldName: string,
-    value: ServiceFieldValue
-  ) => void;
-  addServiceToAccount: (accountId: string, serviceName: string, initialFields: Record<string, ServiceFieldValue>) => void;
-  removeServiceFromAccount: (accountId: string, serviceName: string) => void;
-
-  // Alias actions
-  addAlias: (accountId: string, alias: AliasWithStatus) => void;
-  updateAliasServiceField: (
-    aliasId: string,
-    serviceName: string,
-    fieldName: string,
-    value: ServiceFieldValue
-  ) => void;
-  updateAliasComment: (aliasId: string, comment: string) => void;
-  deleteAlias: (aliasId: string) => void;
-  addServiceToAlias: (aliasId: string, serviceName: string, initialFields: Record<string, ServiceFieldValue>) => void;
-  removeServiceFromAlias: (aliasId: string, serviceName: string) => void;
-
-  // Loading and error states
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-
-  // Fetch data
-  fetchAccounts: () => Promise<void>;
-}
-
-type AccountStore = AccountState & AccountActions;
-
+/**
+ * Main account store
+ * Combines account and alias actions with persistence
+ */
 export const useAccountStore = create<AccountStore>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get, store) => ({
         // Initial state
-        accounts: [],
-        selectedAccountId: null,
-        isLoading: false,
-        error: null,
+        ...INITIAL_STATE,
 
         // Account actions
-        setAccounts: (accounts) => set({ accounts }),
-
-        addAccount: (account) =>
-          set((state) => ({
-            accounts: [...state.accounts, account],
-          })),
-
-        updateAccount: (id, updatedAccount) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === id ? { ...account, ...updatedAccount } : account
-            ),
-          })),
-
-        deleteAccount: (id) =>
-          set((state) => ({
-            accounts: state.accounts.filter((account) => account.id !== id),
-            selectedAccountId:
-              state.selectedAccountId === id ? null : state.selectedAccountId,
-          })),
-
-        selectAccount: (id) => set({ selectedAccountId: id }),
-
-        updateAccountServiceField: (accountId, serviceName, fieldName, value) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === accountId
-                ? {
-                    ...account,
-                    status: setServiceField(
-                      account.status,
-                      serviceName,
-                      fieldName,
-                      value
-                    ),
-                  }
-                : account
-            ),
-          })),
-
-        addServiceToAccount: (accountId, serviceName, initialFields) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === accountId
-                ? {
-                    ...account,
-                    status: {
-                      ...account.status,
-                      [serviceName]: initialFields,
-                    },
-                  }
-                : account
-            ),
-          })),
-
-        removeServiceFromAccount: (accountId, serviceName) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => {
-              if (account.id === accountId) {
-                const newStatus = { ...account.status };
-                delete newStatus[serviceName];
-                return {
-                  ...account,
-                  status: newStatus,
-                };
-              }
-              return account;
-            }),
-          })),
+        ...createAccountActions(set, get, store),
 
         // Alias actions
-        addAlias: (accountId, alias) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === accountId
-                ? {
-                    ...account,
-                    aliases: [...account.aliases, alias],
-                    lastAliasAddedAt: new Date(),
-                  }
-                : account
-            ),
-          })),
-
-        updateAliasServiceField: (aliasId, serviceName, fieldName, value) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => ({
-              ...account,
-              aliases: account.aliases.map((alias) =>
-                alias.id === aliasId
-                  ? {
-                      ...alias,
-                      status: setServiceField(
-                        alias.status,
-                        serviceName,
-                        fieldName,
-                        value
-                      ),
-                    }
-                  : alias
-              ),
-            })),
-          })),
-
-        updateAliasComment: (aliasId, comment) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => ({
-              ...account,
-              aliases: account.aliases.map((alias) =>
-                alias.id === aliasId ? { ...alias, comments: comment } : alias
-              ),
-            })),
-          })),
-
-        deleteAlias: (aliasId) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => ({
-              ...account,
-              aliases: account.aliases.filter((alias) => alias.id !== aliasId),
-            })),
-          })),
-
-        addServiceToAlias: (aliasId, serviceName, initialFields) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => ({
-              ...account,
-              aliases: account.aliases.map((alias) =>
-                alias.id === aliasId
-                  ? {
-                      ...alias,
-                      status: {
-                        ...alias.status,
-                        [serviceName]: initialFields,
-                      },
-                    }
-                  : alias
-              ),
-            })),
-          })),
-
-        removeServiceFromAlias: (aliasId, serviceName) =>
-          set((state) => ({
-            accounts: state.accounts.map((account) => ({
-              ...account,
-              aliases: account.aliases.map((alias) => {
-                if (alias.id === aliasId) {
-                  const newStatus = { ...alias.status };
-                  delete newStatus[serviceName];
-                  return {
-                    ...alias,
-                    status: newStatus,
-                  };
-                }
-                return alias;
-              }),
-            })),
-          })),
+        ...createAliasActions(set, get, store),
 
         // Loading and error states
         setLoading: (loading) => set({ isLoading: loading }),
-
         setError: (error) => set({ error }),
 
         // Fetch data from API
         fetchAccounts: async () => {
           set({ isLoading: true, error: null });
+
           try {
             const response = await fetch('/api/accounts');
+
             if (!response.ok) {
               throw new Error('Failed to fetch accounts');
             }
+
             const data = await response.json();
             set({ accounts: data, isLoading: false });
           } catch (error) {
@@ -260,15 +61,12 @@ export const useAccountStore = create<AccountStore>()(
   )
 );
 
-// Selectors for derived state - return stable references
-export const useSelectedAccount = (): AccountWithAliases | undefined =>
-  useAccountStore((state) =>
-    state.accounts.find((acc) => acc.id === state.selectedAccountId)
-  );
-
-export const useAccountById = (id: string): AccountWithAliases | undefined =>
-  useAccountStore((state) => state.accounts.find((acc) => acc.id === id));
-
-// For collections, return the accounts array and let components compute derived data
-export const useAllAccounts = (): AccountWithAliases[] =>
-  useAccountStore((state) => state.accounts);
+// Re-export selectors for backwards compatibility
+export {
+  useSelectedAccount,
+  useAccountById,
+  useAllAccounts,
+  useAccountsLoading,
+  useAccountsError,
+  useSelectedAccountId,
+} from './accountSelectors';

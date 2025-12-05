@@ -86,7 +86,6 @@ export function useCSRFToken() {
 
   // Function to refresh token (useful after errors)
   const refreshToken = useCallback(async () => {
-    console.log('[useCSRFToken] Refreshing CSRF token...');
     globalIsLoaded = false;
     globalCsrfToken = null;
     
@@ -94,7 +93,6 @@ export function useCSRFToken() {
       const response = await fetch('/api/auth/csrf-token');
       if (response.ok) {
         const data = await response.json();
-        console.log('[useCSRFToken] New CSRF token received:', data.csrfToken);
         globalCsrfToken = data.csrfToken;
         setCsrfToken(data.csrfToken);
       }

@@ -147,12 +147,9 @@ export const useAddServiceToAlias = () => {
         }
 
         const updatedAlias = await response.json();
-        console.log('[useAddServiceToAlias] Updated alias:', updatedAlias);
-        console.log('[useAddServiceToAlias] Service name:', serviceName);
 
         // Update store with the service fields from the response
         const serviceFields = updatedAlias.status[serviceName];
-        console.log('[useAddServiceToAlias] Service fields:', serviceFields);
 
         if (serviceFields) {
           addServiceToAlias(aliasId, serviceName, serviceFields);
