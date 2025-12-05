@@ -9,7 +9,7 @@ export const ACCESS_TOKEN_COOKIE_OPTIONS: SerializeOptions = {
   httpOnly: true,
   secure: IS_PRODUCTION,
   sameSite: 'strict',
-  maxAge: 15 * 60, // 15 minutes in seconds
+  maxAge: 60 * 60, // 1 hour in seconds (extended for better UX)
   path: '/',
 };
 

@@ -91,8 +91,7 @@ export async function POST(
       data: { status: updatedStatus },
     });
 
-    // Revalidate the main page to show new service
-    revalidatePath('/');
+    // Note: revalidatePath removed - client-side state handles updates for better performance
 
     return NextResponse.json(updatedAlias, { status: 200 });
   } catch (error) {

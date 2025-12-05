@@ -99,8 +99,7 @@ export async function POST(
       include: { aliases: true },
     });
 
-    // Revalidate the main page to show new service
-    revalidatePath('/');
+    // Note: revalidatePath removed - client-side state handles updates for better performance
 
     return NextResponse.json(updatedAccount, { status: 200 });
   } catch (error) {

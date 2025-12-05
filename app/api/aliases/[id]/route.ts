@@ -133,8 +133,7 @@ export async function PATCH(
       data: updateData,
     });
 
-    // Revalidate the main page to show updated alias
-    revalidatePath('/');
+    // Note: revalidatePath removed for PATCH - client-side state handles updates for better performance
 
     return NextResponse.json(updatedAlias, { status: 200 });
   } catch (error) {

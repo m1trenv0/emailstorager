@@ -170,8 +170,7 @@ export async function POST(
       }),
     ]);
 
-    // Revalidate the main page to show new alias
-    revalidatePath('/');
+    // Note: revalidatePath removed - client-side state handles updates for better performance
 
     return NextResponse.json(alias, { status: 201 });
   } catch (error) {

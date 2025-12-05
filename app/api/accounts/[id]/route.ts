@@ -100,7 +100,7 @@ export async function PATCH(
       },
     });
 
-    revalidatePath('/');
+    // Note: revalidatePath removed - client-side state handles updates for better performance
 
     return successResponse(updatedAccount);
   } catch (error) {

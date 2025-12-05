@@ -1,61 +1,75 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getAuthUser } from '@/lib/auth/middleware';
-import { prisma } from '@/lib/prisma';
+import { verifyRefreshToken, generateAccessToken } from '@/lib/auth/jwt';
+import { parseCookies, serializeCookie, ACCESS_TOKEN_COOKIE_OPTIONS } from '@/lib/auth/cookies';
 
 // Public paths that don't require authentication
-const publicPaths = ['/auth/login', '/auth/setup'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/setup'];
 
 // API paths that don't require authentication
-const publicApiPaths = ['/api/auth/login', '/api/auth/setup', '/api/auth/check-setup', '/api/auth/csrf-token'];
+const PUBLIC_API_PATHS = [
+  '/api/auth/login',
+  '/api/auth/setup',
+  '/api/auth/check-setup',
+  '/api/auth/csrf-token',
+  '/api/auth/refresh',
+];
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   // Allow public paths
-  if (publicPaths.some((path) => pathname.startsWith(path))) {
+  if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
   // Allow public API paths
-  if (publicApiPaths.some((path) => pathname.startsWith(path))) {
+  if (PUBLIC_API_PATHS.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
-  }
-
-  // Check if users exist in database
-  try {
-    const userCount = await prisma.user.count();
-
-    if (userCount === 0) {
-      // No users exist
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ error: 'Setup required' }, { status: 401 });
-      } else if (!pathname.startsWith('/auth/setup')) {
-        return NextResponse.redirect(new URL('/auth/setup', request.url));
-      }
-      return NextResponse.next();
-    }
-  } catch (error) {
-    console.error('Proxy: Failed to check user count:', error);
-    // On error, continue to auth check
   }
 
   // Check authentication for all other paths
   const user = getAuthUser(request);
 
-  if (!user) {
-    // Not authenticated
-    if (pathname.startsWith('/api/')) {
-      // API routes return 401
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    } else {
-      // Web routes redirect to login
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+  if (user) {
+    // User is authenticated with valid access token
+    return NextResponse.next();
+  }
+
+  // Access token invalid or missing - try refresh token
+  const cookieHeader = request.headers.get('cookie');
+  const cookies = parseCookies(cookieHeader);
+  const refreshToken = cookies['refresh-token'];
+
+  if (refreshToken) {
+    const refreshPayload = verifyRefreshToken(refreshToken);
+    
+    if (refreshPayload) {
+      // Generate new access token
+      const newAccessToken = generateAccessToken(
+        refreshPayload.userId,
+        refreshPayload.username
+      );
+
+      const response = NextResponse.next();
+
+      // Set new access token cookie
+      response.headers.append(
+        'Set-Cookie',
+        serializeCookie('access-token', newAccessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+      );
+
+      return response;
     }
   }
 
-  // User is authenticated, allow access
-  return NextResponse.next();
+  // No valid tokens - redirect or return 401
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  return NextResponse.redirect(new URL('/auth/login', request.url));
 }
 
 // Configure which routes use this middleware
