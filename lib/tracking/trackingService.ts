@@ -27,8 +27,8 @@ export async function getOrUpdateTracking(
       where: { trackNumber },
     });
 
-    // If cache exists and is fresh, return it
-    if (cached && !isCacheExpired(cached.lastUpdated)) {
+    // If cache exists and (is fresh OR is delivered), return it
+    if (cached && (!isCacheExpired(cached.lastUpdated) || cached.isDelivered)) {
       return {
         trackNumber: cached.trackNumber,
         carrier: (cached.trackingData as any).carrier || 'Unknown',
@@ -163,7 +163,7 @@ export async function updateAllTrackingForService(
             where: { trackNumber: serviceData.TrackNumber },
           });
 
-          if (!cached || isCacheExpired(cached.lastUpdated)) {
+          if (!cached || (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)) {
             trackNumbersToUpdate.push({
               id: alias.id,
               type: 'alias',
@@ -189,7 +189,7 @@ export async function updateAllTrackingForService(
             where: { trackNumber: serviceData.TrackNumber },
           });
 
-          if (!cached || isCacheExpired(cached.lastUpdated)) {
+          if (!cached || (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)) {
             trackNumbersToUpdate.push({
               id: account.id,
               type: 'account',

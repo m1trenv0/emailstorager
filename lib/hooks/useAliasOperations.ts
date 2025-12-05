@@ -5,14 +5,17 @@ import { useCSRFToken } from '@/lib/hooks/useCSRFToken';
 
 export const useAddAlias = () => {
   const addAlias = useAccountStore((state) => state.addAlias);
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (accountId: string, email: string, countsTowardLimit: boolean) => {
       try {
+        await ensureTokenLoaded();
         const response = await fetch(`/api/accounts/${accountId}/aliases`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify({
             email,
@@ -32,7 +35,7 @@ export const useAddAlias = () => {
         throw error;
       }
     },
-    [addAlias]
+    [addAlias, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
@@ -63,6 +66,7 @@ export const useUpdateAliasServiceField = () => {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify(requestBody),
         });
@@ -81,7 +85,7 @@ export const useUpdateAliasServiceField = () => {
         throw error;
       }
     },
-    [updateAliasServiceField]
+    [updateAliasServiceField, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
@@ -116,20 +120,23 @@ export const useUpdateAliasComment = () => {
         throw error;
       }
     },
-    [updateAliasComment]
+    [updateAliasComment, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
 export const useAddServiceToAlias = () => {
   const addServiceToAlias = useAccountStore((state) => state.addServiceToAlias);
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (aliasId: string, serviceName: string) => {
       try {
+        await ensureTokenLoaded();
         const response = await fetch(`/api/aliases/${aliasId}/services`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify({ serviceName }),
         });
@@ -157,20 +164,25 @@ export const useAddServiceToAlias = () => {
         throw error;
       }
     },
-    [addServiceToAlias]
+    [addServiceToAlias, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
 export const useRemoveServiceFromAlias = () => {
   const removeServiceFromAlias = useAccountStore((state) => state.removeServiceFromAlias);
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (aliasId: string, serviceName: string) => {
       try {
+        await ensureTokenLoaded();
         const response = await fetch(
           `/api/aliases/${aliasId}/services/${serviceName}`,
           {
             method: 'DELETE',
+            headers: {
+              ...getCSRFHeaders(),
+            },
           }
         );
 
@@ -185,6 +197,6 @@ export const useRemoveServiceFromAlias = () => {
         throw error;
       }
     },
-    [removeServiceFromAlias]
+    [removeServiceFromAlias, getCSRFHeaders, ensureTokenLoaded]
   );
 };

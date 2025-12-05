@@ -8,10 +8,12 @@ import { getTrackingInfo } from '../lib/tracking/17track';
 
 async function main() {
   const trackNumber = process.argv[2];
+  const carrierArg = process.argv[3];
+  const carrier = carrierArg ? parseInt(carrierArg) : undefined;
 
   if (!trackNumber) {
-    console.error('Usage: npx tsx scripts/test-tracking.ts <trackNumber>');
-    console.error('Example: npx tsx scripts/test-tracking.ts LB73247289BE');
+    console.error('Usage: npx tsx scripts/test-tracking.ts <trackNumber> [carrierCode]');
+    console.error('Example: npx tsx scripts/test-tracking.ts LB73247289BE 3011');
     process.exit(1);
   }
 
@@ -28,7 +30,7 @@ async function main() {
   console.log('');
 
   try {
-    const trackingInfo = await getTrackingInfo(trackNumber, apiKey);
+    const trackingInfo = await getTrackingInfo(trackNumber, apiKey, carrier);
 
     if (!trackingInfo) {
       console.log('❌ No tracking information found');
@@ -42,6 +44,7 @@ async function main() {
     }
 
     console.log('✅ Tracking information retrieved successfully!');
+    console.log(JSON.stringify(trackingInfo, null, 2));
     console.log('');
     console.log('═══════════════════════════════════════════');
     console.log('Track Number:', trackingInfo.trackNumber);

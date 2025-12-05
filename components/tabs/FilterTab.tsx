@@ -132,7 +132,7 @@ export const FilterTab = ({
               alias={alias}
               serviceName={serviceName}
               onServiceFieldUpdate={
-                alias.id === alias.accountId && onAccountServiceFieldUpdate
+                isPrimaryEmail && onAccountServiceFieldUpdate
                   ? (id, service, field, value) => onAccountServiceFieldUpdate(id, service, field, value)
                   : onServiceFieldUpdate
               }

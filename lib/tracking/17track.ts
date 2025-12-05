@@ -73,6 +73,11 @@ async function registerTracking(
 
     // Check if rejected
     if (data.data?.rejected && data.data.rejected.length > 0) {
+      // If already registered, it's considered a success for our purpose
+      const error = data.data.rejected[0]?.error;
+      if (error?.code === -18019901) {
+        return true;
+      }
       console.error('Track number rejected:', data.data.rejected[0]);
       return false;
     }
@@ -82,6 +87,75 @@ async function registerTracking(
     console.error(`Error registering tracking number:`, error);
     return false;
   }
+}
+
+/**
+ * Helper to calculate status and delivery state
+ */
+function calculateStatusAndDelivery(
+  trackData: any,
+  events: TrackingEvent[]
+): { status: string; isDelivered: boolean } {
+  const latestStatus = trackData.track_info?.latest_status?.status;
+  const provider = trackData.track_info?.tracking?.providers?.[0];
+  
+  // 1. Determine isDelivered
+  // Check summary status first (most reliable if available)
+  let isDelivered = latestStatus === 'Delivered';
+  
+  if (!isDelivered) {
+     // Check events
+     const deliveredKeywords = ['delivered', 'successful delivery', 'final delivery', 'has been delivered'];
+     
+     // Check latest event stage
+     const latestStage = provider?.latest_event?.stage?.toLowerCase();
+     if (latestStage === 'delivered') isDelivered = true;
+     
+     // Check all events
+     if (!isDelivered) {
+       isDelivered = events.some(e => {
+         const s = e.status.toLowerCase();
+         const d = e.description.toLowerCase();
+         
+         // Avoid false positives
+         if (s.includes('undelivered') || d.includes('undelivered')) return false;
+         if (s.includes('out for delivery') || d.includes('out for delivery')) return false;
+         if (s.includes('failure') || d.includes('failure')) return false;
+         if (s.includes('return') || d.includes('return')) return false;
+         if (s.includes('attempt') || d.includes('attempt')) return false;
+         
+         return deliveredKeywords.some(k => s.includes(k) || d.includes(k));
+       });
+     }
+  }
+  
+  // 2. Determine status text
+  let status = 'unknown';
+  
+  // Prefer detailed description from latest event
+  if (events.length > 0) {
+    status = events[0].description;
+  } else if (provider?.latest_event?.description) {
+    status = provider.latest_event.description;
+  } else if (latestStatus && latestStatus !== 'NotFound') {
+    status = latestStatus;
+  } else if (provider?.latest_event?.stage) {
+    status = provider.latest_event.stage;
+  } else if (latestStatus === 'NotFound') {
+    status = 'Not Found';
+  }
+  
+  // If status is unknown but we have events, use the first one's status/stage
+  if (status === 'unknown' && events.length > 0) {
+     status = events[0].status;
+  }
+  
+  // Fallback for when we have Delivered status but description is unknown
+  if (status === 'unknown' && isDelivered) {
+    status = 'Delivered';
+  }
+
+  return { status, isDelivered };
 }
 
 /**
@@ -125,6 +199,7 @@ export async function getTrackingInfo(
     }
 
     const data = await response.json();
+    console.log('RAW 17TRACK RESPONSE:', JSON.stringify(data, null, 2));
 
     if (data.code !== 0) {
       console.error(`17TRACK API error code: ${data.code}, msg: ${data.msg}`);
@@ -149,36 +224,29 @@ export async function getTrackingInfo(
     const trackData = data.data.accepted[0];
     const trackInfo = trackData.track_info?.tracking;
     const provider = trackInfo?.providers?.[0];
+    
+    // Even if provider is missing, we might have latest_status in trackData
+    const latestStatus = trackData.track_info?.latest_status;
 
-    if (!provider) {
+    if (!provider && !latestStatus) {
       console.log(`No provider info for ${trackNumber}`);
       return null;
     }
 
     // Parse events
-    const events: TrackingEvent[] = (provider.events || []).map((event: any) => ({
+    const events: TrackingEvent[] = (provider?.events || []).map((event: any) => ({
       time: event.time_iso || event.time_utc,
       status: event.stage || 'unknown',
       description: event.description,
       location: event.location,
     }));
 
-    // Determine if delivered based on stage
-    const latestStage = provider.latest_event?.stage?.toLowerCase() || '';
-    const isDelivered =
-      latestStage === 'delivered' ||
-      latestStage === 'delivery' ||
-      events.some((e) => e.status.toLowerCase().includes('delivered'));
-
-    // Use the latest event description as status for more detail
-    let status = events.length > 0 ? events[0].description : (provider.latest_event?.description || provider.latest_event?.stage || 'unknown');
-    if (status === 'unknown' && events.length > 0 && !isDelivered) {
-      status = 'In transit';
-    }
+    // Calculate status and delivery
+    const { status, isDelivered } = calculateStatusAndDelivery(trackData, events);
 
     return {
       trackNumber,
-      carrier: provider.provider.name,
+      carrier: provider?.provider?.name || 'Unknown',
       status,
       isDelivered,
       events,
@@ -279,9 +347,12 @@ export async function getBatchTrackingInfo(
           const trackInfo = trackData.track_info?.tracking;
           const provider = trackInfo?.providers?.[0];
 
-          if (!provider) continue;
+          // Even if provider is missing, we check trackData
+          const latestStatus = trackData.track_info?.latest_status;
 
-          const events: TrackingEvent[] = (provider.events || []).map(
+          if (!provider && !latestStatus) continue;
+
+          const events: TrackingEvent[] = (provider?.events || []).map(
             (event: any) => ({
               time: event.time_iso || event.time_utc,
               status: event.stage || 'unknown',
@@ -290,21 +361,11 @@ export async function getBatchTrackingInfo(
             })
           );
 
-          const latestStage = provider.latest_event?.stage?.toLowerCase() || '';
-          const isDelivered =
-            latestStage === 'delivered' ||
-            latestStage === 'delivery' ||
-            events.some((e) => e.status.toLowerCase().includes('delivered'));
-
-          // Use the latest event description as status for more detail
-          let status = events.length > 0 ? events[0].description : (provider.latest_event?.description || provider.latest_event?.stage || 'unknown');
-          if (status === 'unknown' && events.length > 0 && !isDelivered) {
-            status = 'In transit';
-          }
+          const { status, isDelivered } = calculateStatusAndDelivery(trackData, events);
 
           results.set(trackData.number, {
             trackNumber: trackData.number,
-            carrier: provider.provider.name,
+            carrier: provider?.provider?.name || 'Unknown',
             status,
             isDelivered,
             events,

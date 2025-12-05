@@ -38,7 +38,7 @@ export const useAddAccount = () => {
         throw error; // Re-throw to let component handle
       }
     },
-    [addAccount]
+    [addAccount, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
@@ -69,7 +69,7 @@ export const useDeleteAccount = () => {
         throw error;
       }
     },
-    [deleteAccount]
+    [deleteAccount, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
@@ -88,7 +88,7 @@ export const useUpdateAccountServiceField = () => {
   const updateAccountServiceField = useAccountStore(
     (state) => state.updateAccountServiceField
   );
-  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
+  const { getCSRFHeaders, ensureTokenLoaded, refreshToken } = useCSRFToken();
 
   return useCallback(
     async (
@@ -108,80 +108,47 @@ export const useUpdateAccountServiceField = () => {
         }
       );
 
-      try {
-        // Ensure CSRF token is loaded before proceeding
-        await ensureTokenLoaded();
-        const requestBody = {
-          serviceName,
-          fieldName,
-          value,
-        };
-
-        console.log(
-          `[useUpdateAccountServiceField] Sending PATCH request to /api/accounts/${accountId} with body:`,
-          requestBody
-        );
-
-        const startTime = Date.now();
-        const csrfHeaders = getCSRFHeaders();
-        const response = await fetch(`/api/accounts/${accountId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            ...csrfHeaders,
-          },
-          body: JSON.stringify(requestBody),
-        });
-        const fetchTime = Date.now() - startTime;
-
-        console.log(
-          `[useUpdateAccountServiceField] Fetch completed in ${fetchTime}ms, response status: ${response.status}`
-        );
-
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error('[useUpdateAccountServiceField] API error response:', {
-            status: response.status,
-            statusText: response.statusText,
-            errorData,
-            accountId,
-            serviceName,
-            fieldName,
-            value,
-          });
-          throw new Error('Failed to update service field');
+          let errorData: unknown;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = await response.text();
+          }
+          
+          // If CSRF token is invalid, refresh it for next request
+          if (response.status === 403) {
+            await refreshToken();
+          }
+          
+          console.error('[useUpdateAccountServiceField] API error response:', 
+            `status=${response.status}`,
+            `statusText=${response.statusText}`,
+            `errorData=${JSON.stringify(errorData)}`,
+            `accountId=${accountId}`,
+            `serviceName=${serviceName}`,
+            `fieldName=${fieldName}`,
+            `value=${JSON.stringify(value)}`
+          );
+          throw new Error(`Failed to update service field: ${response.status} - ${JSON.stringify(errorData)}`);
         }
 
         const responseData = await response.json();
-        console.log(
-          `[useUpdateAccountServiceField] API response data:`,
-          responseData
-        );
 
-        console.log(
-          `[useUpdateAccountServiceField] Updating store with new value`
-        );
         updateAccountServiceField(accountId, serviceName, fieldName, value);
-
-        console.log(
-          `[useUpdateAccountServiceField] Update completed successfully for ${serviceName}.${fieldName}`
-        );
       } catch (error) {
         console.error(
           '[useUpdateAccountServiceField] Error updating service field:',
-          {
-            error: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-            accountId,
-            serviceName,
-            fieldName,
-            value,
-          }
+          `error=${error instanceof Error ? error.message : String(error)}`,
+          `accountId=${accountId}`,
+          `serviceName=${serviceName}`,
+          `fieldName=${fieldName}`,
+          `value=${JSON.stringify(value)}`
         );
         throw error;
       }
     },
-    [updateAccountServiceField]
+    [updateAccountServiceField, getCSRFHeaders, ensureTokenLoaded, refreshToken]
   );
 };
 
@@ -189,14 +156,17 @@ export const useAddServiceToAccount = () => {
   const addServiceToAccount = useAccountStore(
     (state) => state.addServiceToAccount
   );
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
       try {
+        await ensureTokenLoaded();
         const response = await fetch(`/api/accounts/${accountId}/services`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getCSRFHeaders(),
           },
           body: JSON.stringify({ serviceName }),
         });
@@ -231,7 +201,7 @@ export const useAddServiceToAccount = () => {
         throw error;
       }
     },
-    [addServiceToAccount]
+    [addServiceToAccount, getCSRFHeaders, ensureTokenLoaded]
   );
 };
 
@@ -239,14 +209,19 @@ export const useRemoveServiceFromAccount = () => {
   const removeServiceFromAccount = useAccountStore(
     (state) => state.removeServiceFromAccount
   );
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(
     async (accountId: string, serviceName: string) => {
       try {
+        await ensureTokenLoaded();
         const response = await fetch(
           `/api/accounts/${accountId}/services/${serviceName}`,
           {
             method: 'DELETE',
+            headers: {
+              ...getCSRFHeaders(),
+            },
           }
         );
 
@@ -261,6 +236,6 @@ export const useRemoveServiceFromAccount = () => {
         throw error;
       }
     },
-    [removeServiceFromAccount]
+    [removeServiceFromAccount, getCSRFHeaders, ensureTokenLoaded]
   );
 };

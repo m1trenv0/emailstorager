@@ -164,11 +164,10 @@ export function getDefaultServiceConfig(serviceName: string): ServiceField[] {
           description: 'Tracking number for orders',
         },
         {
-          name: 'shortDescription',
+          name: 'OrderDescription',
           type: 'string',
           required: false,
-          dependsOn: ['trackNumber'],
-          description: 'Short description (requires track number)',
+          description: 'Order description',
         },
         {
           name: 'isDelivered',
