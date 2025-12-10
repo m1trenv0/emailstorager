@@ -1,0 +1,22 @@
+# Git Rebase Plan
+# This file contains the plan for rewriting commit history
+
+# Commits to squash:
+# - c145190 init + fba30a9 init 2 → "feat: initial project setup with Next.js and Prisma"
+
+# Commits to reword (fix typos and make more concise):
+# - c75e134 "Fixed updating UI after update credintals" → "fix: update UI after credential changes"
+# - 5439063 (too long) → "refactor: improve service and filter forms with modern UI"
+# - df432dd (too long) → "feat: implement authFetch with token refresh"
+# - 52090bd (too long) → "feat: add account and alias management"
+
+# Commits with duplicate messages:
+# - 12151d5 and 81732e3 both say "feat: add advanced filter tab system" → keep only one
+
+# Strategy:
+# 1. Squash init + init 2
+# 2. Reword commits with typos
+# 3. Shorten overly verbose commits
+# 4. Remove duplicate commit
+# 5. Ensure all commits follow Conventional Commits format
+

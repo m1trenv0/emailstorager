@@ -1,226 +1,86 @@
 # Email Storage Manager
 
-Open-source NextJS application for convenient storage and management of Outlook email accounts with alias management, featuring service status tracking for AliExpress and Augment.
+Self-hosted service for managing Outlook accounts and their aliases. Track when you can create new email addresses and monitor package deliveries using 17Track API.
 
-## 🚀 Features
+## Features
 
-- **Account Management**: Store primary email accounts with recovery credentials
-- **Alias Management**: Add and manage email aliases with 7-day addition limit
-- **Service Status Tracking**: Track registration and delivery status for AliExpress and Augment
-- **Secure Self-Hosted**: Keep your data private with MongoDB database
-- **Comment System**: Add notes and comments to each alias
-- **Tab-Based Interface**: Organized views for different service statuses
-- **Real-time Updates**: Zustand state management for instant UI updates
-- **Security First**: CSRF protection, rate limiting, input validation with Zod
+- **Account Management**: Store email accounts with recovery credentials
+- **Alias Management**: Add and manage email aliases (7-day cooldown between additions)
+- **Package Tracking**: Track AliExpress deliveries directly on the site via 17Track API
+- **Self-Hosted**: Your data stays on your server with MongoDB
+- **Comments**: Add notes to each alias
+- **Filters**: Custom filtering system for organizing accounts
 
-## 📋 Prerequisites
+## Prerequisites
 
-- Node.js 18+ and npm
-- MongoDB database (local or Atlas)
+- Node.js 18+
+- MongoDB (local or Atlas)
 
-## 🛠️ Installation
-
-1. **Clone the repository**
+## Installation
 
 ```bash
 git clone <repository-url>
 cd emailstorager
-```
-
-2. **Install dependencies**
-
-```bash
 npm install
-```
-
-3. **Set up environment variables**
-
-```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your MongoDB connection string:
+Edit `.env` with your MongoDB connection:
 
 ```env
 DATABASE_URL="mongodb://localhost:27017/emailstorager"
-# or for MongoDB Atlas:
-# DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/emailstorager"
 ```
 
-4. **Generate Prisma Client**
+Generate Prisma client and push schema:
 
 ```bash
 npx prisma generate
-```
-
-5. **Run database migrations** (if using a fresh database)
-
-```bash
 npx prisma db push
 ```
 
-## 🚀 Development
-
-Run the development server:
+## Development
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open http://localhost:3000
 
-## 🧪 Testing
-
-Run the test suite:
+## Testing
 
 ```bash
 npm test
-```
-
-Run tests in watch mode:
-
-```bash
 npm run test:watch
 ```
 
-## 🏗️ Build for Production
-
-Build the application:
+## Production
 
 ```bash
 npm run build
-```
-
-Start the production server:
-
-```bash
 npm start
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-emailstorager/
-├── app/                      # NextJS 15 app directory
-│   ├── api/                 # API routes
-│   │   ├── accounts/        # Account management endpoints
-│   │   └── aliases/         # Alias management endpoints
-│   ├── layout.tsx           # Root layout with metadata
-│   └── page.tsx             # Main application page
-├── components/              # React components
-│   ├── ui/                  # Shadcn-UI base components
-│   ├── AccountCard.tsx      # Account display component
-│   ├── AliasCard.tsx        # Alias display component
-│   ├── StatusIcon.tsx       # Service status icon
-│   └── AddAccountForm.tsx   # Account creation form
-├── lib/                     # Utilities and configurations
-│   ├── store/              # Zustand state management
-│   ├── business-logic.ts   # Core business logic
-│   ├── middleware.ts       # Security middleware
-│   ├── prisma.ts           # Database connection
-│   └── types.ts            # TypeScript types
-├── prisma/                 # Database schema
-│   └── schema.prisma
-├── __tests__/              # Jest test files
-└── public/                 # Static assets
+app/          # Next.js 15 app directory
+  api/        # API routes
+  auth/       # Authentication pages
+components/   # React components
+lib/          # Utils, store, business logic
+prisma/       # Database schema
+__tests__/    # Jest tests
 ```
 
-## 🔐 Security Features
+## Tech Stack
 
-- **CSRF Protection**: Token-based protection for API routes
-- **Rate Limiting**: In-memory rate limiting to prevent abuse
-- **Input Validation**: Zod schemas for all API inputs
-- **Secure Headers**: Helmet.js security headers
-- **Type Safety**: Full TypeScript coverage
+- Next.js 15 + React 19
+- TypeScript
+- Prisma + MongoDB
+- Zustand (state management)
+- Shadcn UI + Tailwind
+- Jest (testing)
 
-## 📊 Business Logic
+## License
 
-### 7-Day Alias Addition Limit
-
-The application enforces a 7-day waiting period between adding aliases to an account:
-
-- First alias can be added immediately
-- Subsequent aliases require 7 days wait from the last addition
-- Timer display shows remaining time: "X days Y:Z"
-- API prevents premature alias addition with clear error messages
-
-## 🎨 Design System
-
-The application uses Shadcn-UI with a consistent design system:
-
-- **Colors**: Neutral base with semantic status colors
-- **Typography**: Geist Sans font family
-- **Components**: Reusable, accessible components
-- **Dark Mode**: Automatic dark mode support
-- **Responsive**: Mobile-first responsive design
-
-## 🔧 Code Quality
-
-- **ESLint**: Strict TypeScript and security rules
-- **Prettier**: Consistent code formatting
-- **Jest**: Comprehensive unit tests
-- **TypeScript**: Full type safety
-
-Run linting:
-
-```bash
-npm run lint
-npm run lint:fix
-```
-
-Run formatting:
-
-```bash
-npm run format
-npm run format:check
-```
-
-## 📝 API Endpoints
-
-### Accounts
-
-- `GET /api/accounts` - Fetch all accounts
-- `POST /api/accounts` - Create new account
-- `GET /api/accounts/[id]` - Fetch specific account
-- `PATCH /api/accounts/[id]` - Update account
-- `DELETE /api/accounts/[id]` - Delete account
-
-### Aliases
-
-- `GET /api/accounts/[id]/aliases` - Fetch account aliases
-- `POST /api/accounts/[id]/aliases` - Create alias (7-day limit applies)
-- `GET /api/aliases/[id]` - Fetch specific alias
-- `PATCH /api/aliases/[id]` - Update alias status/comments
-- `DELETE /api/aliases/[id]` - Delete alias
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
-
-## 📄 License
-
-This project is open-source and available under the MIT License.
-
-## 🐛 Known Issues
-
-- None currently reported
-
-## 🚀 Future Enhancements
-
-- Export/Import functionality
-- Email notifications
-- Advanced search and filtering
-- Bulk operations
-- Analytics dashboard
-
-## 💬 Support
-
-For issues and questions, please open an issue on the repository.
-
----
-
-Built with ❤️ using Next.js 15, React 19, Prisma, MongoDB, and Zustand
+MIT

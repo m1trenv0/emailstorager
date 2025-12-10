@@ -1,0 +1,21 @@
+# Commits to fix (non-conventional format):
+
+588ff2c Better status tracking → fix: improve status tracking
+1e990a2 Package tracking integration → feat: integrate package tracking
+e098799 Ability to auto-create aliexpress filter → feat: add auto-create for AliExpress filter
+c75e134 Fixed updating UI after update credintals → fix: update UI after credential changes
+6f3df34 Fixed hydration mismatch in Tabs component by adding suppressHydrationWarning to TabsTrigger → fix: resolve hydration mismatch in Tabs
+d6cbccd Fix logout button visibility on mobile by removing incorrect hidden wrapper → fix: logout button visibility on mobile
+441e3dd Add labels to theme and logout buttons on mobile: theme shows current mode, logout shows 'Log Out' → feat: add labels to theme and logout buttons
+33d9318 Move logout and theme buttons to replace description on mobile screens → refactor: move logout and theme buttons on mobile
+eecc549 Register/Autentification → feat: add authentication system
+e03a27e Fix Add Alias button positioning to be consistent at bottom of card → fix: Add Alias button positioning
+adb3f79 Move add buttons to header for services and filters pages → refactor: move add buttons to header
+acf01dc remove logs → chore: remove debug logs
+dc5e241 Implemented dark mode → feat: implement dark mode
+9eb4991 Unification modal between services and filters → refactor: unify modal between services and filters
+6ad6ef4 Better page switcher → feat: improve page switcher
+64ce3c1 Tabs fixed; Account details horizontal scrolling on mobile devices fixed → fix: tabs and horizontal scrolling on mobile
+76bfa46 Modal update: better landing → refactor: improve modal landing
+b056687 Fix ServiceFieldEditor save button state management → fix: ServiceFieldEditor save button state
+
