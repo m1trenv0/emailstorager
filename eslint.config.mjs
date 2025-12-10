@@ -29,6 +29,29 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'error',
       'prettier/prettier': 'error',
       'no-console': 'warn',
+
+      // === CODE SIZE LIMITS ===
+      'max-lines': [
+        'error',
+        { max: 250, skipBlankLines: true, skipComments: true },
+      ],
+      'max-lines-per-function': [
+        'warn',
+        { max: 100, skipBlankLines: true, skipComments: true, IIFEs: true },
+      ],
+      'max-params': ['warn', 4],
+      'max-depth': ['warn', { max: 5 }],
+      complexity: ['warn', { max: 15 }],
+      'max-nested-callbacks': ['warn', 3],
+    },
+  },
+  // Relaxed rules for test files and scripts
+  {
+    files: ['__tests__/**/*.ts', 'scripts/**/*.ts', 'prisma/seed.ts'],
+    rules: {
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'no-console': 'off',
     },
   },
   // Override default ignores of eslint-config-next.
@@ -38,6 +61,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Generated files
+    'lib/generated/**',
   ]),
 ]);
 

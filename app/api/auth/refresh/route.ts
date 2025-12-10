@@ -33,17 +33,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate new access token
-    const newAccessToken = generateAccessToken(payload.userId, payload.username);
+    const newAccessToken = generateAccessToken(
+      payload.userId,
+      payload.username
+    );
 
     // Create response with new access token cookie
-    const response = NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
+    const response = NextResponse.json({ success: true }, { status: 200 });
 
     response.headers.append(
       'Set-Cookie',
-      serializeCookie('access-token', newAccessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+      serializeCookie(
+        'access-token',
+        newAccessToken,
+        ACCESS_TOKEN_COOKIE_OPTIONS
+      )
     );
 
     return response;

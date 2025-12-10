@@ -40,7 +40,9 @@ export function QuickRegisterModal({
   aliasId,
 }: QuickRegisterModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<Record<string, ServiceFieldValue>>({});
+  const [formData, setFormData] = useState<Record<string, ServiceFieldValue>>(
+    {}
+  );
 
   // Initialize form data with default values
   useEffect(() => {
@@ -124,7 +126,10 @@ export function QuickRegisterModal({
                   : String(value)
               }
               onChange={(e) =>
-                setFormData({ ...formData, [field.name]: new Date(e.target.value) })
+                setFormData({
+                  ...formData,
+                  [field.name]: new Date(e.target.value),
+                })
               }
               required={field.required}
             />
@@ -140,7 +145,10 @@ export function QuickRegisterModal({
               type="number"
               value={Number(value)}
               onChange={(e) =>
-                setFormData({ ...formData, [field.name]: Number(e.target.value) })
+                setFormData({
+                  ...formData,
+                  [field.name]: Number(e.target.value),
+                })
               }
               required={field.required}
             />
@@ -162,7 +170,9 @@ export function QuickRegisterModal({
               placeholder={field.description}
             />
             {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {field.description}
+              </p>
             )}
           </div>
         );
@@ -175,7 +185,8 @@ export function QuickRegisterModal({
         <DialogHeader>
           <DialogTitle>Quick Register: {serviceName}</DialogTitle>
           <DialogDescription>
-            Register <span className="font-semibold">{aliasEmail}</span> on {serviceName}
+            Register <span className="font-semibold">{aliasEmail}</span> on{' '}
+            {serviceName}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

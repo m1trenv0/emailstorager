@@ -5,7 +5,11 @@ import {
   isCacheExpired,
   type TrackingInfo,
 } from './17track';
-import { TrackNumberEntry, TrackingUpdateResult, ServiceStatus } from './serviceTypes';
+import {
+  TrackNumberEntry,
+  TrackingUpdateResult,
+  ServiceStatus,
+} from './serviceTypes';
 import { getCachedTracking, upsertTrackingCache } from './cacheOperations';
 import { updateAliasTracking, updateAccountTracking } from './entityUpdates';
 
@@ -99,7 +103,10 @@ async function collectAliasTrackNumbers(
       where: { trackNumber: serviceData.TrackNumber },
     });
 
-    if (!cached || (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)) {
+    if (
+      !cached ||
+      (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)
+    ) {
       entries.push({
         id: alias.id,
         type: 'alias',
@@ -131,7 +138,10 @@ async function collectAccountTrackNumbers(
       where: { trackNumber: serviceData.TrackNumber },
     });
 
-    if (!cached || (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)) {
+    if (
+      !cached ||
+      (isCacheExpired(cached.lastUpdated) && !cached.isDelivered)
+    ) {
       entries.push({
         id: account.id,
         type: 'account',

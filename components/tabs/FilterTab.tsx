@@ -1,5 +1,11 @@
 import { FilteredServiceCard } from '@/components/FilteredServiceCard';
-import { AliasWithStatus, ServiceFieldValue, Filter, ServiceField, AccountWithAliases } from '@/lib/types';
+import {
+  AliasWithStatus,
+  ServiceFieldValue,
+  Filter,
+  ServiceField,
+  AccountWithAliases,
+} from '@/lib/types';
 import { filterAliases } from '@/lib/filter-utils';
 import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,7 +50,9 @@ export const FilterTab = ({
   onRemoveService,
 }: FilterTabProps) => {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
-  const [selectedAlias, setSelectedAlias] = useState<AliasWithStatus | null>(null);
+  const [selectedAlias, setSelectedAlias] = useState<AliasWithStatus | null>(
+    null
+  );
 
   const filteredAliases = useMemo(() => {
     return filterAliases(allAliases, filter.conditions, serviceName);
@@ -128,8 +136,10 @@ export const FilterTab = ({
             );
           }
 
-          const account = accounts.find(a => a.id === alias.accountId);
-          const isPrimaryEmail = account ? alias.email === account.primaryEmail : false;
+          const account = accounts.find((a) => a.id === alias.accountId);
+          const isPrimaryEmail = account
+            ? alias.email === account.primaryEmail
+            : false;
 
           return (
             <FilteredServiceCard
@@ -138,7 +148,8 @@ export const FilterTab = ({
               serviceName={serviceName}
               onServiceFieldUpdate={
                 isPrimaryEmail && onAccountServiceFieldUpdate
-                  ? (id, service, field, value) => onAccountServiceFieldUpdate(id, service, field, value)
+                  ? (id, service, field, value) =>
+                      onAccountServiceFieldUpdate(id, service, field, value)
                   : onServiceFieldUpdate
               }
               onCommentUpdate={onCommentUpdate}

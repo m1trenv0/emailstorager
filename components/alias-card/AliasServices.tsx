@@ -16,7 +16,11 @@ interface AliasServicesProps {
   aliasStatus: Record<string, Record<string, ServiceFieldValue>>;
   services: Service[];
   isUpdating: boolean;
-  onFieldUpdate: (serviceName: string, fieldName: string, value: ServiceFieldValue) => Promise<void>;
+  onFieldUpdate: (
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => Promise<void>;
   onAddService?: () => void;
   onRemoveService?: (serviceName: string) => Promise<void>;
 }
@@ -100,7 +104,9 @@ export function AliasServices({
           </p>
         ) : (
           <div className="space-y-2">
-            {aliasServices.map((serviceName) => renderServiceEditor(serviceName))}
+            {aliasServices.map((serviceName) =>
+              renderServiceEditor(serviceName)
+            )}
           </div>
         )}
       </CollapsibleContent>

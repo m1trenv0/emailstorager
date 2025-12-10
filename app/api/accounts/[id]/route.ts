@@ -3,7 +3,12 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { validateInput, rateLimit, csrfProtection } from '@/lib/middleware';
-import { successResponse, errorResponse, notFoundResponse, validationErrorResponse } from '@/lib/api/response-helpers';
+import {
+  successResponse,
+  errorResponse,
+  notFoundResponse,
+  validationErrorResponse,
+} from '@/lib/api/response-helpers';
 import { buildAccountUpdateData } from '@/lib/api/account-helpers';
 
 const updateAccountSchema = z.object({

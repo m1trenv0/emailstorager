@@ -13,7 +13,9 @@ async function main() {
   const carrier = process.argv[3] ? parseInt(process.argv[3]) : undefined;
 
   if (!trackNumber) {
-    console.error('Usage: npx tsx scripts/update-track.ts <trackNumber> [carrier]');
+    console.error(
+      'Usage: npx tsx scripts/update-track.ts <trackNumber> [carrier]'
+    );
     console.error('Example: npx tsx scripts/update-track.ts LB73247289BE 2061');
     console.error('\nCommon carriers:');
     console.error('  2061 = Bpost (Belgium)');

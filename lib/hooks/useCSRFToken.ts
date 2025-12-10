@@ -57,13 +57,13 @@ export function useCSRFToken() {
 
   const ensureTokenLoaded = useCallback(async () => {
     if (globalIsLoaded && globalCsrfToken) return;
-    
+
     // If fetch is in progress, wait for it
     if (globalFetchPromise) {
       await globalFetchPromise;
       if (globalCsrfToken) return;
     }
-    
+
     // Wait for the token to be loaded with timeout
     return new Promise<void>((resolve, reject) => {
       let attempts = 0;
@@ -88,7 +88,7 @@ export function useCSRFToken() {
   const refreshToken = useCallback(async () => {
     globalIsLoaded = false;
     globalCsrfToken = null;
-    
+
     try {
       const response = await fetch('/api/auth/csrf-token');
       if (response.ok) {
@@ -104,5 +104,11 @@ export function useCSRFToken() {
     }
   }, []);
 
-  return { csrfToken, getCSRFHeaders, isLoaded, ensureTokenLoaded, refreshToken };
+  return {
+    csrfToken,
+    getCSRFHeaders,
+    isLoaded,
+    ensureTokenLoaded,
+    refreshToken,
+  };
 }

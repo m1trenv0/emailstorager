@@ -53,15 +53,20 @@ export function AddAliasModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[calc(100%-1rem)] max-w-[500px] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Add New Alias</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
+            Add New Alias
+          </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Enter the alias email address. Domain defaults to @outlook.com if not specified.
+            Enter the alias email address. Domain defaults to @outlook.com if
+            not specified.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm">Alias Email</Label>
+              <Label htmlFor="email" className="text-sm">
+                Alias Email
+              </Label>
               <Input
                 id="email"
                 value={emailInput}
@@ -71,7 +76,7 @@ export function AddAliasModal({
                 className="text-sm"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="countsTowardLimit"
@@ -81,17 +86,27 @@ export function AddAliasModal({
                 }
                 className="cursor-pointer"
               />
-              <Label htmlFor="countsTowardLimit" className="cursor-pointer text-xs sm:text-sm font-normal">
+              <Label
+                htmlFor="countsTowardLimit"
+                className="cursor-pointer text-xs sm:text-sm font-normal"
+              >
                 Do not count towards 7 days limit
               </Label>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} className="cursor-pointer text-xs sm:text-sm">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="cursor-pointer text-xs sm:text-sm"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="cursor-pointer text-xs sm:text-sm">Add Alias</Button>
+            <Button type="submit" className="cursor-pointer text-xs sm:text-sm">
+              Add Alias
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

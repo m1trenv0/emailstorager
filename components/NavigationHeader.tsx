@@ -82,7 +82,10 @@ export const NavigationHeader = ({
         </div>
         <div className="flex gap-2 min-h-[40px]">
           {showAddAccount && onAddAccount && (
-            <Button onClick={onAddAccount} className="w-full sm:w-auto transition-all duration-200">
+            <Button
+              onClick={onAddAccount}
+              className="w-full sm:w-auto transition-all duration-200"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Account
             </Button>

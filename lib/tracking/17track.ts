@@ -94,7 +94,9 @@ export async function getTrackingInfo(
     const registered = await registerTracking(trackNumber, apiKey, carrier);
 
     if (!registered) {
-      console.error(`Failed to register ${trackNumber}, trying to fetch anyway...`);
+      console.error(
+        `Failed to register ${trackNumber}, trying to fetch anyway...`
+      );
     }
 
     // Wait a bit for the system to process
@@ -214,7 +216,9 @@ export async function getBatchTrackingInfo(
       if (data && data.code === 0) {
         processBatchResponse(data, results);
       } else if (data) {
-        console.error(`17TRACK batch API error code: ${data.code}, msg: ${data.msg}`);
+        console.error(
+          `17TRACK batch API error code: ${data.code}, msg: ${data.msg}`
+        );
       }
 
       await delay(BATCH_DELAY_MS);

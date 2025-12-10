@@ -21,10 +21,7 @@ export async function DELETE(
     });
 
     if (!existingAccount) {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
     // Get current status

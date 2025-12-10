@@ -20,4 +20,7 @@ export async function verifyPassword(
 }
 
 // Re-export client-safe utilities from password-utils
-export { validatePasswordStrength, calculatePasswordStrength } from './password-utils';
+export {
+  validatePasswordStrength,
+  calculatePasswordStrength,
+} from './password-utils';

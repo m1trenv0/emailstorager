@@ -12,8 +12,12 @@ async function main() {
   const carrier = carrierArg ? parseInt(carrierArg) : undefined;
 
   if (!trackNumber) {
-    console.error('Usage: npx tsx scripts/test-tracking.ts <trackNumber> [carrierCode]');
-    console.error('Example: npx tsx scripts/test-tracking.ts LB73247289BE 3011');
+    console.error(
+      'Usage: npx tsx scripts/test-tracking.ts <trackNumber> [carrierCode]'
+    );
+    console.error(
+      'Example: npx tsx scripts/test-tracking.ts LB73247289BE 3011'
+    );
     process.exit(1);
   }
 

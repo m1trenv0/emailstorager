@@ -9,7 +9,10 @@ interface RecoveryCredentialsProps {
   password: string;
 }
 
-export function RecoveryCredentials({ email, password }: RecoveryCredentialsProps) {
+export function RecoveryCredentials({
+  email,
+  password,
+}: RecoveryCredentialsProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

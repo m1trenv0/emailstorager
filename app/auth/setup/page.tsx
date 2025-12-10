@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -66,7 +72,9 @@ export default function SetupPage() {
       toast.success('Account created successfully');
       router.push('/');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create account');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create account'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +127,8 @@ export default function SetupPage() {
             />
             <PasswordStrength password={password} />
             <p className="text-xs text-muted-foreground">
-              Minimum 12 characters with uppercase, lowercase, numbers, and special characters
+              Minimum 12 characters with uppercase, lowercase, numbers, and
+              special characters
             </p>
           </div>
 
@@ -136,8 +145,9 @@ export default function SetupPage() {
           <div className="rounded-md bg-muted p-3 text-sm">
             <p className="font-medium mb-1">Important:</p>
             <p className="text-muted-foreground">
-              If you forget your password, you will need direct access to your MongoDB database to reset it.
-              Please store your credentials securely.
+              If you forget your password, you will need direct access to your
+              MongoDB database to reset it. Please store your credentials
+              securely.
             </p>
           </div>
 

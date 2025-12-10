@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { ServiceField, ServiceFieldValue } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { ServiceFieldEditorActions, ServiceFieldInput, ServiceFieldView } from '@/components/service-fields';
+import {
+  ServiceFieldEditorActions,
+  ServiceFieldInput,
+  ServiceFieldView,
+} from '@/components/service-fields';
 import { useServiceFieldEditing } from '@/lib/hooks/useServiceFieldEditing';
 
 interface ServiceFieldEditorProps {
@@ -34,7 +38,8 @@ export function ServiceFieldEditor({
   onRemoveService,
 }: ServiceFieldEditorProps): React.ReactElement {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
-  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+  const isEditing =
+    externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 
   const handleEditStart = (): void => {
     if (onEditStart) {

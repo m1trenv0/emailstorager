@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
     const existingUser = await prisma.user.findFirst();
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists. Setup is only available for first-time setup.' },
+        {
+          error:
+            'User already exists. Setup is only available for first-time setup.',
+        },
         { status: 400 }
       );
     }
@@ -52,7 +55,10 @@ export async function POST(request: NextRequest) {
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.valid) {
       return NextResponse.json(
-        { error: 'Password does not meet requirements', details: passwordValidation.errors },
+        {
+          error: 'Password does not meet requirements',
+          details: passwordValidation.errors,
+        },
         { status: 400 }
       );
     }
@@ -100,7 +106,11 @@ export async function POST(request: NextRequest) {
     );
     response.headers.append(
       'Set-Cookie',
-      serializeCookie('refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+      serializeCookie(
+        'refresh-token',
+        refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS
+      )
     );
 
     return response;

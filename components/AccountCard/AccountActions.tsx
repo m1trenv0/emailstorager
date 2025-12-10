@@ -12,7 +12,11 @@ interface AccountActionsProps {
   onDelete?: (accountId: string) => void;
 }
 
-export function AccountActions({ account, onAddAlias, onDelete }: AccountActionsProps) {
+export function AccountActions({
+  account,
+  onAddAlias,
+  onDelete,
+}: AccountActionsProps) {
   const { confirm, ConfirmDialog } = useConfirm();
 
   const handleDelete = async () => {
@@ -28,7 +32,10 @@ export function AccountActions({ account, onAddAlias, onDelete }: AccountActions
     }
   };
 
-  const canAddAliasResult = canAddAlias(account.lastAliasAddedAt, account.aliasesAddedInPeriod);
+  const canAddAliasResult = canAddAlias(
+    account.lastAliasAddedAt,
+    account.aliasesAddedInPeriod
+  );
 
   return (
     <>
@@ -44,11 +51,7 @@ export function AccountActions({ account, onAddAlias, onDelete }: AccountActions
           <Plus className="mr-2 h-4 w-4" />
           Add Alias
         </Button>
-        <Button
-          variant="destructive"
-          size="icon"
-          onClick={handleDelete}
-        >
+        <Button variant="destructive" size="icon" onClick={handleDelete}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </section>

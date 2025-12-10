@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronDown } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Service, ServiceFieldValue } from '@/lib/types';
 import { ServiceFieldEditor } from '@/components/ServiceFieldEditor';
 
@@ -12,7 +16,11 @@ interface AccountServicesProps {
   accountStatus: Record<string, Record<string, ServiceFieldValue>>;
   services: Service[];
   isUpdating: boolean;
-  onFieldUpdate: (serviceName: string, fieldName: string, value: ServiceFieldValue) => Promise<void>;
+  onFieldUpdate: (
+    serviceName: string,
+    fieldName: string,
+    value: ServiceFieldValue
+  ) => Promise<void>;
   onAddService?: () => void;
   onRemoveService?: (serviceName: string) => Promise<void>;
 }

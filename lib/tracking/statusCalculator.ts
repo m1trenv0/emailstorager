@@ -119,7 +119,12 @@ export function calculateStatusAndDelivery(
   const provider = trackData.track_info?.tracking?.providers?.[0];
 
   const isDelivered = calculateIsDelivered(latestStatus, provider, events);
-  const status = calculateStatusText(latestStatus, provider, events, isDelivered);
+  const status = calculateStatusText(
+    latestStatus,
+    provider,
+    events,
+    isDelivered
+  );
 
   return { status, isDelivered };
 }

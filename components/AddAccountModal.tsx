@@ -87,7 +87,8 @@ export function AddAccountModal({
         <DialogHeader>
           <DialogTitle>Add New Account</DialogTitle>
           <DialogDescription>
-            Create a new email account with primary email and recovery credentials.
+            Create a new email account with primary email and recovery
+            credentials.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -107,10 +108,12 @@ export function AddAccountModal({
                   className="flex-1"
                   autoFocus
                 />
-                <span className="shrink-0 text-sm text-muted-foreground">@outlook.com</span>
+                <span className="shrink-0 text-sm text-muted-foreground">
+                  @outlook.com
+                </span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="recoveryCredentials">Recovery Credentials</Label>
               <Input
@@ -131,12 +134,21 @@ export function AddAccountModal({
               </p>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} className="cursor-pointer">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="cursor-pointer"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="cursor-pointer">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="cursor-pointer"
+            >
               {isLoading ? 'Adding...' : 'Add Account'}
             </Button>
           </DialogFooter>

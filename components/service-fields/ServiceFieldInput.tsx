@@ -1,7 +1,12 @@
 'use client';
 
 import { ServiceField, ServiceFieldValue } from '@/lib/types';
-import { BooleanFieldInput, DateFieldInput, NumberFieldInput, StringFieldInput } from './index';
+import {
+  BooleanFieldInput,
+  DateFieldInput,
+  NumberFieldInput,
+  StringFieldInput,
+} from './index';
 
 interface ServiceFieldInputProps {
   serviceName: string;

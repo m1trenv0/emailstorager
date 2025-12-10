@@ -19,7 +19,7 @@ export function ReusableAccountHeader({
   createdAt,
   aliasCount = 0,
   title,
-  className = "",
+  className = '',
 }: ReusableAccountHeaderProps) {
   return (
     <CardHeader className={className}>
@@ -32,9 +32,7 @@ export function ReusableAccountHeader({
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-            <span className="truncate">
-              Created: {formatDate(createdAt)}
-            </span>
+            <span className="truncate">Created: {formatDate(createdAt)}</span>
           </div>
         </div>
         {aliasCount > 0 && (

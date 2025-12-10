@@ -56,10 +56,7 @@ export function requireApiAuth(request: NextRequest): NextResponse | null {
   const user = getAuthUser(request);
 
   if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return null; // Continue with the request

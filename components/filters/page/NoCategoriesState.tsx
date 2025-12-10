@@ -6,7 +6,9 @@ interface NoCategoriesStateProps {
   onSyncCategories: () => Promise<void>;
 }
 
-export function NoCategoriesState({ onSyncCategories }: NoCategoriesStateProps) {
+export function NoCategoriesState({
+  onSyncCategories,
+}: NoCategoriesStateProps) {
   return (
     <Card className="mx-auto w-full max-w-2xl">
       <CardContent className="py-12 text-center">

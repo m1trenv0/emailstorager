@@ -15,7 +15,9 @@ async function main() {
   try {
     const result = await updateAllTrackingForService('AliExpress');
 
-    console.log(`[${new Date().toISOString()}] Cron tracking update completed:`);
+    console.log(
+      `[${new Date().toISOString()}] Cron tracking update completed:`
+    );
     console.log(`  ✅ Updated: ${result.updated}`);
     console.log(`  ❌ Failed: ${result.failed}`);
 
@@ -23,7 +25,10 @@ async function main() {
       console.log(`  📊 Total processed: ${result.updated + result.failed}`);
     }
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Cron tracking update failed:`, error);
+    console.error(
+      `[${new Date().toISOString()}] Cron tracking update failed:`,
+      error
+    );
     process.exit(1);
   }
 }

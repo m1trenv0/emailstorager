@@ -63,7 +63,9 @@ export function buildAccountUpdateData(
   return updateData;
 }
 
-function getStatusObject(status: unknown): Record<string, Record<string, ServiceFieldValue>> {
+function getStatusObject(
+  status: unknown
+): Record<string, Record<string, ServiceFieldValue>> {
   return typeof status === 'object' && status !== null
     ? (status as Record<string, Record<string, ServiceFieldValue>>)
     : {};

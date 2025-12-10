@@ -64,7 +64,9 @@ export function ConditionValueInput({
       type={fieldType === 'number' ? 'number' : 'text'}
       value={condition.value?.toString() || ''}
       onChange={(e) =>
-        onUpdate(fieldType === 'number' ? Number(e.target.value) : e.target.value)
+        onUpdate(
+          fieldType === 'number' ? Number(e.target.value) : e.target.value
+        )
       }
       placeholder="Enter value"
     />

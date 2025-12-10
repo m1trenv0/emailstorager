@@ -81,7 +81,10 @@ export const useUpdateAliasServiceField = () => {
 
         updateAliasServiceField(aliasId, serviceName, fieldName, value);
       } catch (error) {
-        console.error('[useUpdateAliasServiceField] Error updating service field:', error);
+        console.error(
+          '[useUpdateAliasServiceField] Error updating service field:',
+          error
+        );
         throw error;
       }
     },
@@ -154,7 +157,10 @@ export const useAddServiceToAlias = () => {
         if (serviceFields) {
           addServiceToAlias(aliasId, serviceName, serviceFields);
         } else {
-          console.error('[useAddServiceToAlias] No service fields found for', serviceName);
+          console.error(
+            '[useAddServiceToAlias] No service fields found for',
+            serviceName
+          );
         }
       } catch (error) {
         console.error('Error adding service to alias:', error);
@@ -166,7 +172,9 @@ export const useAddServiceToAlias = () => {
 };
 
 export const useRemoveServiceFromAlias = () => {
-  const removeServiceFromAlias = useAccountStore((state) => state.removeServiceFromAlias);
+  const removeServiceFromAlias = useAccountStore(
+    (state) => state.removeServiceFromAlias
+  );
   const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   return useCallback(

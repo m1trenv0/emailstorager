@@ -39,7 +39,8 @@ export function usePageHandlers() {
       toast.success('Account created successfully');
     } catch (error) {
       toast.error('Failed to create account', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
     }
   };
@@ -53,7 +54,10 @@ export function usePageHandlers() {
     }
   };
 
-  const handleSelectAccount = (accountId: string, onSelect: (accountId: string) => void) => {
+  const handleSelectAccount = (
+    accountId: string,
+    onSelect: (accountId: string) => void
+  ) => {
     onSelect(accountId);
     selectAccountMutation(accountId);
   };
@@ -65,7 +69,12 @@ export function usePageHandlers() {
     value: ServiceFieldValue
   ) => {
     try {
-      await updateAliasServiceFieldMutation(aliasId, serviceName, fieldName, value);
+      await updateAliasServiceFieldMutation(
+        aliasId,
+        serviceName,
+        fieldName,
+        value
+      );
     } catch {
       toast.error('Failed to update service field');
     }
@@ -79,19 +88,26 @@ export function usePageHandlers() {
     }
   };
 
-  const handleAddServiceToAlias = async (aliasId: string, serviceName: string) => {
+  const handleAddServiceToAlias = async (
+    aliasId: string,
+    serviceName: string
+  ) => {
     try {
       await addServiceToAliasMutation(aliasId, serviceName);
       toast.success('Service added successfully');
     } catch (error) {
       toast.error('Failed to add service', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
       throw error;
     }
   };
 
-  const handleRemoveServiceFromAlias = async (aliasId: string, serviceName: string) => {
+  const handleRemoveServiceFromAlias = async (
+    aliasId: string,
+    serviceName: string
+  ) => {
     try {
       await removeServiceFromAliasMutation(aliasId, serviceName);
       toast.success('Service removed successfully');
@@ -107,25 +123,37 @@ export function usePageHandlers() {
     value: ServiceFieldValue
   ) => {
     try {
-      await updateAccountServiceFieldMutation(accountId, serviceName, fieldName, value);
+      await updateAccountServiceFieldMutation(
+        accountId,
+        serviceName,
+        fieldName,
+        value
+      );
     } catch {
       toast.error('Failed to update account service field');
     }
   };
 
-  const handleAddServiceToAccount = async (accountId: string, serviceName: string) => {
+  const handleAddServiceToAccount = async (
+    accountId: string,
+    serviceName: string
+  ) => {
     try {
       await addServiceToAccountMutation(accountId, serviceName);
       toast.success('Service added to account successfully');
     } catch (error) {
       toast.error('Failed to add service to account', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
       throw error;
     }
   };
 
-  const handleRemoveServiceFromAccount = async (accountId: string, serviceName: string) => {
+  const handleRemoveServiceFromAccount = async (
+    accountId: string,
+    serviceName: string
+  ) => {
     try {
       await removeServiceFromAccountMutation(accountId, serviceName);
       toast.success('Service removed from account successfully');
@@ -144,7 +172,8 @@ export function usePageHandlers() {
       toast.success('Alias added successfully');
     } catch (error) {
       toast.error('Failed to add alias', {
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
       });
       throw error;
     }

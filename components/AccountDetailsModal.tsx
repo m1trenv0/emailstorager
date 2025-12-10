@@ -42,8 +42,14 @@ interface AccountDetailsModalProps {
     fieldName: string,
     value: ServiceFieldValue
   ) => Promise<void>;
-  onAddServiceToAccount?: (accountId: string, serviceName: string) => Promise<void>;
-  onRemoveServiceFromAccount?: (accountId: string, serviceName: string) => Promise<void>;
+  onAddServiceToAccount?: (
+    accountId: string,
+    serviceName: string
+  ) => Promise<void>;
+  onRemoveServiceFromAccount?: (
+    accountId: string,
+    serviceName: string
+  ) => Promise<void>;
 }
 
 export function AccountDetailsModal({
@@ -87,7 +93,10 @@ export function AccountDetailsModal({
 
   if (!account) return null;
 
-  const aliasResult = canAddAlias(account.lastAliasAddedAt, account.aliasesAddedInPeriod);
+  const aliasResult = canAddAlias(
+    account.lastAliasAddedAt,
+    account.aliasesAddedInPeriod
+  );
 
   const accountStatus =
     typeof account.status === 'object' && account.status !== null
@@ -110,11 +119,16 @@ export function AccountDetailsModal({
           <DialogDescription className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
             <span className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
               <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="hidden sm:inline">{formatDateLong(account.createdAt)}</span>
-              <span className="sm:hidden">{formatDateShort(account.createdAt)}</span>
+              <span className="hidden sm:inline">
+                {formatDateLong(account.createdAt)}
+              </span>
+              <span className="sm:hidden">
+                {formatDateShort(account.createdAt)}
+              </span>
             </span>
             <Badge variant="secondary" className="text-xs">
-              {account.aliases.length} {account.aliases.length === 1 ? 'alias' : 'aliases'}
+              {account.aliases.length}{' '}
+              {account.aliases.length === 1 ? 'alias' : 'aliases'}
             </Badge>
           </DialogDescription>
         </DialogHeader>

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { ServiceField } from '@/lib/types';
 
-export function useFieldDragDrop(fields: ServiceField[], onChange: (fields: ServiceField[]) => void) {
+export function useFieldDragDrop(
+  fields: ServiceField[],
+  onChange: (fields: ServiceField[]) => void
+) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleDragStart = (index: number) => {

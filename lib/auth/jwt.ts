@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default-access-secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
+const JWT_ACCESS_SECRET =
+  process.env.JWT_ACCESS_SECRET || 'default-access-secret';
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
 
 const ACCESS_TOKEN_EXPIRY = '1h'; // 1 hour (extended for better UX)
 const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days

@@ -75,7 +75,9 @@ export function FieldCard({
             <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted border ml-1">
               {field.type}
             </span>
-            {field.required && <span className="text-red-500 font-bold">*</span>}
+            {field.required && (
+              <span className="text-red-500 font-bold">*</span>
+            )}
           </CollapsibleTrigger>
 
           <Button

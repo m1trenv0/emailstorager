@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -77,7 +83,8 @@ export default function LoginPage() {
           </div>
 
           <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            Forgot your password? You'll need direct access to your MongoDB database to reset it.
+            Forgot your password? You'll need direct access to your MongoDB
+            database to reset it.
           </div>
 
           <Button

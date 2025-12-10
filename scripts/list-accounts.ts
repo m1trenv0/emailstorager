@@ -21,7 +21,9 @@ async function main() {
       console.log(`    TrackNumber: ${ali.TrackNumber || 'Not set'}`);
       console.log(`    isDelivered: ${ali.isDelivered ?? 'Not set'}`);
       console.log(`    trackingStatus: ${ali.trackingStatus || 'Not set'}`);
-      console.log(`    lastTrackingUpdate: ${ali.lastTrackingUpdate || 'Not set'}`);
+      console.log(
+        `    lastTrackingUpdate: ${ali.lastTrackingUpdate || 'Not set'}`
+      );
     }
 
     console.log('');

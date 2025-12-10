@@ -47,7 +47,9 @@ export default function FiltersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
-  const [editingFilter, setEditingFilter] = useState<FilterWithCategory | null>(null);
+  const [editingFilter, setEditingFilter] = useState<FilterWithCategory | null>(
+    null
+  );
 
   const { invalidateFilterCategories } = useCacheInvalidation();
   const { setCustomAction } = useHeader();
@@ -75,7 +77,8 @@ export default function FiltersPage() {
     }
   };
 
-  const { handleCreate, handleUpdate, handleDelete } = useFilterOperations(fetchData);
+  const { handleCreate, handleUpdate, handleDelete } =
+    useFilterOperations(fetchData);
 
   useEffect(() => {
     fetchData();
@@ -83,7 +86,10 @@ export default function FiltersPage() {
 
   useEffect(() => {
     setCustomAction(
-      <Button onClick={() => setDialogMode('create')} className="w-full sm:w-auto">
+      <Button
+        onClick={() => setDialogMode('create')}
+        className="w-full sm:w-auto"
+      >
         <Plus className="mr-2 h-4 w-4" />
         Create Filter
       </Button>
@@ -141,7 +147,9 @@ export default function FiltersPage() {
       toast.success(result.message);
       await fetchData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to sync categories');
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to sync categories'
+      );
       setIsLoading(false);
     }
   };
@@ -160,7 +168,11 @@ export default function FiltersPage() {
 
   return (
     <>
-      <FilterList filters={filters} onEdit={handleEditClick} onDelete={handleDelete} />
+      <FilterList
+        filters={filters}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+      />
 
       <FilterDialog
         isOpen={dialogMode === 'create'}

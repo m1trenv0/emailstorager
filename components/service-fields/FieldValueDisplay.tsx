@@ -8,7 +8,10 @@ interface FieldValueDisplayProps {
   fieldType: 'string' | 'number' | 'boolean' | 'date';
 }
 
-export function FieldValueDisplay({ value, fieldType }: FieldValueDisplayProps) {
+export function FieldValueDisplay({
+  value,
+  fieldType,
+}: FieldValueDisplayProps) {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground italic">Not set</span>;
   }

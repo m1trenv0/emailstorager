@@ -17,11 +17,16 @@ import { useModalState } from '@/lib/hooks/useModalState';
 import { usePageState } from '@/lib/hooks/usePageState';
 
 export default function Home() {
-  const { accounts, selectedAccountId, isLoading, error, fetchAccounts } = useAccountStore();
+  const { accounts, selectedAccountId, isLoading, error, fetchAccounts } =
+    useAccountStore();
   const allAccounts = useAllAccounts();
 
   const [filters, setFilters] = useState<
-    Array<Filter & { category: { service: { name: string; fields: ServiceField[] } } }>
+    Array<
+      Filter & {
+        category: { service: { name: string; fields: ServiceField[] } };
+      }
+    >
   >([]);
   const pageState = usePageState();
   const { searchQuery, setSearchQuery, activeTab, setActiveTab } = pageState;
@@ -47,7 +52,11 @@ export default function Home() {
   } = usePageHandlers();
 
   const { data: filtersData, loading: filtersLoading } = useFetch<
-    Array<Filter & { category: { service: { name: string; fields: ServiceField[] } } }>
+    Array<
+      Filter & {
+        category: { service: { name: string; fields: ServiceField[] } };
+      }
+    >
   >('/api/filters', {
     cache: true,
     cacheTTL: 30000,
@@ -72,7 +81,10 @@ export default function Home() {
     addAliasModal.open(accountId);
   };
 
-  const handleAddAliasSubmit = async (email: string, countsTowardLimit: boolean) => {
+  const handleAddAliasSubmit = async (
+    email: string,
+    countsTowardLimit: boolean
+  ) => {
     if (!addAliasModal.currentId) return;
 
     try {

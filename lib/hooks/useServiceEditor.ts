@@ -13,7 +13,7 @@ export function useServiceEditor() {
     setEditingService(null);
   };
 
-  const withLoading = async <T,>(fn: () => Promise<T>): Promise<T> => {
+  const withLoading = async <T>(fn: () => Promise<T>): Promise<T> => {
     setIsUpdating(true);
     try {
       return await fn();

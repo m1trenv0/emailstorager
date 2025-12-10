@@ -70,7 +70,9 @@ export function useFilterOperations(fetchData: () => Promise<void>) {
       await fetchData();
       toast.success('Filter deleted successfully');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete filter');
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to delete filter'
+      );
     }
   };
 

@@ -27,7 +27,10 @@ export function FieldEditorForm({
     <div className="px-3 pb-3 pt-1 space-y-4 border-t">
       <div className="grid grid-cols-2 gap-3 pt-3">
         <div className="space-y-2">
-          <Label htmlFor={`field-name-${index}`} className="text-xs font-medium">
+          <Label
+            htmlFor={`field-name-${index}`}
+            className="text-xs font-medium"
+          >
             Field Name <span className="text-red-500">*</span>
           </Label>
           <Input
@@ -40,7 +43,10 @@ export function FieldEditorForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`field-type-${index}`} className="text-xs font-medium">
+          <Label
+            htmlFor={`field-type-${index}`}
+            className="text-xs font-medium"
+          >
             Type <span className="text-red-500">*</span>
           </Label>
           <Select
@@ -84,7 +90,10 @@ export function FieldEditorForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor={`field-default-${index}`} className="text-xs font-medium">
+          <Label
+            htmlFor={`field-default-${index}`}
+            className="text-xs font-medium"
+          >
             Default Value
           </Label>
           {field.type === 'boolean' ? (
@@ -98,8 +107,7 @@ export function FieldEditorForm({
               }
               onValueChange={(value) =>
                 onUpdate({
-                  defaultValue:
-                    value === 'none' ? undefined : value === 'true',
+                  defaultValue: value === 'none' ? undefined : value === 'true',
                 })
               }
             >
@@ -132,7 +140,10 @@ export function FieldEditorForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`field-depends-${index}`} className="text-xs font-medium">
+          <Label
+            htmlFor={`field-depends-${index}`}
+            className="text-xs font-medium"
+          >
             Depends On
           </Label>
           <Select

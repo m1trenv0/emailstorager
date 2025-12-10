@@ -1,7 +1,13 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Mail, Calendar } from 'lucide-react';
 import { AccountWithAliases } from '@/lib/types';
 import { formatDate } from '@/lib/business-logic';
@@ -12,7 +18,11 @@ interface AccountCardHeaderProps {
   onSelect?: (accountId: string) => void;
 }
 
-export function AccountCardHeader({ account, isSelected = false, onSelect }: AccountCardHeaderProps) {
+export function AccountCardHeader({
+  account,
+  isSelected = false,
+  onSelect,
+}: AccountCardHeaderProps) {
   return (
     <CardHeader className="pb-3">
       <div className="flex items-start justify-between gap-2 lg:gap-3">

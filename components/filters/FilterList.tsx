@@ -98,7 +98,9 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
                 {filter.conditions.map((condition, idx) => (
                   <div key={idx}>
                     <div className="flex items-center gap-2 text-sm bg-muted/80 rounded px-3 py-2 border">
-                      <span className="font-semibold flex-1">{condition.field}</span>
+                      <span className="font-semibold flex-1">
+                        {condition.field}
+                      </span>
                       <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-0.5 rounded flex-shrink-0 border">
                         {condition.operator}
                       </span>
@@ -122,7 +124,8 @@ export function FilterList({ filters, onEdit, onDelete }: FilterListProps) {
             <div className="bg-accent/30 px-3 py-2.5 border-t-2 mt-auto">
               <div className="flex items-center justify-between text-xs">
                 <div className="font-semibold text-foreground">
-                  {filter.conditions.length} condition{filter.conditions.length !== 1 && 's'}
+                  {filter.conditions.length} condition
+                  {filter.conditions.length !== 1 && 's'}
                 </div>
                 {filter.showAsTab && (
                   <Badge variant="default" className="text-xs">

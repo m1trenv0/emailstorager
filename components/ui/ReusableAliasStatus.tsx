@@ -10,8 +10,14 @@ interface ReusableAliasStatusProps {
   className?: string;
 }
 
-export function ReusableAliasStatus({ account, className = "" }: ReusableAliasStatusProps) {
-  const aliasResult = canAddAlias(account.lastAliasAddedAt, account.aliasesAddedInPeriod);
+export function ReusableAliasStatus({
+  account,
+  className = '',
+}: ReusableAliasStatusProps) {
+  const aliasResult = canAddAlias(
+    account.lastAliasAddedAt,
+    account.aliasesAddedInPeriod
+  );
   const timeRemaining = getTimeUntilNextAlias(account.lastAliasAddedAt);
 
   if (!aliasResult.canAdd && timeRemaining) {
@@ -22,8 +28,8 @@ export function ReusableAliasStatus({ account, className = "" }: ReusableAliasSt
       >
         <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
         <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-          New alias available in {timeRemaining.days}d{' '}
-          {timeRemaining.hours}h {timeRemaining.minutes}m (2/2 used)
+          New alias available in {timeRemaining.days}d {timeRemaining.hours}h{' '}
+          {timeRemaining.minutes}m (2/2 used)
         </AlertDescription>
       </Alert>
     );

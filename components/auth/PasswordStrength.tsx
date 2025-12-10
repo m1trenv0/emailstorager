@@ -26,7 +26,8 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
     <div className="space-y-1">
       <Progress value={percentage} className="h-2" />
       <p className="text-xs text-muted-foreground">
-        Password strength: <span className="font-medium">{strengthLabels[strength]}</span>
+        Password strength:{' '}
+        <span className="font-medium">{strengthLabels[strength]}</span>
       </p>
     </div>
   );

@@ -11,7 +11,9 @@ export const Header = ({ onAddAccount }: HeaderProps) => {
     <header className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
         <div>
-          <h1 className="mb-1.5 sm:mb-2 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Email Storage Manager</h1>
+          <h1 className="mb-1.5 sm:mb-2 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+            Email Storage Manager
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Manage your Outlook accounts and aliases with service status
             tracking

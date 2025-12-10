@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getAuthUser } from '@/lib/auth/middleware';
 import { verifyRefreshToken, generateAccessToken } from '@/lib/auth/jwt';
-import { parseCookies, serializeCookie, ACCESS_TOKEN_COOKIE_OPTIONS } from '@/lib/auth/cookies';
+import {
+  parseCookies,
+  serializeCookie,
+  ACCESS_TOKEN_COOKIE_OPTIONS,
+} from '@/lib/auth/cookies';
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = ['/auth/login', '/auth/setup'];
@@ -44,7 +48,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   if (refreshToken) {
     const refreshPayload = verifyRefreshToken(refreshToken);
-    
+
     if (refreshPayload) {
       // Generate new access token
       const newAccessToken = generateAccessToken(
@@ -57,7 +61,11 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       // Set new access token cookie
       response.headers.append(
         'Set-Cookie',
-        serializeCookie('access-token', newAccessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+        serializeCookie(
+          'access-token',
+          newAccessToken,
+          ACCESS_TOKEN_COOKIE_OPTIONS
+        )
       );
 
       return response;

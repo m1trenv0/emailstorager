@@ -38,10 +38,7 @@ export async function POST(
     });
 
     if (!existingAccount) {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
     // Check if service exists
@@ -50,10 +47,7 @@ export async function POST(
     });
 
     if (!service) {
-      return NextResponse.json(
-        { error: 'Service not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     }
 
     // Get current status

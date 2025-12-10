@@ -8,10 +8,11 @@ export const setupSchema = z.object({
     .string()
     .min(3, 'Username must be at least 3 characters')
     .max(50, 'Username must be less than 50 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
-  password: z
-    .string()
-    .min(12, 'Password must be at least 12 characters'),
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      'Username can only contain letters, numbers, underscores, and hyphens'
+    ),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
 });
 
 /**

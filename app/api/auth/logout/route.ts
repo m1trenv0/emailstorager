@@ -7,10 +7,7 @@ import { createClearCookie } from '@/lib/auth/cookies';
  */
 export async function POST(request: NextRequest) {
   try {
-    const response = NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
+    const response = NextResponse.json({ success: true }, { status: 200 });
 
     // Clear cookies
     response.headers.append('Set-Cookie', createClearCookie('access-token'));
@@ -19,9 +16,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Logout error:', error);
-    return NextResponse.json(
-      { error: 'Failed to logout' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to logout' }, { status: 500 });
   }
 }

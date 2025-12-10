@@ -130,5 +130,5 @@ export function invalidateCacheByPattern(pattern: string): void {
       keysToDelete.push(key);
     }
   });
-  keysToDelete.forEach(key => fetchCache.delete(key));
+  keysToDelete.forEach((key) => fetchCache.delete(key));
 }

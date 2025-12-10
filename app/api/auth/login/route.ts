@@ -93,7 +93,11 @@ export async function POST(request: NextRequest) {
     );
     response.headers.append(
       'Set-Cookie',
-      serializeCookie('refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
+      serializeCookie(
+        'refresh-token',
+        refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS
+      )
     );
     response.headers.append(
       'Set-Cookie',
@@ -109,9 +113,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Failed to login' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to login' }, { status: 500 });
   }
 }

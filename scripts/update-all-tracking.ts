@@ -15,7 +15,9 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('🔍 Finding all aliases and accounts with AliExpress track numbers...\n');
+  console.log(
+    '🔍 Finding all aliases and accounts with AliExpress track numbers...\n'
+  );
 
   const toUpdate: Array<{
     id: string;
@@ -56,7 +58,9 @@ async function main() {
     }
   }
 
-  console.log(`Found ${toUpdate.length} aliases/accounts with track numbers:\n`);
+  console.log(
+    `Found ${toUpdate.length} aliases/accounts with track numbers:\n`
+  );
   toUpdate.forEach((item, index) => {
     console.log(`${index + 1}. ${item.email} - ${item.trackNumber}`);
   });
@@ -142,7 +146,9 @@ async function main() {
 
       console.log(`   ✅ Carrier: ${trackingInfo.carrier}`);
       console.log(`   📍 Status: ${trackingInfo.status}`);
-      console.log(`   📦 Delivered: ${trackingInfo.isDelivered ? 'YES' : 'NO'}`);
+      console.log(
+        `   📦 Delivered: ${trackingInfo.isDelivered ? 'YES' : 'NO'}`
+      );
       console.log(`   🕐 Events: ${trackingInfo.events.length}`);
 
       // Update cache
@@ -213,7 +219,7 @@ async function main() {
       }
 
       // Wait between requests to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     } catch (error: any) {
       console.error(`   ❌ Error:`, error.message);
       failed++;

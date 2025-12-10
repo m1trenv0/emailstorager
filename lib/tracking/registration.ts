@@ -88,9 +88,7 @@ export async function registerTrackingBatch(
         'Content-Type': 'application/json',
         '17token': apiKey,
       },
-      body: JSON.stringify(
-        trackNumbers.map((number) => ({ number }))
-      ),
+      body: JSON.stringify(trackNumbers.map((number) => ({ number }))),
     });
   } catch (error) {
     console.error(`Error registering batch:`, error);

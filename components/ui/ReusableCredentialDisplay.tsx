@@ -14,8 +14,8 @@ interface ReusableCredentialDisplayProps {
 export function ReusableCredentialDisplay({
   email,
   password,
-  title = "Recovery Credentials",
-  className = "",
+  title = 'Recovery Credentials',
+  className = '',
 }: ReusableCredentialDisplayProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(`${email}:${password}`);
@@ -34,11 +34,7 @@ export function ReusableCredentialDisplay({
               {email}:•••••••••
             </span>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleCopy}
-          >
+          <Button size="sm" variant="ghost" onClick={handleCopy}>
             <Copy className="h-4 w-4" />
           </Button>
         </div>

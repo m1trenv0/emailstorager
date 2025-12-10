@@ -14,8 +14,14 @@ interface UseAccountDetailsModalHandlersProps {
     fieldName: string,
     value: ServiceFieldValue
   ) => Promise<void>;
-  onAddServiceToAccount?: (accountId: string, serviceName: string) => Promise<void>;
-  onRemoveServiceFromAccount?: (accountId: string, serviceName: string) => Promise<void>;
+  onAddServiceToAccount?: (
+    accountId: string,
+    serviceName: string
+  ) => Promise<void>;
+  onRemoveServiceFromAccount?: (
+    accountId: string,
+    serviceName: string
+  ) => Promise<void>;
 }
 
 interface UseAccountDetailsModalHandlersReturn {
@@ -68,12 +74,21 @@ export function useAccountDetailsModalHandlers({
   }, [account, confirm, onDelete, onClose]);
 
   const handleAccountFieldUpdate = useCallback(
-    async (serviceName: string, fieldName: string, value: ServiceFieldValue) => {
+    async (
+      serviceName: string,
+      fieldName: string,
+      value: ServiceFieldValue
+    ) => {
       if (!onAccountServiceFieldUpdate || !account) return;
 
       setIsUpdating(true);
       try {
-        await onAccountServiceFieldUpdate(account.id, serviceName, fieldName, value);
+        await onAccountServiceFieldUpdate(
+          account.id,
+          serviceName,
+          fieldName,
+          value
+        );
       } catch (error) {
         console.error('Failed to update account service field:', error);
       } finally {

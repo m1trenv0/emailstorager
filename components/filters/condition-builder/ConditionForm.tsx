@@ -50,7 +50,9 @@ export function ConditionForm({
                 key={SERVICE_REGISTRATION_FIELD}
                 value={SERVICE_REGISTRATION_FIELD}
               >
-                <span className="font-semibold">Service Registration Status</span>
+                <span className="font-semibold">
+                  Service Registration Status
+                </span>
               </SelectItem>
               {serviceFields.map((field) => (
                 <SelectItem key={field.name} value={field.name}>

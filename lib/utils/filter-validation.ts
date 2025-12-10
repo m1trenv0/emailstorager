@@ -25,7 +25,10 @@ export function validateFilterForm(
 
     const needsValue = OPERATORS_NEEDING_VALUE.includes(condition.operator);
 
-    if (needsValue && (condition.value === undefined || condition.value === '')) {
+    if (
+      needsValue &&
+      (condition.value === undefined || condition.value === '')
+    ) {
       return `Condition "${condition.field}" with operator "${condition.operator}" requires a value`;
     }
   }

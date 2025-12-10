@@ -83,7 +83,10 @@ export function AddServiceToAliasDialog({
             <>
               <div className="space-y-2">
                 <Label htmlFor="service">Service</Label>
-                <Select value={selectedService} onValueChange={setSelectedService}>
+                <Select
+                  value={selectedService}
+                  onValueChange={setSelectedService}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a service..." />
                   </SelectTrigger>

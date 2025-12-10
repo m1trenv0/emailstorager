@@ -96,7 +96,10 @@ export async function PATCH(
     const updateData: Record<string, unknown> = {};
 
     // Handle dynamic service field updates
-    if (validationResult.data.serviceName && validationResult.data.fieldName !== undefined) {
+    if (
+      validationResult.data.serviceName &&
+      validationResult.data.fieldName !== undefined
+    ) {
       const currentStatus =
         typeof existingAlias.status === 'object' &&
         existingAlias.status !== null

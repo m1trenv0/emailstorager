@@ -7,14 +7,17 @@ type Theme = 'light' | 'dark' | 'system';
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'system';
   const stored = localStorage.getItem('theme') as Theme;
-  return stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'system';
+  return stored && ['light', 'dark', 'system'].includes(stored)
+    ? stored
+    : 'system';
 }
 
 function applyTheme(theme: Theme) {
   if (typeof window === 'undefined') return;
   const isDark =
     theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    (theme === 'system' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   document.documentElement.classList.toggle('dark', isDark);
 }

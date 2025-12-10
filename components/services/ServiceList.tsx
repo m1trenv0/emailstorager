@@ -48,7 +48,8 @@ export function ServiceList({
               <div className="min-w-0 flex-1">
                 <h3 className="text-base font-bold truncate">{service.name}</h3>
                 <span className="text-xs font-medium text-muted-foreground">
-                  {service.fields.length} field{service.fields.length !== 1 && 's'}
+                  {service.fields.length} field
+                  {service.fields.length !== 1 && 's'}
                 </span>
               </div>
 
@@ -111,12 +112,16 @@ export function ServiceList({
                     key={idx}
                     className="flex items-center gap-2 text-sm bg-muted/80 rounded px-3 py-2 border"
                   >
-                    <span className="font-semibold truncate flex-1">{field.name}</span>
+                    <span className="font-semibold truncate flex-1">
+                      {field.name}
+                    </span>
                     <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-0.5 rounded flex-shrink-0 border">
                       {field.type}
                     </span>
                     {field.required && (
-                      <span className="text-destructive font-bold text-base flex-shrink-0">*</span>
+                      <span className="text-destructive font-bold text-base flex-shrink-0">
+                        *
+                      </span>
                     )}
                   </div>
                 ))}
@@ -133,7 +138,8 @@ export function ServiceList({
                         (sum, cat) => sum + cat.filters.length,
                         0
                       )}{' '}
-                      filter{service.filterCategories.reduce(
+                      filter
+                      {service.filterCategories.reduce(
                         (sum, cat) => sum + cat.filters.length,
                         0
                       ) !== 1 && 's'}
@@ -143,7 +149,8 @@ export function ServiceList({
                   )}
                 </div>
                 <div className="text-muted-foreground">
-                  {service.filterCategories.length} categor{service.filterCategories.length === 1 ? 'y' : 'ies'}
+                  {service.filterCategories.length} categor
+                  {service.filterCategories.length === 1 ? 'y' : 'ies'}
                 </div>
               </div>
             </div>

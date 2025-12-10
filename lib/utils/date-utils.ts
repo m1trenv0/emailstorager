@@ -1,4 +1,7 @@
-export function formatDate(date: Date, format: 'long' | 'short' = 'short'): string {
+export function formatDate(
+  date: Date,
+  format: 'long' | 'short' = 'short'
+): string {
   if (format === 'long') {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',

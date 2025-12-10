@@ -1,6 +1,9 @@
 import { AccountWithAliases, AliasWithStatus } from '@/lib/types';
 
-export function filterAccounts(accounts: AccountWithAliases[], searchQuery: string) {
+export function filterAccounts(
+  accounts: AccountWithAliases[],
+  searchQuery: string
+) {
   return accounts.filter(
     (account) =>
       account.primaryEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -8,7 +11,9 @@ export function filterAccounts(accounts: AccountWithAliases[], searchQuery: stri
   );
 }
 
-export function getAllAliases(accounts: AccountWithAliases[]): AliasWithStatus[] {
+export function getAllAliases(
+  accounts: AccountWithAliases[]
+): AliasWithStatus[] {
   return accounts.flatMap((account) => [
     {
       id: account.id,

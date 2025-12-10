@@ -14,7 +14,8 @@ export function useServiceFieldEditing(
     return initial;
   }, [currentValues, serviceFields]);
 
-  const [editedValues, setEditedValues] = useState<Record<string, ServiceFieldValue>>(initialValues);
+  const [editedValues, setEditedValues] =
+    useState<Record<string, ServiceFieldValue>>(initialValues);
 
   useEffect(() => {
     if (!isEditing) {

@@ -16,9 +16,14 @@ export function ConditionBuilder({
   serviceFields,
   onChange,
 }: ConditionBuilderProps) {
-  const [expandedConditions, setExpandedConditions] = useState<Set<number>>(new Set());
+  const [expandedConditions, setExpandedConditions] = useState<Set<number>>(
+    new Set()
+  );
 
-  const updateCondition = (index: number, updates: Partial<FilterCondition>) => {
+  const updateCondition = (
+    index: number,
+    updates: Partial<FilterCondition>
+  ) => {
     const newConditions = [...conditions];
     newConditions[index] = { ...newConditions[index], ...updates };
     onChange(newConditions);

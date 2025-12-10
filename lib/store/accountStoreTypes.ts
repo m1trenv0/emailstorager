@@ -70,7 +70,10 @@ export interface StateActions {
 /**
  * Combined store type
  */
-export type AccountStore = AccountState & AccountActions & AliasActions & StateActions;
+export type AccountStore = AccountState &
+  AccountActions &
+  AliasActions &
+  StateActions;
 
 /**
  * Initial store state

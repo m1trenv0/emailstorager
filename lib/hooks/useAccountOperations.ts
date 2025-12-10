@@ -116,13 +116,15 @@ export const useUpdateAccountServiceField = () => {
           } catch {
             errorData = await response.text();
           }
-          
+
           // If CSRF token is invalid, refresh it for next request
           if (response.status === 403) {
             await refreshToken();
           }
-          
-          throw new Error(`Failed to update service field: ${response.status} - ${JSON.stringify(errorData)}`);
+
+          throw new Error(
+            `Failed to update service field: ${response.status} - ${JSON.stringify(errorData)}`
+          );
         }
 
         await response.json();

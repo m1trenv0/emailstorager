@@ -26,7 +26,8 @@ export default function ServicesPage() {
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [editingService, setEditingService] =
     useState<ServiceWithCategories | null>(null);
-  const { invalidateServices, invalidateFilterCategories } = useCacheInvalidation();
+  const { invalidateServices, invalidateFilterCategories } =
+    useCacheInvalidation();
   const { setCustomAction } = useHeader();
 
   const fetchServices = async () => {

@@ -38,7 +38,9 @@ export function serializeCookie(
 /**
  * Parse cookies from a request header
  */
-export function parseCookies(cookieHeader: string | null): Record<string, string> {
+export function parseCookies(
+  cookieHeader: string | null
+): Record<string, string> {
   if (!cookieHeader) return {};
   return parse(cookieHeader) as Record<string, string>;
 }
