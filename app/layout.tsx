@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { AddAccountModal } from '@/components/AddAccountModal';
 import { toast } from 'sonner';
 import { HeaderProvider, useHeader } from '@/lib/context/HeaderContext';
+import { useCSRFToken } from '@/lib/hooks/useCSRFToken';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,6 +25,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const { customAction } = useHeader();
+  const { getCSRFHeaders, ensureTokenLoaded } = useCSRFToken();
 
   const handleAddAccount = async (accountData: {
     primaryEmail: string;
@@ -31,9 +33,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     recoveryPassword: string;
   }) => {
     try {
+      // Ensure CSRF token is loaded
+      await ensureTokenLoaded();
+
       const response = await fetch('/api/accounts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getCSRFHeaders(),
+        },
         body: JSON.stringify(accountData),
       });
 
@@ -53,16 +61,23 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Check if we're on an auth page
+  const isAuthPage = pathname.startsWith('/auth');
+
   return (
     <>
       <main className="container mx-auto min-h-screen p-3 sm:p-6">
-        <NavigationHeader
-          onAddAccount={
-            pathname === '/' ? () => setIsAddAccountModalOpen(true) : undefined
-          }
-          showAddAccount={pathname === '/'}
-          customAction={customAction}
-        />
+        {!isAuthPage && (
+          <NavigationHeader
+            onAddAccount={
+              pathname === '/'
+                ? () => setIsAddAccountModalOpen(true)
+                : undefined
+            }
+            showAddAccount={pathname === '/'}
+            customAction={customAction}
+          />
+        )}
         {children}
       </main>
       <AddAccountModal

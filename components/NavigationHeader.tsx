@@ -58,13 +58,40 @@ export const NavigationHeader = ({
   };
 
   return (
-    <header className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
-        <div className="min-h-[60px] sm:min-h-0">
-          <h1 className="mb-1.5 sm:mb-2 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight transition-all duration-300">
+    <header className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4 w-full max-w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 w-full">
+        <div className="min-h-[60px] sm:min-h-0 flex-shrink min-w-0">
+          <h1 className="mb-1.5 sm:mb-2 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight transition-all duration-300 break-words">
             {getPageTitle()}
           </h1>
-          <div className="sm:hidden flex gap-2">
+          <div className="sm:hidden flex gap-2 items-center">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              <span>Log Out</span>
+            </Button>
+          </div>
+          <p className="hidden sm:block text-sm sm:text-base text-muted-foreground transition-all duration-300">
+            {getPageDescription()}
+          </p>
+        </div>
+        <div className="flex gap-2 min-h-[40px] flex-shrink-0 w-full sm:w-auto">
+          {showAddAccount && onAddAccount && (
+            <Button
+              onClick={onAddAccount}
+              className="flex-1 sm:flex-initial sm:w-auto transition-all duration-200"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Account
+            </Button>
+          )}
+          {customAction}
+          <div className="hidden sm:flex sm:gap-2">
             <ThemeToggle />
             <Button
               variant="outline"
@@ -73,39 +100,12 @@ export const NavigationHeader = ({
               className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              <span className="sm:hidden">Log Out</span>
+              <span>Logout</span>
             </Button>
           </div>
-          <p className="hidden sm:block text-sm sm:text-base text-muted-foreground transition-all duration-300">
-            {getPageDescription()}
-          </p>
-        </div>
-        <div className="flex gap-2 min-h-[40px]">
-          {showAddAccount && onAddAccount && (
-            <Button
-              onClick={onAddAccount}
-              className="w-full sm:w-auto transition-all duration-200"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Account
-            </Button>
-          )}
-          {customAction}
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <LogOut className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
         </div>
       </div>
-      <nav className="flex gap-2 flex-wrap min-h-[36px]">
+      <nav className="flex gap-2 flex-wrap min-h-[36px] w-full">
         <Link href="/" className="flex-1 sm:flex-none">
           <Button
             variant={pathname === '/' ? 'default' : 'outline'}

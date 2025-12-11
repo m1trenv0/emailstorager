@@ -1,0 +1,7 @@
+<!-- Placeholder for PWA icons -->
+<!-- You need to create actual icon files:
+- icon-192x192.png (192x192px)
+- icon-512x512.png (512x512px)
+- icon-192x192-maskable.png (192x192px with padding for maskable icons)
+-->
+<!-- Use a tool like favicon generator or ImageMagick to create these -->

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -17,7 +16,6 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +38,8 @@ export default function LoginPage() {
       }
 
       toast.success('Logged in successfully');
-      router.push('/');
-      router.refresh();
+      // Use window.location.href for full page reload to ensure cookies are properly set
+      window.location.href = '/';
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to login');
     } finally {
@@ -83,7 +81,7 @@ export default function LoginPage() {
           </div>
 
           <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            Forgot your password? You'll need direct access to your MongoDB
+            Forgot your password? You&apos;ll need direct access to your MongoDB
             database to reset it.
           </div>
 
