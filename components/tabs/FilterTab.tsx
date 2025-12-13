@@ -11,8 +11,9 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Mail } from 'lucide-react';
 import { QuickRegisterModal } from '@/components/QuickRegisterModal';
+import { CopyEmailButton } from '@/components/ui/CopyEmailButton';
 
 interface FilterTabProps {
   allAliases: AliasWithStatus[];
@@ -94,17 +95,18 @@ export const FilterTab = ({
           );
 
           if (!hasService && hasNotExistsServiceRegistration) {
+            const account = accounts.find((a) => a.id === alias.accountId);
+
             return (
               <Card key={alias.id} className="w-full max-w-md">
-                <CardContent className="space-y-3 pt-4 pb-4 px-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-2 flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold leading-none break-all">
+                <CardContent className="space-y-2 pt-3 pb-3 px-3">
+                  {/* Alias Email */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <span className="text-xs font-medium text-muted-foreground break-all">
                         {alias.email}
-                      </h4>
-                      <Badge variant="secondary" className="text-xs w-fit">
-                        Not Registered
-                      </Badge>
+                      </span>
+                      <CopyEmailButton email={alias.email} size="icon" className="h-6 w-6" />
                     </div>
                     <Button
                       size="icon"
@@ -118,15 +120,27 @@ export const FilterTab = ({
                       <Plus className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                   </div>
-                  <div className="rounded border border-dashed bg-muted/30 p-3">
-                    <p className="text-xs text-muted-foreground text-center">
-                      This account is not registered on {serviceName}
-                    </p>
-                  </div>
+
+                  {/* Main Email */}
+                  {account && (
+                    <div className="flex items-center justify-between gap-2 pl-0.5">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground break-all">
+                          {account.primaryEmail}
+                        </span>
+                        <CopyEmailButton
+                          email={account.primaryEmail}
+                          size="icon"
+                          className="h-6 w-6"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {alias.comments && (
-                    <div className="rounded bg-muted px-3 py-2">
-                      <p className="text-xs font-medium mb-1">Comments:</p>
-                      <p className="text-xs whitespace-pre-wrap">
+                    <div className="pt-1 border-t">
+                      <p className="text-xs text-muted-foreground whitespace-pre-wrap">
                         {alias.comments}
                       </p>
                     </div>

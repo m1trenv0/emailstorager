@@ -105,7 +105,7 @@ export function ServiceFieldEditor({
   // Render only fields (no header/actions)
   if (renderFieldsOnly) {
     return (
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {isEditing ? (
           <>
             {serviceFields.map((field) => (
@@ -120,7 +120,7 @@ export function ServiceFieldEditor({
                 />
               </div>
             ))}
-            <div className="flex gap-1 pt-2">
+            <div className="flex gap-1 pt-1">
               <ServiceFieldEditorActions
                 isEditing={true}
                 isUpdating={isUpdating}
@@ -133,7 +133,7 @@ export function ServiceFieldEditor({
             </div>
           </>
         ) : (
-          <div className="space-y-0.5">
+          <div className="space-y-0">
             {serviceFields.map((field) => (
               <ServiceFieldView
                 key={field.name}

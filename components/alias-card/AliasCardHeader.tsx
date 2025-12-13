@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils/date-utils';
+import { CopyEmailButton } from '@/components/ui/CopyEmailButton';
 
 interface AliasCardHeaderProps {
   email: string;
@@ -18,9 +19,12 @@ export function AliasCardHeader({
   return (
     <div className="flex items-start justify-between gap-2">
       <div className="flex-1 space-y-0.5 px-0.5">
-        <h4 className="text-sm font-semibold leading-none break-all">
-          {email}
-        </h4>
+        <div className="flex items-center gap-1.5">
+          <h4 className="text-sm font-semibold leading-none break-all flex-1 min-w-0">
+            {email}
+          </h4>
+          <CopyEmailButton email={email} size="icon" className="h-6 w-6" />
+        </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
           <time dateTime={new Date(createdAt).toISOString()}>

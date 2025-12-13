@@ -33,7 +33,7 @@ export function StringFieldInput({
         type="text"
         value={(value as string) ?? ''}
         onChange={(e) => {
-          const newValue = e.target.value.trim() || null;
+          const newValue = e.target.value || null;
           onChange(newValue);
         }}
         disabled={disabled}

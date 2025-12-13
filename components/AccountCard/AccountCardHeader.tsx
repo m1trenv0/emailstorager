@@ -11,6 +11,7 @@ import {
 import { Mail, Calendar } from 'lucide-react';
 import { AccountWithAliases } from '@/lib/types';
 import { formatDate } from '@/lib/business-logic';
+import { CopyEmailButton } from '@/components/ui/CopyEmailButton';
 
 interface AccountCardHeaderProps {
   account: AccountWithAliases;
@@ -27,9 +28,14 @@ export function AccountCardHeader({
     <CardHeader className="pb-3">
       <div className="flex items-start justify-between gap-2 lg:gap-3">
         <div className="space-y-1 min-w-0 flex-1 overflow-hidden">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+          <CardTitle className="flex items-center gap-1.5 text-base sm:text-lg lg:text-xl">
             <Mail className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-            <span className="truncate">{account.primaryEmail}</span>
+            <span className="truncate flex-1 min-w-0">{account.primaryEmail}</span>
+            <CopyEmailButton
+              email={account.primaryEmail}
+              size="icon"
+              className="h-6 w-6 sm:h-7 sm:w-7"
+            />
           </CardTitle>
           <CardDescription className="flex items-center gap-2 text-xs">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />

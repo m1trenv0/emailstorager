@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,6 +14,7 @@ import { ChevronDown, Edit2, MessageSquare } from 'lucide-react';
 import { ServiceFieldEditor } from './ServiceFieldEditor';
 import { useConfirm } from '@/lib/hooks/useConfirm';
 import { useFetch } from '@/lib/hooks/useFetch';
+import { CopyEmailButton } from '@/components/ui/CopyEmailButton';
 
 interface FilteredServiceCardProps {
   alias: AliasWithStatus;
@@ -107,21 +107,19 @@ export function FilteredServiceCard({
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader className="pb-2 pt-2 sm:pt-3 px-3 sm:px-6">
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold leading-none break-all">
+      <CardHeader className="pb-1.5 pt-2 px-3">
+        <div className="flex items-center gap-1.5">
+          <h4 className="text-sm font-semibold leading-none break-all flex-1 min-w-0">
             {alias.email}
           </h4>
-          <Badge variant="outline" className="text-xs capitalize w-fit">
-            {serviceName}
-          </Badge>
+          <CopyEmailButton email={alias.email} size="icon" className="h-6 w-6" />
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 pt-0 pb-2 sm:pb-3 px-3 sm:px-6">
+      <CardContent className="space-y-1.5 pt-0 pb-2 px-3">
         {/* Service Fields */}
         <div className="rounded border bg-card">
-          <div className="p-2 space-y-2">
+          <div className="p-1.5 space-y-1.5">
             <ServiceFieldEditor
               serviceName={serviceName}
               serviceFields={service.fields}
@@ -158,9 +156,9 @@ export function FilteredServiceCard({
               </span>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 space-y-2">
+          <CollapsibleContent className="mt-1.5 space-y-1.5">
             {isEditingComment ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -168,7 +166,7 @@ export function FilteredServiceCard({
                   rows={2}
                   className="resize-none text-xs"
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <Button
                     size="sm"
                     className="h-6 text-xs"
@@ -192,15 +190,15 @@ export function FilteredServiceCard({
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {alias.comments ? (
-                  <div className="rounded bg-muted px-2 py-1">
+                  <div className="rounded bg-muted px-2 py-0.5">
                     <p className="text-xs whitespace-pre-wrap">
                       {alias.comments}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic px-2">
+                  <p className="text-xs text-muted-foreground italic px-1">
                     No comments yet
                   </p>
                 )}
