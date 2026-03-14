@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import type { InputHTMLAttributes } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 
-interface PasswordInputProps {
+interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement> {
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   error?: string;
-  autoComplete?: string;
 }
 
 export function PasswordInput({
@@ -19,6 +18,9 @@ export function PasswordInput({
   placeholder = 'Password',
   error,
   autoComplete = 'current-password',
+  name,
+  required,
+  id,
 }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,6 +33,9 @@ export function PasswordInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
+          name={name}
+          required={required}
+          id={id}
           className={error ? 'border-destructive' : ''}
         />
         <Button

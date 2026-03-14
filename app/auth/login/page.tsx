@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -8,44 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/auth/PasswordInput';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { getSession } from '@/lib/auth/actions';
+import { redirect } from 'next/navigation';
 
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export default async function LoginPage() {
+  const session = await getSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to login');
-      }
-
-      toast.success('Logged in successfully');
-      // Use window.location.href for full page reload to ensure cookies are properly set
-      window.location.href = '/';
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (session?.session) {
+    redirect('/');
+  }
 
   return (
     <Card>
@@ -56,50 +25,7 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-              required
-              autoComplete="username"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              value={password}
-              onChange={setPassword}
-              placeholder="Enter password"
-              autoComplete="current-password"
-            />
-          </div>
-
-          <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            Forgot your password? You&apos;ll need direct access to your MongoDB
-            database to reset it.
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading || !username || !password}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
-              </>
-            ) : (
-              'Login'
-            )}
-          </Button>
-        </form>
+        <LoginForm />
       </CardContent>
     </Card>
   );

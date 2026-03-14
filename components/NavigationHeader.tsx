@@ -3,9 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Plus, Settings, Filter, Home, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { toast } from 'sonner';
+import { useTransition } from 'react';
+import { logoutAction } from '@/lib/auth/actions';
 
 interface NavigationHeaderProps {
   onAddAccount?: () => void;
@@ -19,25 +21,17 @@ export const NavigationHeader = ({
   customAction,
 }: NavigationHeaderProps) => {
   const pathname = usePathname();
-  const router = useRouter();
+  const [isLoggingOut, startLogout] = useTransition();
 
   const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to logout');
+    startLogout(async () => {
+      try {
+        await logoutAction();
+      } catch (error) {
+        toast.error('Failed to logout');
+        console.error('Logout error:', error);
       }
-
-      toast.success('Logged out successfully');
-      router.push('/auth/login');
-      router.refresh();
-    } catch (error) {
-      toast.error('Failed to logout');
-      console.error('Logout error:', error);
-    }
+    });
   };
 
   const getPageTitle = () => {
@@ -70,6 +64,7 @@ export const NavigationHeader = ({
               variant="outline"
               size="sm"
               onClick={handleLogout}
+              disabled={isLoggingOut}
               className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -97,6 +92,7 @@ export const NavigationHeader = ({
               variant="outline"
               size="sm"
               onClick={handleLogout}
+              disabled={isLoggingOut}
               className="transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
             >
               <LogOut className="h-4 w-4 mr-2" />
