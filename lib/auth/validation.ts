@@ -4,14 +4,11 @@ import { z } from 'zod';
  * Setup request validation schema
  */
 export const setupSchema = z.object({
-  username: z
+  name: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(50, 'Username must be less than 50 characters')
-    .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      'Username can only contain letters, numbers, underscores, and hyphens'
-    ),
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters'),
+  email: z.string().email('Valid email is required'),
   password: z.string().min(12, 'Password must be at least 12 characters'),
 });
 
@@ -19,7 +16,7 @@ export const setupSchema = z.object({
  * Login request validation schema
  */
 export const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
+  email: z.string().email('Valid email is required'),
   password: z.string().min(1, 'Password is required'),
   rememberMe: z.boolean().optional().default(false),
 });

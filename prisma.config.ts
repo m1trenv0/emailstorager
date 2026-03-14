@@ -1,5 +1,8 @@
 import 'dotenv/config';
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
+
+const fallbackDatabaseUrl =
+  process.env.DATABASE_URL ?? 'mongodb://127.0.0.1:27017/emailstorager';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -8,6 +11,6 @@ export default defineConfig({
   },
   engine: 'classic',
   datasource: {
-    url: env('DATABASE_URL'),
+    url: fallbackDatabaseUrl,
   },
 });
